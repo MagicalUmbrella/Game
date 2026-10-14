@@ -48,6 +48,36 @@ export const LIFE=[
     ch:[{k:'chia',label:'Mang bánh trái ra chia',note:'−1 quan · +2 Đức',dis:()=>S.tien<1,fn:()=>{pay(1);gain('duc',2)}},
         {k:'giu',label:'Ở nhà phụ mẹ cúng',fn:()=>{}}],
     chron:{chia:'rằm tháng Bảy mang bánh chia cho trẻ nghèo',giu:'rằm tháng Bảy ở nhà phụ mẹ cúng'}},
+  {id:'chim',age:[6,11],title:'Con chim sẻ gãy cánh',body:'Bạn nhặt được một con chim sẻ gãy cánh dưới gốc đa, nó run rẩy trong lòng bàn tay.',
+    ch:[{k:'nuoi',label:'Mang về nuôi cho lành',note:'−1 Sức · +2 Đức',fn:()=>{sucDown(1);gain('duc',2)}},
+        {k:'tha',label:'Đặt lại vào bụi cây',fn:()=>{}}],
+    res:{nuoi:'Nửa tháng sau, con sẻ bay được. Sáng nào nó cũng về đậu trên mái nhà.'},
+    chron:{nuoi:'nuôi lành con chim sẻ gãy cánh',tha:'để con chim sẻ gãy cánh lại dưới gốc đa'}},
+  {id:'chantrau',age:[8,13],when:()=>S.quests.trau==='done',title:'Bãi cỏ ven sông',body:'Dắt trâu ra bãi, bạn gặp lũ trẻ chăn trâu làng bên đòi chiếm bãi cỏ non.',
+    ch:[{k:'nhuong',label:'Nhường, dắt trâu đi chỗ khác',note:'+1 Đức',fn:()=>gain('duc',1)},
+        {k:'tranh',label:'Đứng ra tranh bãi',note:()=>S.vo>=10?'Võ đủ để giữ bãi':'Võ dưới 10, dễ thua',fn:()=>{if(S.vo>=10){gain('vo',1);return'tranh_thang'}return'tranh_thua'}},
+        {k:'co',label:'Gọi Cò ra cùng',note:'Cò thân hơn',fn:()=>{S.rel.co++}}],
+    res:{tranh_thang:'Lũ trẻ làng bên rút đi. Từ đó trâu nhà bạn được ăn bãi cỏ non.',tranh_thua:'Bạn bị xô ngã xuống bùn, về nhà mẹ phải giặt áo cả buổi.',co:'Hai đứa đứng cạnh nhau, lũ trẻ làng bên chùn bước.'},
+    chron:{nhuong:'nhường bãi cỏ cho trẻ chăn trâu làng bên',tranh_thang:'giữ được bãi cỏ ven sông',tranh_thua:'tranh bãi cỏ với trẻ làng bên, bị xô ngã xuống bùn',co:'cùng Cò giữ bãi cỏ ven sông'}},
+  {id:'trungthu',age:[6,13],s:2,title:'Trung thu',body:'Đêm rằm tháng Tám, trăng sáng vằng vặc. Lũ trẻ trong xóm rủ nhau phá cỗ ở sân đình.',
+    ch:[{k:'co',label:'Cùng Cò bày cỗ',note:'Cò thân hơn',fn:()=>{S.rel.co++}},
+        {k:'me',label:'Ở nhà ngắm trăng với mẹ',note:'+1 Đức',fn:()=>gain('duc',1)}],
+    chron:{co:'cùng Cò bày cỗ trông trăng',me:'đêm trung thu ở nhà ngắm trăng với mẹ'}},
+  {id:'caotrom',age:[8,12],title:'Ao nhà ông Cả',body:'Cò thì thầm: "Ao nhà ông Cả cá rô nhiều lắm, tối nay đi câu trộm không?"',
+    ch:[{k:'di',label:'Đi câu trộm',note:'Cò thân hơn · có thể bị bắt',fn:()=>{S.rel.co++;if(roll(.5)){gain('duc',-2);return'di_bat'}gain('tien',1)}},
+        {k:'khuyen',label:'Khuyên Cò thôi',note:'+1 Đức',fn:()=>gain('duc',1)}],
+    res:{di_bat:'Ông Cả cầm gậy đuổi ra tận đầu ngõ. Hôm sau ông sang mách mẹ.',di:'Hai đứa câu được mấy con rô, nướng ăn ngay bờ ao.',khuyen:'Cò bĩu môi nhưng rồi cũng thôi.'},
+    chron:{di:'đi câu trộm ao nhà ông Cả với Cò',di_bat:'đi câu trộm ao nhà ông Cả, bị bắt quả tang',khuyen:'khuyên Cò thôi đi câu trộm'}},
+  {id:'sachchua',age:[9,13],title:'Quyển sách ở chùa',body:'Quét sân chùa, bạn nhặt được một quyển kinh rách gáy rơi dưới gầm bàn.',
+    ch:[{k:'tra',label:'Mang trả sư cụ',note:'+2 Đức',fn:()=>gain('duc',2)},
+        {k:'doc',label:'Giấu về đọc',note:'+2 Văn',fn:()=>gain('van',2)}],
+    res:{tra:'Sư cụ khâu lại gáy sách, bảo bạn rảnh thì lên chùa đọc.'},
+    chron:{tra:'mang trả quyển kinh nhặt được ở chùa',doc:'giấu quyển kinh nhặt được ở chùa về đọc'}},
+  {id:'batnat',age:[9,13],title:'Bị bắt nạt',body:'Trên đường đi học về, mấy đứa lớn làng bên chặn đường đòi cái nón của bạn.',
+    ch:[{k:'danh',label:'Đánh lại',note:()=>S.vo>=12?'Võ đủ để thắng':'Võ dưới 12, dễ thua',fn:()=>{if(S.vo>=12){gain('vo',1);return'danh_thang'}return'danh_thua'}},
+        {k:'nhin',label:'Đưa nón, về kể với cha',note:'+1 Đức',fn:()=>gain('duc',1)}],
+    res:{danh_thang:'Mấy đứa kia bỏ chạy. Hôm sau cả lớp nhìn bạn khác hẳn.',danh_thua:'Bạn về nhà với con mắt tím bầm.',nhin:'Cha sang làng bên nói chuyện. Hôm sau cái nón được mang trả.'},
+    chron:{danh_thang:'đánh lại mấy đứa lớn bắt nạt',danh_thua:'đánh lại mấy đứa lớn bắt nạt, về nhà tím mắt',nhin:'bị bắt nạt, về nhờ cha phân xử'}},
   // ---------- tuổi thiếu niên ----------
   {id:'moctui',age:[12,17],when:()=>S.tien>=2,title:'Chợ kinh',body:'Đang xem hàng ở chợ phường Nhai Tuân, bạn thấy túi tiền bên hông nhẹ bẫng. Một bóng người lách vội vào đám đông.',
     ch:[{k:'duoi',label:'Đuổi theo',note:()=>S.vo>=15?'Võ đủ để đuổi kịp':'Võ dưới 15, khó đuổi kịp',fn:()=>{if(S.vo>=15){gain('vo',1);return'duoi_kip'}pay(2);return'duoi_truot'}},
@@ -148,12 +178,15 @@ export function runLife(e){
 
 const eligible=e=>{const a=age();return S.life[e.id]==null&&a>=e.age[0]&&a<=e.age[1]&&(e.s==null||e.s===S.season)&&(!e.when||e.when())};
 
-/* Gọi sau khi sang mùa, khi mùa này không có sự kiện lịch sử. Mỗi chuyện xong thì nghỉ 1–2 mùa. */
+/* Gọi sau khi sang mùa, khi mùa này không có sự kiện lịch sử. Mỗi chuyện xong thì nghỉ 1–2 mùa;
+   đã 4 mùa liền không có chuyện gì (kể cả sự kiện lịch sử) thì chắc chắn có một chuyện. */
 export function maybeLife(){
   if(S.year>=1285)return;
-  if((S.lifeWait=(S.lifeWait||0)-1)>0)return;
+  const now=S.year*4+S.season,quiet=now-(S.lastEv??now);if(S.lastEv==null)S.lastEv=now;
+  if((S.lifeWait=(S.lifeWait||0)-1)>0&&quiet<4)return;
   const pool=LIFE.filter(eligible);
-  if(!pool.length||Math.random()>.75)return;
+  if(!pool.length||(quiet<4&&Math.random()>.75))return;
+  S.lastEv=now;
   S.lifeWait=1+Math.floor(Math.random()*2);
   runLife(pool[Math.floor(Math.random()*pool.length)]);
 }

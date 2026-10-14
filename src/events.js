@@ -80,7 +80,7 @@ function eventCuoi(){
   S.thao=S.co==='village'?'co':'gone';
   showModal({kicker:K(0,1279),title:S.thao==='co'?'Thảo nhận lời Cò':'Thảo đi lấy chồng',body:S.thao==='co'?`<p>Cò nhờ người sang nhà bà Tư dạm hỏi, và Thảo nhận lời.${S.flags.rival?' Bạn đã nói lời thương, nhưng chưa đủ để giữ được Thảo.':''}</p>`:'<p>Thảo nhận lời một người làng bên rồi theo chồng đi xa. Bà Tư ở lại một mình.</p>'});
 }
-function checkEvents(){for(const e of EVENTS)if(!S.ev[e.id]&&S.year===e.y&&S.season===e.s){S.ev[e.id]=1;if(e.mg)S.pending=e.id;e.run()}
+function checkEvents(){for(const e of EVENTS)if(!S.ev[e.id]&&S.year===e.y&&S.season===e.s){S.ev[e.id]=1;if(e.mg)S.pending=e.id;S.lastEv=S.year*4+S.season;e.run()}
   if(!modalOpen&&!S.ended&&!S.pending)maybeLife()}
 export function resumePending(){if(!S.pending)return;const e=EVENTS.find(x=>x.id===S.pending);if(e)e.run()}
 function choosePath(){

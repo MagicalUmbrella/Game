@@ -371,9 +371,10 @@
     }
     const all = [...new Set(happened.concat([...main].filter(t => t < 1285 * 4)))].sort((a, b) => a - b);
     let gap = 0, at = 1264 * 4;
-    for (const t of all) { if (t - at - 1 > gap) gap = t - at - 1; at = t; }
+    let where = '';
+    for (const t of all) { if (t - at - 1 > gap) { gap = t - at - 1; where = `${Math.floor(at / 4)}.${at % 4} → ${Math.floor(t / 4)}.${t % 4}`; } at = t; }
     if (count < 14) errs.push(`chỉ có ${count} chuyện đời thường cả đời (mong ít nhất 14)`);
-    if (gap > 6) errs.push(`có quãng ${gap} mùa liền không có chuyện gì (mong tối đa 6)`);
+    if (gap > 6) errs.push(`có quãng ${gap} mùa liền không có chuyện gì, từ ${where} (mong tối đa 6)`);
     return {errs, count, gap};
   }
 
