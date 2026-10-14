@@ -29,6 +29,9 @@ function zoneSpot(p){ // ô trong rừng trú ẩn đi tới được từ làng
   for(let y=ZONE.y0;y<=ZONE.y1;y++)for(let x=ZONE.x0;x<=ZONE.x1;x++)if(zoneReach[y*W+x]!==-2){const d=Math.hypot(x+.5-p.x,y+.5-p.y);if(d<bd){bd=d;best=[x+.5,y+.5]}}
   return best}
 function reachSafe(p){p.st='safe';p.path=null;floatAt(p.name+' đã an toàn',p.x,p.y,'#9fcaa9');p.spot=[ZONE.x0+.8+Math.random()*(ZONE.x1-ZONE.x0-.6),ZONE.y0+1+Math.random()*(ZONE.y1-ZONE.y0-2)]}
+// Chỗ giặc lục lọi khi không có ai để đuổi: sân các nhà, kho thóc, đình, ruộng.
+const LOOT=[[43.5,51.5],[47.5,51.2],[52.5,51],[36.5,38.5],[34.5,38.5],[44.5,44.5],[40.5,46.5],[49.5,46],[38.5,52.5],[46.5,56.5]];
+function pickLoot(e){let p;do p=LOOT[Math.floor(Math.random()*LOOT.length)];while(e.loot&&p===e.loot&&LOOT.length>1);e.lootT=1+Math.random()*2.5;return p}
 const FIRES=[[53.5,21.6],[24.5,20.2],[48.5,21.2]];
 export function startClimax(){
   const v=[],add=(id,name,x,y,look,slow)=>v.push({id,name,x,y,look,st:'wait',slow:slow||1,walk:0,dir:'down'});
@@ -84,8 +87,14 @@ function clUpdate(dt){
     else{let tg=null;
       if(M.decoy&&Math.hypot(M.decoy.x-e.x,M.decoy.y-e.y)<11)tg=M.decoy;
       else{let best=1e9;for(const p of M.v)if(p.st==='wait'||p.st==='follow'||p.st==='self'){const d=Math.hypot(p.x-e.x,p.y-e.y);if(d<best){best=d;tg=p}}
-        if(!tg||Math.hypot(S.x-e.x,S.y-e.y)<best*1.2)tg={x:S.x,y:S.y};
-        for(const a of M.al)if(!a.down&&!a.quan&&Math.hypot(a.x-e.x,a.y-e.y)<1.2)tg=a}
+        // bạn đã vào rừng thì giặc thôi đuổi (giặc không dám theo vào rừng)
+        if(!inZone(S.x,S.y)&&(!tg||Math.hypot(S.x-e.x,S.y-e.y)<best*1.2))tg={x:S.x,y:S.y};
+        for(const a of M.al)if(!a.down&&!a.quan&&!inZone(a.x,a.y)&&Math.hypot(a.x-e.x,a.y-e.y)<1.2)tg=a}
+      if(!tg){ // không còn ai ngoài rừng để đuổi: đi lục lọi trong làng, dừng lại một lúc ở mỗi chỗ
+        if(!e.loot)e.loot=pickLoot(e);
+        else if(Math.hypot(e.loot[0]-e.x,e.loot[1]-e.y)<.6&&(e.lootT-=dt)<=0)e.loot=pickLoot(e);
+        tg={x:e.loot[0],y:e.loot[1]}}
+      else e.loot=null;
       tx=tg.x;ty=tg.y}
     const dx=tx-e.x,dy=ty-e.y,d=Math.hypot(dx,dy);
     if(d>.05){const st=nextStep(e,tx,ty,okEnemy,M.T-M.t);if(st){const sx=st[0]-e.x,sy=st[1]-e.y,sd=Math.hypot(sx,sy)||1,m=Math.min(sd,e.sp*dt*(e.st==='flee'?1.15:1)*(wading(e)?.5:1)),nx=e.x+sx/sd*m,ny=e.y+sy/sd*m;if(!(inZone(nx,ny)&&e.st!=='flee')){e.x=nx;e.y=ny}e.walk+=dt*9;e.dir=dirOf(sx,sy)}}

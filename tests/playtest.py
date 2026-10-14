@@ -128,10 +128,12 @@ def balance(page, fails):
 def mechanics(page, fails):
     """Đi tới được mọi nơi, không đi chéo, trâu giật mình."""
     for name, fn in (('đi tới được (BFS)', 'reach'), ('không đi chéo', 'noDiagonal'), ('trâu giật mình', 'buffalo'),
-                     ('đường văn: dân tự vào rừng', 'selfWalk'), ('ngã xuống: ai bị bắt, ai kẹt lại', 'downRule')):
+                     ('đường văn: dân tự vào rừng', 'selfWalk'), ('ngã xuống: ai bị bắt, ai kẹt lại', 'downRule'),
+                     ('giặc không đứng dàn hàng ở bìa rừng', 'noCamping')):
         fresh(page)
         r = page.evaluate(f'() => __checks.{fn}()')
-        extra = f" ({r['n']} điểm)" if 'n' in r else f" ({r['safe']}/{r['total']} vào tới rừng)" if 'safe' in r else ''
+        extra = (f" ({r['n']} điểm)" if 'n' in r else f" ({r['safe']}/{r['total']} vào tới rừng)" if 'safe' in r
+                 else f" (sát bìa rừng {100 * r['near']:.0f}% thời gian, tốc độ TB {r['speed']:.1f} ô/giây)" if 'near' in r else '')
         print(f"  {name}{extra}: {'đạt' if not r['errs'] else 'LỖI'}")
         fails.extend(f'{name}: {e}' for e in r['errs'])
     for dredged in (True, False):

@@ -212,5 +212,38 @@
     return {errs};
   }
 
-  window.__checks = {reach, noDiagonal, buffalo, terrain, selfWalk, downRule};
+  /* Bạn đã vào rừng, chỉ còn thóc ngoài làng: giặc không được đứng dàn hàng ở bìa rừng mà phải đi lại
+     lục lọi trong làng. Đo tỉ lệ lần giặc đứng sát bìa rừng và tốc độ di chuyển trung bình. */
+  function noCamping() {
+    const d = D(), S = d.S, errs = [];
+    Object.assign(S, {year: 1285, season: 0, path: 'vo', co: 'army', cha: true});
+    S.flags.tolich = 'done';
+    d.startClimax();
+    const M = d.MG, Z = d.ZONE;
+    for (const p of M.v) { p.st = 'safe'; p.x = Z.x0 + 2; p.y = Z.y0 + 3; p.spot = [p.x, p.y]; }
+    S.x = (Z.x0 + Z.x1) / 2 + .5; S.y = (Z.y0 + Z.y1) / 2 + .5;
+    let near = 0, samples = 0, moved = 0;
+    const last = new Map();
+    for (let i = 0; i < 50 * 60 && d.MG === M; i++) {
+      d.step(DT);
+      if (i < 20 * 60) continue; // cho giặc kịp vào làng
+      for (const e of M.en) {
+        if (e.dead || e.st === 'flee') continue;
+        samples++;
+        const dx = Math.max(Z.x0 - e.x, 0, e.x - (Z.x1 + 1)), dy = Math.max(Z.y0 - e.y, 0, e.y - (Z.y1 + 1));
+        if (Math.hypot(dx, dy) < 2) near++;
+        const p = last.get(e); if (p) moved += Math.hypot(e.x - p[0], e.y - p[1]); last.set(e, [e.x, e.y]);
+      }
+    }
+    const speed = samples ? moved / (samples * DT) : 0;
+    if (!samples) errs.push('không có giặc nào để đo');
+    else {
+      if (near / samples > 0.1) errs.push(`giặc đứng sát bìa rừng ${(100 * near / samples).toFixed(0)}% thời gian (tối đa 10%)`);
+      if (speed < 0.5) errs.push(`giặc gần như đứng yên (tốc độ TB ${speed.toFixed(2)} ô/giây)`);
+    }
+    d.setMG(null); document.body.classList.remove('mg');
+    return {errs, near: samples ? near / samples : 0, speed};
+  }
+
+  window.__checks = {reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping};
 })();

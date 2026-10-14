@@ -13,6 +13,7 @@ import {startFlood,endFlood} from './minigames/flood.js';
 import {startExam} from './minigames/exam.js';
 import {startTraining,tmHit} from './minigames/training.js';
 import {startClimax,finishClimax,ZONE} from './climax.js';
+import {personSprite} from './sprites.js';
 
 requestAnimationFrame(loop);
 titleScreen();
@@ -24,4 +25,4 @@ if(import.meta.env.MODE==='test')window.__dv={
   get modalOpen(){return ui.modalOpen},get dialogOpen(){return ui.dialogOpen},pick:ui.pick,mpick:ui.mpick,nextModal:ui.nextModal,startQuest:ui.startQuest,
   advance,advanceOne,fastForward,chooseFocus,talkThay,talkVo,startPlay,
   startFlood,endFlood,startExam,startTraining,tmHit,startClimax,finishClimax,
-  step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY};
+  step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY,personSprite};

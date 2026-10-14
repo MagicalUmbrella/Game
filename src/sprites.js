@@ -2,54 +2,9 @@
 import {TS} from './constants.js';
 import {Hs,disc,flip,mk,outline,shade} from './pixel.js';
 
+export {personSprite} from './person.js';
 const spriteCache={};
 const SKIN='#e9b98f',SKIND='#c58f66';
-export function personSprite(o,dir,f){
-  const key=JSON.stringify(o)+dir+f;if(spriteCache[key])return spriteCache[key];
-  if(dir==='right')return spriteCache[key]=flip(personSprite(o,'left',f));
-  const top=o.spear?12:6,[c,g]=mk(22,top+26),X=3,Y=top;
-  const s=(x,y,w,h,col)=>{g.fillStyle=col;g.fillRect(X+x,Y+y,w,h)};
-  const kid=o.kid,side=dir==='left',back=dir==='up';
-  const sh=o.shirt,shD=shade(sh,-.22),shL=shade(sh,.14);
-  const hairC={kid:'#1e1813',man:'#1e1813',old:'#ddd6c6',woman:'#1e1813',oldwoman:'#c9c2b3',monk:null}[o.hair];
-  const legL=f===1?-1:0,legR=f===2?-1:0,armL=f===1?1:f===2?-1:0;
-  const hy=kid?6:3,hh=8,by=kid?14:11,bh=kid?5:8,ly=19,lh=kid?3:4;
-  const robe=o.hair==='woman'||o.hair==='oldwoman'||o.hair==='monk',long=o.long||robe;
-  // legs / feet
-  if(!long){s(5,ly+legL,2,lh-legL+(kid?1:0)-(kid?1:0),o.pants||'#3b3027');if(kid)s(5,20+legL,2,3-legL,o.pants||'#3b3027');s(9,ly+legR,2,lh-legR,o.pants||'#3b3027');if(kid)s(9,20+legR,2,3-legR,o.pants||'#3b3027');s(5,23+legL,2,1,SKIND);s(9,23+legR,2,1,SKIND)}
-  else{s(4,by+bh,8,23-(by+bh),o.hair==='monk'?shD:'#2d2621');s(5,23,2,1,SKIND);s(9,23,2,1,SKIND)}
-  if(o.spear){s(14,-10,1,33,'#6a4e2e');s(13,-12,3,2,'#d3d7da');s(14,-13,1,1,'#eef0f2');s(13,-8,3,1,'#b8322a')}
-  // torso
-  const bodyH=o.hair==='monk'?23-by:(long&&!robe?bh+4:bh);
-  s(4,by,8,bodyH,sh);s(side?4:11,by,1,bodyH,shD);s(side?11:4,by,1,bodyH,shL);
-  if(!back)s(7,by,2,2,shD);
-  if(!long)s(4,by+(kid?3:4),8,1,o.belt||'#7a2e22');else if(!robe)s(4,by+4,8,1,shade(sh,-.35));
-  if(o.hair==='monk'&&!back)for(let i=0;i<6;i++)s(5+i,by+1+i,1,1,'#7a4a20');
-  // arms
-  const al=kid?4:5;
-  if(side){s(7,by+1+armL,2,al,shD);s(7,by+1+al+armL,2,1,SKIN)}
-  else{s(3,by+1+armL,1,al,sh);s(3,by+1+al+armL,1,1,SKIN);s(12,by+1-armL,1,al,sh);s(12,by+1+al-armL,1,1,SKIN)}
-  // head
-  s(4,hy+1,8,hh-1,SKIN);s(5,hy,6,1,SKIN);g.clearRect(X+4,Y+hy+hh-1,1,1);g.clearRect(X+11,Y+hy+hh-1,1,1);
-  s(side?4:11,hy+2,1,hh-3,SKIND);
-  // hair
-  if(o.hair==='kid'){s(7,hy-2,2,2,'#1e1813');s(8,hy-3,1,1,'#1e1813');if(back)s(6,hy,4,2,'#3a2e24')}
-  else if(hairC){
-    s(4,hy,8,3,hairC);s(5,hy-1,6,1,hairC);
-    if(back)s(4,hy,8,hh-2,hairC);else if(side)s(8,hy,4,hh-3,hairC);else{s(4,hy+3,1,2,hairC);s(11,hy+3,1,2,hairC)}
-    if(o.hair==='woman'||o.hair==='oldwoman'){s(3,hy-1,10,2,'#6b3a28');s(4,hy-2,8,1,'#80482f')}
-    else{s(6,hy-4,4,3,hairC);s(7,hy-5,2,1,hairC)}
-  }
-  if(o.hair==='old'&&!back)s(side?4:6,hy+hh-2,side?3:4,3,'#e6e0d2');
-  if(o.band){s(4,hy+2,8,1,'#b8322a');if(side)s(11,hy+3,1,3,'#b8322a');else if(back)s(7,hy+3,2,3,'#b8322a')}
-  if(o.helm){s(4,hy-2,8,4,'#5d636c');s(5,hy-3,6,1,'#5d636c');s(7,hy-5,2,2,'#8a9099');s(3,hy+1,10,1,'#7a5a3a');if(back)s(4,hy+2,8,3,'#5d636c');if(o.plume)s(7,hy-8,2,3,'#b8322a')}
-  if(o.hat){s(7,hy-5,2,1,'#e0cb92');s(6,hy-4,4,1,'#e0cb92');s(4,hy-3,8,1,'#d9c288');s(2,hy-2,12,1,'#cdb57a');s(1,hy-1,14,1,'#b9a066');s(5,hy-3,1,1,'#b9a066');s(10,hy-3,1,1,'#b9a066')}
-  // face
-  if(!back){const ey=hy+4;if(side)s(5,ey,1,2,'#2a1e16');else{s(6,ey,1,2,'#2a1e16');s(9,ey,1,2,'#2a1e16')}
-    if(kid&&!side){s(5,ey+2,1,1,'#e79a8a');s(10,ey+2,1,1,'#e79a8a')}}
-  outline(c);c.ax=X+8;c.ay=Y+24;
-  return spriteCache[key]=c;
-}
 export function buffaloSprite(dir){const key='buf'+dir;if(spriteCache[key])return spriteCache[key];
   if(dir==='right')return spriteCache[key]=flip(buffaloSprite('left'));
   const[c,g]=mk(30,22),s=(x,y,w,h,col)=>{g.fillStyle=col;g.fillRect(x,y,w,h)};
