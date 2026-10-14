@@ -135,6 +135,7 @@ def mechanics(page, fails):
     """Đi tới được mọi nơi, không đi chéo, trâu giật mình."""
     for name, fn in (('đánh nhau đêm 1285: không chồng, không kẹt, tự quay mặt', 'combat'), ('chuỗi nhiệm vụ Cò, Thảo, thầy Chu', 'chains'), ('khám phá: mọi chỗ, đồ dùng được', 'explore'), ('việc hằng ngày: phần thưởng theo mức chơi', 'daily'), ('đi tới được (BFS)', 'reach'), ('không đi chéo', 'noDiagonal'), ('trâu giật mình', 'buffalo'),
                      ('đường văn: dân tự vào rừng', 'selfWalk'), ('ngã xuống: ai bị bắt, ai kẹt lại', 'downRule'),
+                     ('ba hồi đêm 1285: lửa, tên đầu toán, đổi mình', 'acts'),
                      ('giặc không đứng dàn hàng ở bìa rừng', 'noCamping'),
                      ('giấy bút, thuốc bổ mỗi mùa một lần', 'shopLimit'), ('lo trước ngày giặc đến', 'prep'),
                      ('mốc chỉ số, phím C', 'statTiers'), ('chuyện đời thường: mọi lựa chọn', 'lifeAll'),
@@ -209,12 +210,13 @@ CLIMAX_BUILDS = {  # chỉ số sát với người chơi thật theo từng đ�
     'nông (Võ 25, Đức 30), có Cò': "S.path='nong';S.vo=25;S.duc=30;S.co='village';S.rel.co=2;S.flags.tolich='skip';",
     'như trên, lo đủ 3 việc': "S.path='nong';S.vo=25;S.duc=30;S.co='village';S.rel.co=2;S.flags.tolich='skip';S.flags.lan=S.flags.giao=S.flags.catThoc=true;",
 }
-REASON = {'done': 'đủ người', 'dawn': 'trời sáng', 'down': 'ngã xuống'}
+REASON = {'done': 'đủ người', 'dawn': 'trời sáng', 'down': 'ngã xuống', 'captured': 'bị bắt'}
+BOSS = {'killed': 'hạ', 'tricked': 'lừa', 'took': 'mất con tin', 'alive': 'không kịp bắt ai'}
 
 
 def climax_table(page, fails, n):
     """Bot bấm phím chơi đêm 1285 với vài kiểu nhân vật, n lượt mỗi ô."""
-    print(f"  {'nhân vật':30s} {'tay nghề':9s} {'cứu TB':>7s} {'thóc TB':>7s} {'ngã xuống':>9s}  kết thúc")
+    print(f"  {'nhân vật':30s} {'tay nghề':9s} {'cứu TB':>7s} {'thóc TB':>7s} {'ngã xuống':>9s}  kết thúc · tên đầu toán")
     out = {}
     for name, setup in CLIMAX_BUILDS.items():
         for sk in SKILLS:
@@ -224,12 +226,13 @@ def climax_table(page, fails, n):
                 rs.append(page.evaluate("""([setup,sk]) => {const D=__dv,S=D.S; S.year=1285; S.season=0; S.cha=true;
                   S.ev.thao=1; S.thao='wife'; S.child=true; new Function('S',setup)(S);
                   D.startClimax(); return __bots.climaxBot(sk)}""", [setup, sk]))
-            total = rs[0]['total']
+            total = max(r['total'] for r in rs)
             saved = sum(r['saved'] for r in rs) / n
-            down = sum(r['reason'] == 'down' for r in rs)
-            ends = ', '.join(f"{REASON.get(k, k)} {sum(r['reason'] == k for r in rs)}" for k in ('done', 'dawn', 'down') if any(r['reason'] == k for r in rs))
+            down = sum(r['reason'] in ('down', 'captured') for r in rs)
+            ends = ', '.join(f"{REASON.get(k, k)} {sum(r['reason'] == k for r in rs)}" for k in ('done', 'dawn', 'down', 'captured') if any(r['reason'] == k for r in rs))
+            boss = ', '.join(f"{BOSS[k]} {sum(r.get('boss') == k for r in rs)}" for k in BOSS if any(r.get('boss') == k for r in rs))
             out[(name, sk)] = (saved, total, down)
-            print(f"  {name:30s} {sk:9s} {saved:4.1f}/{total:<2d} {sum(r['thoc'] for r in rs) / n:4.1f}/{rs[0]['thocT']:<2d} {down:>5d}/{n:<3d}  {ends}")
+            print(f"  {name:30s} {sk:9s} {saved:4.1f}/{total:<2d} {sum(r['thoc'] for r in rs) / n:4.1f}/{rs[0]['thocT']:<2d} {down:>5d}/{n:<3d}  {ends} · {boss or '–'}")
     saved, total, down = out[('võ (Võ 70), có Cò, Đức 40', 'giỏi')]
     if down or saved < total - 1:
         fails.append(f"đêm 1285: nhân vật mạnh nhất, bot giỏi mà chỉ cứu TB {saved:.1f}/{total}, ngã xuống {down} lần (quá khó?)")

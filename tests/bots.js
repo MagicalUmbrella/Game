@@ -121,6 +121,7 @@
     const d = D(), skill = SKILL[skillName], w = makeWalker(skill);
     let t = 0, wait = 0, react = 0, hp = 0, tLeft = 0, M;
     while ((M = d.MG) && M.type === 'climax' && t < maxT) {
+      if (d.modalOpen) { d.mpick(d.S.path === 'van' ? 2 : 1); continue; } // hỏi đổi mình lấy con tin: bot không đổi
       hp = M.hp; tLeft = M.t;
       const S = d.S;
       const live = M.en.filter(e => !e.dead);
@@ -130,6 +131,10 @@
       if (M.decoys > 0 && !M.decoy && (live.filter(e => Math.hypot(e.x - S.x, e.y - S.y) < 7).length >= 3 ||
           live.some(e => !e.cap && e.st !== 'flee' && Math.hypot(e.x - S.x, e.y - S.y) < 10 &&
             M.v.some(p => ['wait', 'follow', 'self'].includes(p.st) && Math.hypot(p.x - e.x, p.y - e.y) < 4)))) w.tap('q');
+      // đường văn: đến sát tên đầu toán đang giữ con tin thì thử lừa hắn một lần (lựa chọn thứ hai trong hộp hỏi)
+      if (S.path === 'van' && M.boss && !M.boss.dead && M.boss.cap && !M.boss.tricked && Math.hypot(M.boss.x - S.x, M.boss.y - S.y) < 1.5) {
+        w.tap('e'); if (d.modalOpen) d.mpick(1); d.step(DT); t += DT; continue;
+      }
       if (near && (react -= DT) <= 0) {
         // quay mặt về phía giặc (một nhịp bấm hướng) rồi đánh
         w.only(DIRKEY[dirOf(near.x - S.x, near.y - S.y)]);
@@ -171,7 +176,7 @@
     w.releaseAll();
     const r = d.S.res || {};
     return {reason: r.reason, saved: (r.saved || []).length, total: (r.saved || []).length + (r.left || []).length + (r.lost || []).length,
-      lost: (r.lost || []).length, thoc: r.thoc, thocT: r.thocT, kills: r.kills, hp, tLeft: +tLeft.toFixed(0)};
+      lost: (r.lost || []).length, thoc: r.thoc, thocT: r.thocT, kills: r.kills, hp, tLeft: +tLeft.toFixed(0), boss: r.boss};
   }
 
   // full: cứu hết; không thì mỗi người, mỗi bao thóc bị bỏ lại với xác suất skip.
@@ -189,6 +194,15 @@
       if (d.MG !== M) return;
       if (s.st !== 'wait' || (!full && Math.random() < skip)) continue;
       S.x = s.x; S.y = s.y; act(); toZone(); d.step(1 / 30);
+    }
+    // hồi 3: cu Tí, con tin của tên đầu toán. Cứu đủ thì đánh hạ hắn (bấm Space như người chơi), rồi dẫn con tin vào rừng.
+    for (let k = 0; k < 4000 && d.MG === M; k++) {
+      while (d.modalOpen) d.mpick(1);
+      const b = M.boss, tiw = M.v.find(p => p.st === 'wait');
+      if (full && b && !b.dead && b.cap) { M.hp = M.maxhp; S.x = b.x + .7; S.y = b.y; M.cd = 0; M.key(' '); d.step(0.05); continue; }
+      if (full && tiw) { S.x = tiw.x; S.y = tiw.y; act(); toZone(); for (let i = 0; i < 900 && d.MG === M && (tiw.st === 'follow' || tiw.st === 'self'); i++) d.step(1 / 30); continue; }
+      if (!M.boss && M.act < 3) { toZone(); d.step(0.1); continue; }
+      break;
     }
     toZone();
     for (let i = 0; i < 4000 && d.MG === M; i++) d.step(0.1);

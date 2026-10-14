@@ -29,6 +29,7 @@ Mở thẳng `index.html` bằng cách bấm đúp không chạy được nữa,
 | `Esc` | Đóng hội thoại |
 | `Space` | Đánh (màn cao trào) |
 | `Q` | Cắm đuốc nghi binh (màn cao trào, đường văn) |
+| `E` cạnh tên đầu toán | Đổi mình lấy con tin, hoặc lừa hắn (đường văn) |
 
 Game cần bàn phím, nên chơi trên máy tính.
 
@@ -38,7 +39,7 @@ Game cần bàn phím, nên chơi trên máy tính.
 - **Chọn đường đời năm 16 tuổi:** văn (Quốc học viện), võ (hương binh, Giảng võ đường) hoặc nông.
 - **Minigame:** đắp đê trong trận lụt năm 1270, kỳ thi năm 1275, tập trận năm 1283.
 - **Tuyến truyện cá nhân:** tình bạn với Cò, chuyện với Thảo (cháu bà Tư), cha mẹ, thầy đồ Chu, anh Ngũ người Phù Ủng.
-- **Cao trào:** đêm tháng giêng năm 1285, dẫn dân làng và thóc gạo vào rừng trước khi trời sáng.
+- **Cao trào ba hồi:** đêm tháng giêng năm 1285. Hồi một giặc tụ bên kia sông; hồi hai giặc tràn vào, làng cháy, lửa chặn lối; hồi ba tên đầu toán bắt người làm con tin ở sân đình. Bạn có thể hạ hắn, lừa hắn (đường văn), hoặc đổi mình lấy con tin. Ngã xuống mà không ai đỡ, hoặc đổi mình, thì bạn bị bắt về trại giặc, và chương hai sẽ bắt đầu từ đó.
 - **Mọi lựa chọn đều có hậu quả.** Màn kết có phần "Biên niên đời bạn" liệt kê lại các lựa chọn và hệ quả.
 
 ## Sự kiện lịch sử (theo Toàn thư)
@@ -57,7 +58,7 @@ Game cần bàn phím, nên chơi trên máy tính.
 | 1284 | Vét sông Tô Lịch; duyệt binh Đông Bộ Đầu; Hội nghị Diên Hồng |
 | 1285 | Quân Nguyên đánh Vạn Kiếp, Gia Lâm; quân ta thích chữ "Sát Thát" |
 
-Làng An Phú, gia đình nhân vật, Cò, Thảo, thầy đồ Chu, bà Tư và các tình huống cá nhân là hư cấu. Cảnh nhân vật gặp anh Ngũ (Phạm Ngũ Lão lúc trẻ) bên đường đi Phù Ủng là hư cấu. Toàn thư (mục năm 1320, khi ông mất) chép ông người làng Phù Ủng, rất thích đọc sách, thích ngâm thơ, hơn hai mươi tuổi được Hưng Đạo Vương thấy có kỳ tài; câu thơ "Hoành sáo giang sơn cáp kỷ thu" game dẫn theo đúng bản Toàn thư ấy.
+Làng An Phú, gia đình nhân vật, Cò, Thảo, thầy đồ Chu, bà Tư và các tình huống cá nhân là hư cấu. Tên đầu toán giặc, cu Tí nhà bên, chuyện làng An Phú bị đốt đêm 12 tháng giêng là hư cấu; việc nhân vật bị bắt và có mặt trong trại Ô Mã Nhi lúc Đỗ Khắc Chung đến là hư cấu, còn lời đối đáp của Đỗ Khắc Chung theo Toàn thư (mục tháng giêng năm 1285). Cảnh nhân vật gặp anh Ngũ (Phạm Ngũ Lão lúc trẻ) bên đường đi Phù Ủng là hư cấu. Toàn thư (mục năm 1320, khi ông mất) chép ông người làng Phù Ủng, rất thích đọc sách, thích ngâm thơ, hơn hai mươi tuổi được Hưng Đạo Vương thấy có kỳ tài; câu thơ "Hoành sáo giang sơn cáp kỷ thu" game dẫn theo đúng bản Toàn thư ấy.
 
 ## Bật GitHub Pages
 

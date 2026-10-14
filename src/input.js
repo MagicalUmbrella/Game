@@ -26,7 +26,8 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
-export function solidAt(px,py){const tx=Math.floor(px),ty=Math.floor(py),t=get(tx,ty);if(isW(t)||t===MO||t===TR||t===WL)return true;if(t===GA&&age()<12)return true;return bsolid[ty*W+tx]===1}
+/* Đêm 1285: lửa chặn ô (MG.blockAt). Đang đứng sẵn trong ô ấy thì vẫn bước ra được. */
+export function solidAt(px,py){const tx=Math.floor(px),ty=Math.floor(py),t=get(tx,ty);if(MG&&MG.blockAt&&MG.blockAt(tx,ty)&&!(Math.floor(S.x)===tx&&Math.floor(S.y)===ty))return true;if(isW(t)||t===MO||t===TR||t===WL)return true;if(t===GA&&age()<12)return true;return bsolid[ty*W+tx]===1}
 export function canStand(x,y){const r=.28;return!solidAt(x-r,y-.12)&&!solidAt(x+r,y-.12)&&!solidAt(x-r,y+.12)&&!solidAt(x+r,y+.12)}
 let target=null,gateWarn=0;
 export function update(dt){
@@ -55,6 +56,7 @@ function findTarget(){
   const b=S.buffalo;{const d=Math.hypot(b.x-S.x,b.y-S.y),lab=buffaloLabel();if(lab&&d<best){best=d;target={label:lab,act:talkBuffalo}}}
   for(const sg of SIGNS){const d=Math.hypot(sg.x+.5-S.x,sg.y+1.2-S.y);if(d<best){best=d;target={label:'Đọc biển: '+sg.name,act:()=>say(sg.name,sg.text)}}}
   {const ex=exploreTarget(best);if(ex){best=ex.d;target=ex}}
+  if(S.buffalo.st==='lost'&&S.quests.trau==='active'&&Math.hypot(b.x-S.x,b.y-S.y)<1.5)target={label:buffaloLabel(),act:talkBuffalo};   // đang tìm trâu thì trâu được ưu tiên hơn chỗ khám phá cạnh đó
   if(!target)for(const bd of BUILDINGS){if(!['home','cung','chua','dinh','truong','thap'].includes(bd.id))continue;const dx=bd.x+Math.floor(bd.w/2)+.5,dy=bd.y+bd.h+.3;if(Math.hypot(dx-S.x,dy-S.y)<1.3){target={label:bd.id==='home'?'Vào nhà':'Xem '+bd.name,act:()=>doorAction(bd)};break}}
   if(!target&&get(Math.floor(S.x),Math.floor(S.y))===FI&&age()>=8)target={label:'Làm đồng  (−1 Sức)',act:fieldAction};
   if(!target){const v={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[P.dir];if(isW(get(Math.floor(S.x+v[0]*.9),Math.floor(S.y+v[1]*.9))))target={label:'Câu cá  (−1 Sức)',act:fishAction}}

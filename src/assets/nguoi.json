@@ -218,6 +218,18 @@
    "name": "Giặc kỵ",
    "kid": false,
    "fight": true
+  },
+  "giac_dau": {
+   "row": 33,
+   "name": "Tên đầu toán",
+   "kid": false,
+   "fight": true
+  },
+  "ti": {
+   "row": 34,
+   "name": "Cu Tí nhà bên",
+   "kid": true,
+   "fight": false
   }
  }
 }
