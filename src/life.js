@@ -18,7 +18,7 @@ const roll=p=>Math.random()<p;
    res: lời kể sau khi chọn, theo khóa kết quả. chron: dòng biên niên, theo khóa kết quả. */
 export const LIFE=[
   // ---------- tuổi thơ ----------
-  {id:'de',age:[7,11],title:'Bắt dế chọi',body:'Sau trận mưa rào, Cò chạy sang gọi: "Bờ ruộng đầy dế than! Đi bắt con nào to về chọi đi!"',
+  {id:'de',age:[7,11],s:1,title:'Bắt dế chọi',body:'Sau trận mưa rào, Cò chạy sang gọi: "Bờ ruộng đầy dế than! Đi bắt con nào to về chọi đi!"',
     ch:[{k:'di',label:'Đi bắt dế với Cò',note:'−1 Sức · Cò thân hơn',fn:()=>{sucDown(1);S.rel.co++}},
         {k:'hoc',label:'Ở nhà ôn bài',note:'+1 Văn',fn:()=>gain('van',1)}],
     res:{di:'Hai đứa bắt được một con dế than cánh bóng, đặt tên là Tướng Quân.'},
@@ -127,9 +127,10 @@ export const LIFE=[
         {k:'khong',label:'Từ chối',note:'−1 Đức',fn:()=>gain('duc',-1)}],
     chron:{cho:null,khong:'từ chối cho hàng xóm vay tiền lúc ốm đau'}},
   {id:'travay',age:[18,40],when:()=>S.life.chovay==='cho'&&S.year>=S.vayYear+1,title:'Món nợ cũ',body:'Một năm đã qua kể từ ngày bác Ba hỏi vay tiền.',
-    ch:[{k:'cho',label:'Sang hỏi thăm',fn:()=>{if(roll(.7)){gain('tien',6);gain('duc',1);return'tra'}return'khong'}}],
-    res:{tra:'Bác Ba trả đủ 5 quan, biếu thêm một quan và con gà trống.',khong:'Nhà bác Ba đã dọn đi nơi khác từ lúc nào. Món nợ coi như mất.'},
-    chron:{tra:'cho hàng xóm vay tiền lúc ốm đau, được trả đủ',khong:'cho hàng xóm vay tiền, họ dọn đi không trả'}},
+    ch:[{k:'cho',label:'Sang hỏi thăm',fn:()=>{if(roll(.7)){gain('tien',6);gain('duc',1);return'tra'}return'khong'}},
+        {k:'xoa',label:'Thôi, coi như giúp nhà bác',note:'mất 5 quan · +3 Đức',fn:()=>gain('duc',3)}],
+    res:{tra:'Bác Ba trả đủ 5 quan, biếu thêm một quan và con gà trống.',khong:'Nhà bác Ba đã dọn đi nơi khác từ lúc nào. Món nợ coi như mất.',xoa:'Bạn không nhắc chuyện tiền. Hôm sau bác Ba sang, đứng ở ngõ mãi mới nói được câu cảm ơn.'},
+    chron:{tra:'cho hàng xóm vay tiền lúc ốm đau, được trả đủ',khong:'cho hàng xóm vay tiền, họ dọn đi không trả',xoa:'cho hàng xóm vay tiền rồi xóa nợ cho họ'}},
   {id:'dinh',age:[18,30],s:0,title:'Hội đình',body:'Làng mở hội tế Thành hoàng. Mỗi nhà góp hai quan làm cỗ.',
     ch:[{k:'gop',label:'Góp hai quan',note:'+2 Đức',dis:()=>S.tien<2,fn:()=>{pay(2);gain('duc',2)}},
         {k:'khong',label:'Không góp',note:'−1 Đức',fn:()=>gain('duc',-1)}],
@@ -151,7 +152,7 @@ export const LIFE=[
     ch:[{k:'day',label:'Nhận dạy',note:'−1 Sức · +2 Đức · trai làng vững hơn',fn:()=>{sucDown(1);gain('duc',2)}},
         {k:'khong',label:'Từ chối',fn:()=>{}}],
     chron:{day:'dạy võ cho trai làng; đêm giặc đến họ đỡ đòn vững hơn',khong:'không nhận dạy võ cho trai làng'}},
-  {id:'chaom',age:[20,30],when:()=>S.cha&&S.year>=1279,title:'Cha trở trời',body:'Trời trở lạnh, cha ho mấy hôm liền, nằm không dậy được.',
+  {id:'chaom',age:[20,30],s:3,when:()=>S.cha&&S.year>=1279,title:'Cha trở trời',body:'Trời trở lạnh, cha ho mấy hôm liền, nằm không dậy được.',
     ch:[{k:'cham',label:'Ở nhà sắc thuốc chăm cha',note:'−2 Sức · +2 Đức',fn:()=>{sucDown(2);gain('duc',2)}},
         {k:'thuoc',label:'Mua thuốc bắc',note:'3 quan',dis:()=>S.tien<3,fn:()=>pay(3)},
         {k:'la',label:'Sắc lá thuốc hái trong rừng',show:()=>has('Lá thuốc'),fn:()=>{useItem('Lá thuốc');gain('duc',1)}}],

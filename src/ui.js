@@ -10,7 +10,7 @@ export const floats=[];
 const KEYS_DEFAULT=$('keys').innerHTML;
 export function setKeys(html){$('keys').innerHTML=html||KEYS_DEFAULT}
 export function toast(msg,ms=3600){const t=$('toast');t.textContent=msg;t.hidden=false;t.style.opacity=1;clearTimeout(toast._t);toast._t=setTimeout(()=>{t.style.opacity=0;setTimeout(()=>t.hidden=true,300)},ms)}
-export function floatAt(txt,x,y,color){floats.push({txt,color:color||'#ece6d4',x,y,t:0})}
+export function floatAt(txt,x,y,color){const k=floats.filter(f=>f.t<1&&Math.abs(f.x-x)<.6&&Math.abs(f.y-y)<.6).length;floats.push({txt,color:color||'#ece6d4',x,y,t:0,dy:k*22})}   // nhiều chữ cùng chỗ thì xếp lệch dòng
 export function floatText(txt,color){floatAt(txt,S.x,S.y,color)}
 export function gain(k,n){const lab={van:'Văn',vo:'Võ',duc:'Đức',tien:'quan'}[k];S[k]=Math.max(0,Math.min(k==='tien'?999:100,S[k]+n));floatText((n>0?'+':'')+n+' '+lab,{van:'#9cc7e0',vo:'#f0a27f',duc:'#e2bf72',tien:'#c9e0a0'}[k]);renderHUD()}
 export function spend(n=1){if(S.suc<n){toast('Bạn đã mệt. Về nhà ngủ để sang mùa mới.');return false}S.suc-=n;renderHUD();return true}
@@ -45,6 +45,8 @@ export function nextModal(){
   setTimeout(()=>{const f=c.querySelector('input')||c.querySelector('.opt:not(:disabled)');f&&f.focus()},30);
 }
 export function mpick(i){const x=curOpts[i];if(!x||x.disabled)return;if(x.fn&&x.fn()===false)return;nextModal()}
+let questsMini=false;try{questsMini=localStorage.getItem('dvmd-quests-mini')==='1'}catch(e){}
+export function toggleQuests(){questsMini=!questsMini;try{localStorage.setItem('dvmd-quests-mini',questsMini?'1':'0')}catch(e){}renderHUD()}
 export function renderHUD(){
   if(!S)return;const a=age();
   const pathName={van:S.dothi?'Thái học sinh':'Sĩ tử · Quốc học viện',vo:'Hương binh',nong:'Nhà nông'}[S.path]||'';
@@ -59,5 +61,12 @@ export function renderHUD(){
    ${pathName?`<div class="path">${pathName}</div>`:''}${rels?`<div class="rels">${rels}</div>`:''}${S.items.length?`<div class="items">${S.items.map(x=>`<span>${x}</span>`).join('')}</div>`:''}`;
   $('status').querySelector('.name').textContent=S.name;
   const qs=Object.entries(S.quests);
-  $('quests').innerHTML=`<h3>Việc cần làm</h3>`+(qs.length?qs.sort((x,y)=>(x[1]==='done')-(y[1]==='done')).map(([id,st])=>`<div class="q ${st}"><b>${st==='done'?ico('done',1):''}${QUESTS[id].title}</b>${st==='active'?`<span>${typeof QUESTS[id].hint==='function'?QUESTS[id].hint():QUESTS[id].hint}</span>`:''}</div>`).join(''):`<div class="q"><span>Đi gặp mọi người trong làng để nhận việc.</span></div>`)+`<div class="q"><span>Về nhà để ngủ sang mùa mới, hoặc chọn việc chính và cho thời gian trôi nhanh.</span></div>`;
+  // chỉ hiện việc đang làm; việc đã xong gom thành một dòng. Bấm tiêu đề (hoặc phím J) để thu gọn khung cho khỏi che bản đồ.
+  const act=qs.filter(q=>q[1]==='active'),nDone=qs.length-act.length;
+  $('quests').classList.toggle('mini',questsMini);
+  $('quests').innerHTML=`<h3 role="button" tabindex="0" title="Thu gọn hoặc mở rộng (J)">Việc cần làm <span class="tog">${questsMini?'▸':'▾'}</span>${questsMini&&act.length?` <span class="cnt">${act.length}</span>`:''}</h3>`+(questsMini?'':
+    (act.length?act.map(([id])=>`<div class="q active"><b>${QUESTS[id].title}</b><span>${typeof QUESTS[id].hint==='function'?QUESTS[id].hint():QUESTS[id].hint}</span></div>`).join(''):qs.length?'':`<div class="q"><span>Đi gặp mọi người trong làng để nhận việc.</span></div>`)
+    +(nDone?`<div class="q done"><b>${ico('done',1)}Đã xong ${nDone} việc</b></div>`:'')
+    +`<div class="q"><span>Về nhà để ngủ sang mùa mới, hoặc chọn việc chính và cho thời gian trôi nhanh.</span></div>`);
+  const h=$('quests').querySelector('h3');h.onclick=toggleQuests;h.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleQuests()}};
 }

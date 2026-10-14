@@ -2,7 +2,7 @@
 import {$,FI,GA,MO,TR,W,WL} from './constants.js';
 import {BUILDINGS,SIGNS,bsolid,get,isW} from './map.js';
 import {MG,NPCS,P,S,age,npcOn} from './state.js';
-import {closeDialog,dialogOpen,floats,modalOpen,mpick,pick,say,toast} from './ui.js';
+import {closeDialog,dialogOpen,floats,modalOpen,mpick,pick,say,toast,toggleQuests} from './ui.js';
 import {buffaloLabel,buffaloUpdate,doorAction,fieldAction,fishAction,talkBuffalo} from './dialogs.js';
 import {dirOf} from './climax.js';
 import {playing} from './intro.js';
@@ -20,6 +20,7 @@ addEventListener('keydown',e=>{
   if(dialogOpen){if(/^[1-9]$/.test(k))pick(+k-1);else if(k==='escape')closeDialog();return}
   if(MG&&MG.key&&playing&&MG.key(k))return;
   if(k==='c'&&playing&&!MG){showStats();return}
+  if(k==='j'&&playing){toggleQuests();return}
   if(k==='e'&&playing&&target)target.act();
 });
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});

@@ -31,6 +31,7 @@ body{background:#0f1311;color:var(--ink);font-family:var(--body);overflow:hidden
 .rels{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted)}.rel{display:inline-flex;align-items:center;gap:2px}
 .items{display:flex;flex-wrap:wrap;gap:4px}.items span{font-size:11px;color:var(--ink);background:var(--lacquer-2);border:1px solid #3d463f;padding:0 5px}
 #quests{position:absolute;top:max(14px,env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));width:264px;padding:12px 14px;display:grid;gap:8px}
+#quests h3{cursor:pointer;user-select:none}#quests h3 .tog{font-size:11px;opacity:.8}#quests h3 .cnt{display:inline-block;min-width:18px;padding:1px 5px;border-radius:9px;background:var(--jade);color:#14110e;font-size:11px;text-align:center;letter-spacing:0}#quests.mini{width:auto;padding:8px 12px}
 #quests h3,.kicker{font-family:var(--display);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--jade);margin:0;font-weight:500}
 .q{display:grid;gap:2px}.q b{font-weight:600;font-size:13.5px}.q span{font-size:12px;color:var(--muted);line-height:1.4}
 .q.done b{color:var(--muted)}.q b .ico{margin-right:5px}

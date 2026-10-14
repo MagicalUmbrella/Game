@@ -48,7 +48,11 @@ function separate(en){const R=.7;
     if(d<1e-3){dx=Math.cos(i+j);dy=Math.sin(i+j);d=1}const k=(R-d)/2/d;
     for(const [o,s] of [[a,-1],[b,1]]){const nx=o.x+s*dx*k,ny=o.y+s*dy*k;if(okEnemy(Math.floor(nx),Math.floor(ny))&&(o.st==='flee'||!inZone(nx,ny))){o.x=nx;o.y=ny}}}}
 const FIRES=[[53.5,21.6],[24.5,20.2],[48.5,21.2]];
+/* tên người đứng giữa câu: viết thường chữ đầu với danh xưng (mẹ, cha, bà Tư, bé Sen, cụ lý trưởng, trai làng) */
+const lc=n=>/^(Mẹ|Cha|Bà|Bé|Cụ|Trai)/.test(n)?n[0].toLowerCase()+n.slice(1):n;
+const names=a=>a.map(lc).join(', ');
 export function startClimax(){
+  if(S.quests.lo==='active')delete S.quests.lo;   // hết hạn lo trước (hết 1284)
   const v=[],add=(id,name,x,y,look,slow)=>v.push({id,name,x,y,look,st:'wait',slow:slow||1,walk:0,dir:'down'});
   add('me','Mẹ',45.5,50.4,{id:'me_gia'},.85);
   if(S.cha)add('cha','Cha',42.5,56.4,{id:'cha_gia'},.85);
@@ -70,7 +74,7 @@ export function startClimax(){
   prepClimax(MG.v,MG.sk,MG.al,o=>{o.st='safe';o.x=ZONE.x0+1.2+Math.random()*4;o.y=ZONE.y0+1.5+Math.random()*10;if(o.look)o.spot=[o.x,o.y]});
   S.x=43.5;S.y=50.6;P.dir='down';document.body.classList.add('mg');
   setKeys(`<span><kbd>Space</kbd> đánh</span><span><kbd>E</kbd> ${S.path==='van'?'chỉ đường':'dẫn người'} · vác thóc</span>${MG.decoys?'<span><kbd>Q</kbd> đuốc nghi binh</span>':''}<span><kbd>Shift</kbd> chạy</span>`);
-  toast(al.length?`${al.map(a=>a.name).filter((x,i,a)=>a.indexOf(x)===i).join(', ')} cầm gậy chạy ra đứng cạnh bạn.`:'Không ai trong làng đứng ra cùng bạn. Bạn phải tự xoay xở.',4600);
+  toast(al.length?`${al.map(a=>a.name).filter((x,i,a)=>a.indexOf(x)===i).map((x,i)=>i?lc(x):x).join(', ')} cầm gậy chạy ra đứng cạnh bạn.`:'Không ai trong làng đứng ra cùng bạn. Bạn phải tự xoay xở.',4600);
   if(S.path==='van'){const n=MG.decoys,M=MG;setTimeout(()=>{if(MG===M)toast(`Dân làng tin người có chữ: bấm E để chỉ đường, họ tự tìm vào rừng. Bạn có ${n} cây đuốc nghi binh (Q).`,6000)},4800)}
 }
 const pDmg=()=>1+(S.path==='vo'?1:0)+(has('Kiếm sắt')?1:0)+voDmg();
@@ -93,7 +97,7 @@ function clUpdate(dt){
   if(M.decoy){M.decoy.t-=dt;if(M.decoy.t<=0)M.decoy=null}
   if(!M.ngu&&M.t>8){M.spawnT-=dt;if(M.spawnT<=0){if(M.en.length<9)spawnEnemy();M.spawnT=Math.max(1.9,4.4-(M.T-M.t)*.018)}}
   if(!M.ngu&&S.nguMet&&M.t<=45){M.ngu=true;for(let i=0;i<4;i++)M.al.push({id:'quan'+i,name:i?'Quân Trần':'Phạm Ngũ Lão',x:79+i*.6,y:31.2+(i%2)*.6,look:{id:i?'quan':'ngu_tuong'},hp:99,dmg:3,cd:0,sp:6,inv:0,quan:true,dir:'left',walk:0});
-    toast(S.flags.nguKnows?'Tiếng tù và! Phạm Ngũ Lão dẫn quân đến. Ông nhận ra bạn từ buổi tập trận năm nào!':'Tiếng tù và! Một đội quân áo đỏ phi đến. Người đi đầu chính là anh Ngũ ngồi đọc sách bên đường năm xưa!',5600)}
+    toast(S.flags.nguKnows?'Tiếng tù và! Phạm Ngũ Lão dẫn quân đến. Ông nhận ra bạn từ buổi tập trận năm nào!':'Tiếng tù và! Một đội quân áo đỏ phi đến. Người đi đầu chính là anh Ngũ từng đứng đọc sách bên đường năm xưa!',5600)}
   let lead={x:S.x,y:S.y};
   for(const p of M.v){
     if(p.st==='follow'){
@@ -192,9 +196,9 @@ export function finishClimax(reason){const M=MG;setMG(null);setKeys();document.b
     thoc:M.sk.filter(s=>s.st==='safe').length,thocT:M.sk.length,kills:M.kills,coDown:M.al.some(a=>a.id==='co'&&a.down),coThere:M.al.some(a=>a.id==='co'),nLang:M.nLang,ngu:M.ngu};
   S.res=res;
   const rescuer=M.ngu?'quân của Phạm Ngũ Lão':M.al.some(a=>a.id==='co'&&!a.down)?'Cò':allyUp?'trai làng':'mấy người làng liều mình quay lại';
-  const lead={down:`<p>Một nhát giáo sượt qua, bạn ngã xuống bờ ruộng. Lúc mở mắt ra, ${rescuer} đã kéo bạn vào bìa rừng.</p>`,dawn:'<p>Trời hửng sáng. Tiếng tù và của giặc vang lên gọi quân rút về phía bến sông.</p>',done:res.lost.length?`<p>Những người còn lại đã vào rừng, bao thóc cuối cùng đã giấu kỹ. Bạn đứng ở bìa rừng, nhìn về phía làng đang cháy, nghĩ đến ${res.lost.join(', ')} đã bị giặc bắt đi.</p>`:'<p>Người cuối cùng đã vào rừng, bao thóc cuối cùng đã giấu kỹ. Bạn đứng ở bìa rừng, nhìn về phía làng đang cháy.</p>'}[reason];
-  showModal({kicker:'Rạng sáng ngày 12 tháng giêng',title:reason==='done'?(res.lost.length?'Rút vào rừng':'Không bỏ lại ai'):reason==='down'?'Ngã xuống':'Bình minh',body:lead+
-    `<p><b>An toàn trong rừng:</b> ${res.saved.join(', ')||'không ai'}.</p>${res.left.length?`<p><b>Kẹt lại trong làng</b> (thoát nạn nhưng nhà cửa bị đốt): ${res.left.join(', ')}.</p>`:''}${res.lost.length?`<p><b>Bị giặc bắt đi:</b> ${res.lost.join(', ')}.</p>`:''}<p>Thóc giấu được ${res.thoc}/${res.thocT} bao. Bạn và mọi người đánh hạ ${res.kills} tên giặc.${res.coDown?' Cò bị thương nặng nhưng còn sống.':''}</p>`,
+  const lead={down:`<p>Một nhát giáo sượt qua, bạn ngã xuống bờ ruộng. Lúc mở mắt ra, ${rescuer} đã kéo bạn vào bìa rừng.</p>`,dawn:'<p>Trời hửng sáng. Tiếng tù và của giặc vang lên gọi quân rút về phía bến sông.</p>',done:res.lost.length?`<p>Những người còn lại đã vào rừng, bao thóc cuối cùng đã giấu kỹ. Bạn đứng ở bìa rừng, nhìn về phía làng đang cháy, nghĩ đến ${names(res.lost)} đã bị giặc bắt đi.</p>`:'<p>Người cuối cùng đã vào rừng, bao thóc cuối cùng đã giấu kỹ. Bạn đứng ở bìa rừng, nhìn về phía làng đang cháy.</p>'}[reason];
+  showModal({kicker:reason==='down'?'Đêm ngày 12 tháng giêng':'Rạng sáng ngày 13 tháng giêng',title:reason==='done'?(res.lost.length?'Rút vào rừng':'Không bỏ lại ai'):reason==='down'?'Ngã xuống':'Bình minh',body:lead+
+    `<p><b>An toàn trong rừng:</b> ${names(res.saved)||'không ai'}.</p>${res.left.length?`<p><b>Kẹt lại trong làng</b> (thoát nạn nhưng nhà cửa bị đốt): ${names(res.left)}.</p>`:''}${res.lost.length?`<p><b>Bị giặc bắt đi:</b> ${names(res.lost)}.</p>`:''}<p>Thóc giấu được ${res.thoc}/${res.thocT} bao. ${res.kills?`Bạn và mọi người đánh hạ ${res.kills} tên giặc.`:'Không hạ được tên giặc nào.'}${res.coDown?' Cò bị thương nặng nhưng còn sống.':''}</p>`,
     choices:[{label:'Nhìn lại cuộc đời',fn:()=>endChapter(res)}]});
   save()}
 
@@ -218,12 +222,12 @@ function endChapter(res){
   L.push(...chainChronicle());
   L.push(S.duc>=60?'Cả làng tin bạn. Đêm giặc đến, trai làng theo bạn đông nhất.':S.duc>=20?'Làng quý bạn. Có việc, người ta sẵn lòng theo.':'Làng ít ai nghe bạn. Đêm giặc đến, bạn phải tự xoay xở nhiều.');
   if(S.nguMet)L.push('Bạn từng ngồi nghe anh Ngũ bàn binh pháp bên đường. Đêm giặc đến, anh ấy dẫn quân tới.');
-  const path={van:(S.dothi?'Là Thái học sinh, bạn':'Bạn')+' được giao việc thảo văn thư, theo xa giá triều đình rời Thăng Long khi giặc áp sát.',
+  const path={van:S.dothi?'Là Thái học sinh, bạn được giao việc thảo văn thư, theo xa giá triều đình rời Thăng Long khi giặc áp sát.':'Không đỗ đạt, bạn ở lại làng dạy chữ cho trẻ. Khi giặc áp sát, bạn giúp các bô lão chép sổ đinh, đưa dân đi lánh nạn.',
     vo:'Như các quân sĩ khác, trên cánh tay bạn thích hai chữ <b>Sát Thát</b> bằng mực. Bạn theo cờ Hưng Đạo Vương ra trận'+(F.nguKnows?', vào đội quân của Phạm Ngũ Lão.':'.'),
     nong:'Bạn dẫn dân làng vào rừng dựng lán, cất giấu lương thực. Giặc đến chỉ thấy làng không.'}[S.path||'nong'];
-  const hook=res.lost.length?`Chương hai: ${res.lost.join(', ')} đang trong tay giặc. Bạn phải tìm cách cứu họ, trong khi cuộc kháng chiến dẫn tới trận Bạch Đằng năm 1288.`:'Chương hai: cuộc kháng chiến, dẫn tới trận Bạch Đằng năm 1288.';
+  const hook=res.lost.length?`Chương hai: ${names(res.lost)} đang trong tay giặc. Bạn phải tìm cách cứu ${res.lost.length>1?'họ':'người ấy'}, trong khi cuộc kháng chiến dẫn tới trận Bạch Đằng năm 1288.`:'Chương hai: cuộc kháng chiến, dẫn tới trận Bạch Đằng năm 1288.';
   showModal({kicker:'Xuân · Ất Dậu 1285',title:'Hết chương một',
-    body:`<p>${path}</p><p class="kicker" style="margin-top:6px">Biên niên đời bạn</p><ul style="margin:0;padding-left:18px;display:grid;gap:4px;line-height:1.5">${L.filter(Boolean).map(x=>`<li>${x}</li>`).join('')}</ul>${(()=>{const t=lifeChronicle();return t.length?`<p class="kicker" style="margin-top:6px">Những chuyện nhỏ</p><p class="note" style="line-height:1.6">${t.map(x=>x[0].toUpperCase()+x.slice(1)).join('. ')}.</p>`:''})()}
+    body:`<p>${path}</p><p class="kicker" style="margin-top:6px">Biên niên đời bạn</p><ul style="margin:0;padding-left:18px;display:grid;gap:4px;line-height:1.5">${L.filter(Boolean).map(x=>`<li>${x}</li>`).join('')}</ul>${(()=>{const t=lifeChronicle();return t.length?`<p class="kicker" style="margin-top:6px">Những chuyện nhỏ</p><ul class="note" style="margin:0;padding-left:18px;display:grid;gap:2px;line-height:1.5">${t.map(x=>`<li>${x[0].toUpperCase()+x.slice(1)}.</li>`).join('')}</ul>`:''})()}
      <div class="endstats"><div><b>${S.van}</b><span>Văn</span></div><div><b>${S.vo}</b><span>Võ</span></div><div><b>${S.duc}</b><span>Đức</span></div><div><b>${S.tien}</b><span>quan</span></div></div>
      <p class="note">${S.name}, 27 tuổi.</p><p><span class="seal">Hết chương một</span>&nbsp; ${hook}</p>`,
     choices:[{label:'Bắt đầu một cuộc đời mới',fn:()=>{try{localStorage.removeItem('dvmd-save')}catch(e){}location.reload();return false}}]});

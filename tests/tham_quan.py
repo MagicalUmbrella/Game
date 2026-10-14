@@ -6,7 +6,7 @@ Ghi vào THƯ_MỤC:
   canh-<nơi>-<mùa>.png   các vùng bản đồ (làng, sông Tô Lịch, ruộng, rừng, kinh thành, cổng, đê, sông Hồng) × 4 mùa
   npc-<id>-<năm>.png      hội thoại với từng NPC lúc nhỏ (1266) và lúc lớn (1276)
   sk-<số>.png             từng khung sự kiện trong một lượt chơi hết chương (lựa chọn ngẫu nhiên có seed)
-  dem-<số>.png            đêm 1285 ở vài thời điểm
+  dem-<đường>-<số>.png    đêm 1285 do bot bấm phím chơi (đường võ, đường văn), chụp giữa chừng và khung kết
   chu.jsonl               chữ của mọi hội thoại, khung sự kiện đã chụp (để soát chính tả, câu chữ)
   index.md                danh sách ảnh kèm chú thích
 Lỗi JavaScript (pageerror) in ra cuối và ghi vào index.md.
@@ -47,7 +47,7 @@ def main():
             page.evaluate("() => {__dv.S.year=1276}")
             for si, mua in enumerate(MUA):
                 for k, x, y, ten in NOI:
-                    page.evaluate("([x,y,s]) => {const d=__dv;d.S.season=s;d.S.x=x;d.S.y=y;d.step(.016)}", [x, y, si])
+                    page.evaluate("([x,y,s]) => {const d=__dv;d.S.season=s;d.S.x=x;d.S.y=y;d.renderHUD();d.step(.016)}", [x, y, si])
                     page.wait_for_timeout(250)
                     shot(page, f'canh-{k}-{mua}.png', f'{ten}, mùa {["xuân","hạ","thu","đông"][si]}')
 
@@ -86,13 +86,19 @@ def main():
 
         if 'dem' in phan:
             idx += ['', '## Đêm 1285', '']
-            pt.fresh(page, 'vo')
-            page.evaluate("() => {const d=__dv;d.S.year=1285;d.S.season=0;d.S.co='village';d.S.nguMet=true;d.startClimax();while(d.modalOpen)d.nextModal()}")
-            for i, secs in enumerate([0, 8, 25, 60, 110]):
-                page.evaluate("(t) => {const d=__dv;for(let k=0;k<t*30&&d.MG;k++){__bots.climaxTeleport(true);d.step(1/30)}}", secs - ([0, 8, 25, 60, 110][i - 1] if i else 0))
-                page.wait_for_timeout(200)
-                shot(page, f'dem-{i}.png', f'đêm 1285, khoảng giây thứ {secs}')
-                if not page.evaluate("() => !!__dv.MG"): break
+            # bot bấm phím thật (tay nghề khá) chơi từng quãng, chụp giữa chừng: thấy đánh nhau, dẫn người, đuốc (đường văn)
+            for path in ('vo', 'van'):
+                pt.fresh(page, path)
+                page.evaluate("(p) => {const d=__dv;d.S.year=1285;d.S.season=0;d.S.co='village';d.S.nguMet=true;d.S.van=p==='van'?60:20;d.S.vo=p==='vo'?60:20;d.S.duc=45;d.startClimax();while(d.modalOpen)d.nextModal()}", path)
+                prev = 0
+                for i, secs in enumerate([3, 12, 25, 45, 70, 105]):
+                    page.evaluate("(t) => __bots.climaxBot('khá', t)", secs - prev)
+                    prev = secs
+                    page.wait_for_timeout(200)
+                    shot(page, f'dem-{path}-{i}.png', f'đêm 1285, đường {path}, khoảng giây thứ {secs}')
+                    if not page.evaluate("() => !!__dv.MG"): break
+                page.evaluate("""() => {for(let k=0;k<5&&__dv.modalOpen;k++){const t=document.querySelector('#modal').innerText;if(/hết chương một/i.test(t))break;__dv.mpick(0)}}""")
+                shot(page, f'dem-{path}-ket.png', f'đêm 1285, đường {path}: khung kết')
 
         b.close()
     chu.close()

@@ -17,7 +17,7 @@ function vanLesson(){const v=S.van;return v<10?'Thầy dạy chữ trên khay c�
 function voLesson(){const v=S.vo;return v<10?'Đứng tấn đến run cả chân.':v<25?'Tập côn pháp, múa gậy quanh sân.':v<45?'Tập đao pháp đến mỏi tay.':v<70?'Tập cưỡi ngựa, bắn cung.':'Học bày trận, đọc binh thư.'}
 export function talkMe(){
   const a=age(),ch=[];
-  if(!S.quests.hoc){startQuest('hoc');return say('Mẹ','Con lên sáu rồi, phải đi học chữ thôi. Trường làng ở phía tây bắc, ngay dưới đình làng. Con đến chào thầy đồ Chu nhé.')}
+  if(!S.quests.hoc){startQuest('hoc');return say('Mẹ',a<9?'Con lên sáu rồi, phải đi học chữ thôi. Trường làng ở phía tây bắc, ngay dưới đình làng. Con đến chào thầy đồ Chu nhé.':'Con lớn ngần này rồi mà chưa ra trường làng. Học được chữ nào hay chữ ấy, con ra chào thầy đồ Chu đi. Trường ở phía tây bắc, ngay dưới đình làng.')}
   if(!S.cha){const pc=prepChoice('catThoc');if(pc)ch.push(pc)}
   if(!S.ate)ch.push({label:'Ăn cơm mẹ nấu',note:'+1 Sức',fn:()=>{S.ate=true;S.suc=Math.min(4,S.suc+1);renderHUD();floatText('+1 Sức','#9fcaa9');toast('Cơm gạo mới, canh rau, cà muối. Bạn thấy khỏe hẳn.')}});
   if(S.year>=1275&&a>=17&&!S.quests.lua)startQuest('lua');
@@ -54,8 +54,8 @@ export function talkVo(){
 }
 export function talkSu(){say('Sư cụ','A Di Đà Phật. Chùa nhỏ nhưng cửa luôn mở. Con có muốn ngồi nghe kinh một lát không?',[{label:'Thắp hương, nghe giảng',note:'−1 Sức · +Đức',fn:()=>{if(!spend())return;gain('duc',2);toast(pickR(['Sư cụ giảng về lòng từ bi.','Bạn quét sân chùa, lòng nhẹ nhõm.','Tiếng chuông chiều vang khắp xóm.']))}}])}
 export function talkBaTu(){
-  if(!S.quests.ca){startQuest('ca');return say('Bà Tư','Cháu ngoan. Bà già rồi, không ra sông được, thèm bát canh cá quá. Cháu câu giúp bà một con nhé.')}
-  if(S.quests.ca==='active'&&has('Cá')){S.items.splice(S.items.indexOf('Cá'),1);doneQuest('ca');gain('duc',3);gain('tien',1);S.rel.thao++;return say('Bà Tư','Ôi con cá rô to quá! Bà nấu canh chua ngay. Cầm quan tiền này mua kẹo nhé.')}
+  if(!S.quests.ca){startQuest('ca');return say('Bà Tư',age()<14?'Cháu ngoan. Bà già rồi, không ra sông được, thèm bát canh cá quá. Cháu câu giúp bà một con nhé.':'Anh ơi, bà già rồi, không ra sông được, thèm bát canh cá quá. Anh câu giúp bà một con nhé.')}
+  if(S.quests.ca==='active'&&has('Cá')){S.items.splice(S.items.indexOf('Cá'),1);doneQuest('ca');gain('duc',3);gain('tien',1);S.rel.thao++;return say('Bà Tư','Ôi con cá rô to quá! Bà nấu canh chua ngay. '+(age()<14?'Cầm quan tiền này mua kẹo nhé.':'Bà gửi quan tiền, anh cầm lấy cho bà vui.'))}
   say('Bà Tư',S.thao==='wife'?'Giao con Thảo cho cháu, bà yên lòng nhắm mắt được rồi.':age()<14?'Lớn nhanh quá, mới ngày nào còn để chỏm.':'Làng mình may có những đứa như cháu.');
 }
 export function talkThao(){
@@ -66,7 +66,7 @@ export function talkThao(){
   if(has('Lụa'))ch.push({label:'Tặng Thảo tấm lụa',note:'thân thiết hơn nhiều',fn:()=>{S.items.splice(S.items.indexOf('Lụa'),1);S.rel.thao+=3;renderHUD();say('Thảo','Lụa của người Tống ở phường Nhai Tuân phải không? Em... em cảm ơn anh.')}});
   ch.push(...chainChoices('thao'));
   if(has('Sỏi trắng'))ch.push({label:'Tặng Thảo hòn sỏi trắng',note:'thân thiết hơn',fn:()=>{S.items.splice(S.items.indexOf('Sỏi trắng'),1);S.rel.thao++;renderHUD();say('Thảo','Tròn như quả trứng... Em sẽ để trên bậu cửa sổ.')}});
-  say('Thảo',r<2?'Em là Thảo, cháu bà Tư. Bố mẹ em mất sau năm nước to, em lên đây ở với bà.':r<5?'Hôm nay anh lại sang à? Bà em khen anh mãi.':'Anh mà đi xa, em... em sẽ nhớ anh đấy.',ch);
+  say('Thảo',r<2?'Em là Thảo, cháu bà Tư. Cha mẹ em mất sau năm nước to, em lên đây ở với bà.':r<5?'Hôm nay anh lại sang à? Bà em khen anh mãi.':'Anh mà đi xa, em... em sẽ nhớ anh đấy.',ch);
 }
 export function talkLy(){
   const ch=[];if(age()>=10)ch.push({label:'Giúp việc làng',note:'−1 Sức · +3 Đức · +1 quan',fn:()=>{if(!spend())return;gain('duc',3);gain('tien',1);toast(pickR(['Bạn cùng trai làng đắp lại đoạn đê.','Bạn giúp dọn sân đình chuẩn bị lễ hội.','Bạn đi báo tin cho các xóm.']))}});
@@ -88,7 +88,7 @@ export function talkCo(){
 export function talkSach(){
   const ch=[{label:'Mua Tứ thư',note:'6 quan',disabled:S.tien<6||has('Tứ thư'),fn:()=>{S.tien-=6;S.items.push('Tứ thư');renderHUD();toast('Bạn mua một bộ Tứ thư.')}},
     {label:'Mua giấy bút',note:S.paper?'mùa này đã mua':'3 quan · +2 Văn · mỗi mùa một lần',disabled:S.tien<3||S.paper,fn:()=>{S.tien-=3;S.paper=true;gain('van',2)}}];
-  if(age()>=14)ch.push({label:'Mua binh thư chép tay',note:'8 quan · +3 Võ · mở đường võ',disabled:S.tien<8||has('Binh thư'),fn:()=>{S.tien-=8;S.items.push('Binh thư');gain('vo',3);gain('van',1);toast('Có binh thư, đến tuổi 16 bạn có thể theo đường võ dù Võ chỉ cần 12.')}});
+  if(age()>=14&&!S.path)ch.push({label:'Mua binh thư chép tay',note:'8 quan · +3 Võ, +1 Văn · đường võ chỉ cần Võ 12',disabled:S.tien<8||has('Binh thư'),fn:()=>{S.tien-=8;S.items.push('Binh thư');gain('vo',3);gain('van',1);toast('Có binh thư, đến tuổi 16 bạn có thể theo đường võ dù Võ chỉ cần 12.')}});
   say('Chủ hàng sách','Sách chép tay, sách in ván đủ cả. Mua đi cậu, chữ nghĩa không bao giờ thừa.',ch);
 }
 export function talkRen(){if(age()<14)return say('Bác thợ rèn','Lò rèn nóng lắm, nhóc đứng xa ra! Lớn lên rồi hãy quay lại.');
@@ -109,7 +109,7 @@ export function talkVoQuan(){
 }
 export function talkNgu(){
   const first=!S.nguMet;S.nguMet=true;
-  say('Chàng trai đọc sách',first?'Một chàng trai to khỏe ngồi bên vệ đường đọc sách, thỉnh thoảng lại ngâm nga mấy câu thơ. Anh tên Ngũ, người làng Phù Ủng. Anh bảo làm trai mà chưa lập được công danh thì còn thẹn lắm.':'Anh Ngũ vẫn ngồi đọc sách, miệng ngâm: "Hoành sáo giang sơn cáp kỷ thu..."',
+  say('Chàng trai đọc sách',first?'Một chàng trai to khỏe đứng tựa gốc cây bên vệ đường đọc sách, thỉnh thoảng lại ngâm nga mấy câu thơ. Anh tên Ngũ, người làng Phù Ủng. Anh bảo làm trai mà chưa lập được công danh thì còn thẹn lắm.':'Anh Ngũ vẫn đứng đọc sách bên đường, miệng ngâm: "Hoành sóc giang sơn cáp kỷ thu..."',
     first?[{label:'Ngồi nghe anh bàn chuyện binh pháp',fn:()=>{gain('vo',2);gain('van',1);toast('Bạn thấy trong lòng sục sôi chí lớn. Anh Ngũ sẽ nhớ mặt bạn.')}}]:[]);
 }
 export const PEN={x:44.5,y:58.6};

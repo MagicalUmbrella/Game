@@ -95,6 +95,19 @@ for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){const t=get(x,y),h=Hs(x,y,321);
   if((t===SA||t===G)&&wet&&h<.16&&!bsolid[y*W+x])PROPS.push({x,y,k:'lau'});
   else if(t===G&&h>.975&&!(x>=27&&x<=59&&y>=29&&y<=53)&&!nearPath(x,y)&&!bsolid[y*W+x]&&!DECOR.some(d=>Math.abs(d.x-x)<3&&Math.abs(d.y-y)<3)&&!SIGNS.some(s=>s.x===x&&s.y===y))PROPS.push({x,y,k:'bui'})}
 
-export function propSprite(p,s){return p.k==='rom'?haystack(s):p.k==='chum'?jar():p.k==='lau'?reeds(s,p.x+p.y):bush(s,(p.x*7+p.y)%9)}
+/* chuồng trâu ở chỗ trâu đứng (PEN, dialogs.js): mái rơm và rào sau vẽ trước trâu, rào trước vẽ sau trâu */
+function penBack(){if(sc.penB)return sc.penB;const b=buf(44,30);
+  for(let y=2;y<12;y++){const ins=Math.max(0,4-y);for(let x=2+ins;x<42-ins;x++){const n=Hs(x,(y+(Hs(x,3,1)*4|0))>>2,7);b.set(x,y,y===11?'#8e6a28':n<.3?'#f0d888':n<.75?'#d8b860':'#b8903c')}}
+  for(const x of [4,39])for(let y=12;y<28;y++){b.set(x,y,'#7a5634');b.set(x+1,y,'#5a3c22')}
+  for(const y of [16,21])for(let x=2;x<42;x++)b.set(x,y,x%5===0?'#5a3c22':'#9a7444');
+  for(let x=4;x<41;x+=6)for(let y=13;y<26;y++)b.set(x,y,'#8a6a3e');
+  const c=b.done();outline(c);c.ax=22;c.ay=28;return sc.penB=c}
+function penFront(){if(sc.penF)return sc.penF;const b=buf(44,12);
+  for(const x of [2,41])for(let y=0;y<11;y++){b.set(x,y,'#7a5634');b.set(x+1,y,'#5a3c22')}
+  for(let x=2;x<43;x++){if(x>17&&x<27)continue;b.set(x,3,x%5===0?'#5a3c22':'#a87e4c');b.set(x,7,x%5===0?'#5a3c22':'#9a7444')}   // chừa lối vào
+  for(const x of [16,27])for(let y=0;y<11;y++){b.set(x,y,'#7a5634');b.set(x+1,y,'#5a3c22')}
+  const c=b.done();outline(c);c.ax=22;c.ay=11;return sc.penF=c}
+PROPS.push({x:44,y:57,k:'chuongSau'},{x:44,y:59,k:'chuongTruoc'});
+export function propSprite(p,s){if(p.k==='chuongSau')return penBack();if(p.k==='chuongTruoc')return penFront();return p.k==='rom'?haystack(s):p.k==='chum'?jar():p.k==='lau'?reeds(s,p.x+p.y):bush(s,(p.x*7+p.y)%9)}
 /* vị trí neo khi vẽ (ô x+.5, y+1 là chân) */
-export const propAt=p=>[p.x+.5+(p.k==='lau'?(Hs(p.x,p.y,4)-.5)*.6:0),p.y+(p.k==='bui'||p.k==='lau'?.7+Hs(p.x,p.y,5)*.3:.95)];
+export const propAt=p=>p.k==='chuongSau'?[44.5,58.05]:p.k==='chuongTruoc'?[44.5,59.3]:[p.x+.5+(p.k==='lau'?(Hs(p.x,p.y,4)-.5)*.6:0),p.y+(p.k==='bui'||p.k==='lau'?.7+Hs(p.x,p.y,5)*.3:.95)];
