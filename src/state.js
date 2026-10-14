@@ -26,7 +26,9 @@ export function loadSave(){try{const s=localStorage.getItem('dvmd-save');if(!s)r
   // bản lưu cũ còn uy tín làng riêng (flags.lang): quy sang Đức, mỗi điểm uy tín bằng 3 Đức
   if(!o.ducMerged){r.duc=Math.max(0,Math.min(100,r.duc+3*(r.flags.lang||0)));r.ducMerged=true}delete r.flags.lang;
   // bản lưu cũ đã qua tin Toa Đô mà chưa có việc "Lo trước ngày giặc đến"
-  if(r.ev&&r.ev.toado&&!r.quests.lo&&r.year<1285)r.quests.lo='active';return r}catch(e){return null}}
+  if(r.ev&&r.ev.toado&&!r.quests.lo&&r.year<1285)r.quests.lo='active';
+  // bản lưu cũ: việc Tứ thư còn dở khi thầy đã mất, việc lo trước còn dở khi đã sang 1285
+  if(!r.thay&&r.quests.sach==='active')delete r.quests.sach;if(r.year>=1285&&r.quests.lo==='active')delete r.quests.lo;return r}catch(e){return null}}
 
 export const P={dir:'down',walk:0,moving:false};
 export const LOOK_THAO={id:'thao'};

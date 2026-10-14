@@ -51,7 +51,8 @@ function render(){
   if(S){
     const a=age();
     if(!MG)exploreDraw(list,clock,camX,camY);
-    for(const n of NPCS){if(!npcOn(n))continue;if(S.res&&S.res.lost&&S.res.lost.includes(n.name))continue;   // người đã bị giặc bắt đi thì không còn ở làngif(n.x<x0-2||n.x>x1+2||n.y<y0-2||n.y>y1+2)continue;
+    for(const n of NPCS){if(!npcOn(n))continue;if(S.res&&S.res.lost&&S.res.lost.includes(n.name))continue;   // người đã bị giặc bắt đi thì không còn ở làng
+      if(n.x<x0-2||n.x>x1+2||n.y<y0-2||n.y>y1+2)continue;
       const look=npcLook(n),dpx=S.x-n.x,dpy=S.y-n.y;let dir=n.moving?n.face:'down';
       if(!n.moving&&Math.hypot(dpx,dpy)<3)dir=Math.abs(dpx)>Math.abs(dpy)?(dpx>0?'right':'left'):(dpy>0?'down':'up');
       const fr=n.moving?[1,0,2,0][Math.floor(clock*8)%4]:0;

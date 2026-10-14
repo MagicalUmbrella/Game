@@ -5,7 +5,7 @@ import {get,tolichY} from './map.js';
 import {personSprite} from './sprites.js';
 import {isKid} from './person.js';
 import {LOOK_THAO,MG,P,S,has,save,setMG} from './state.js';
-import {floatAt,floatText,setKeys,showModal,toast} from './ui.js';
+import {floatAt,floatText,renderHUD,setKeys,showModal,toast} from './ui.js';
 import {hudBar,hudBox,mark,sackSprite} from './minigames/flood.js';
 import {canStand} from './input.js';
 import {bfs,walkable} from './dialogs.js';
@@ -52,7 +52,7 @@ const FIRES=[[53.5,21.6],[24.5,20.2],[48.5,21.2]];
 const lc=n=>/^(Mẹ|Cha|Bà|Bé|Cụ|Trai)/.test(n)?n[0].toLowerCase()+n.slice(1):n;
 const names=a=>a.map(lc).join(', ');
 export function startClimax(){
-  if(S.quests.lo==='active')delete S.quests.lo;   // hết hạn lo trước (hết 1284)
+  if(S.quests.lo==='active'){delete S.quests.lo;renderHUD()}   // hết hạn lo trước (hết 1284)
   const v=[],add=(id,name,x,y,look,slow)=>v.push({id,name,x,y,look,st:'wait',slow:slow||1,walk:0,dir:'down'});
   add('me','Mẹ',45.5,50.4,{id:'me_gia'},.85);
   if(S.cha)add('cha','Cha',42.5,56.4,{id:'cha_gia'},.85);
