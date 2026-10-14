@@ -349,16 +349,19 @@ def frame(spec, d, f, atk=None):
     if d == 'left':
         bare = torso_name in ('vest', 'apron')
         put(kidcut(side_arm(f if atk is None else 0, bare=bare)), bob, BX)
-    # đầu
-    hair = HAIR[spec['hair']][d]
+    # đầu; nhìn nghiêng thì bỏ 2 cột tóc sau gáy (cột 10, 11) cho đầu bớt sâu, tóc không lùi ra sau quá xa
+    def sq(layer):
+        if d != 'left': return layer
+        return [(y, r[:10] + r[12:] + '..' if x == 0 else r, x) for y, r, x in layer]
+    hair = sq(HAIR[spec['hair']][d])
     put(hair, bob, HX)
     face = FACE_W if spec.get('face') == 'w' else FACE_KID if kid else FACE
     if spec['hair'] in ('bun',) and d != 'up' and spec.get('face') == 'w':
-        put(face[d], bob, HX)
+        put(sq(face[d]), bob, HX)
     elif d != 'up':
-        put(face[d], bob, HX)
+        put(sq(face[d]), bob, HX)
     if spec.get('beard'): put(BEARD[spec['beard']][d], bob, HX)
-    if spec.get('hat'): put(HAT[spec['hat']][d], bob, HX)
+    if spec.get('hat'): put(sq(HAT[spec['hat']][d]) if spec['hat'] != 'nonla' else HAT['nonla'][d], bob, HX)
     if spec.get('plume'): put(HAT['plume'][d], bob, HX)
     # chém
     if atk is not None and wpn:
