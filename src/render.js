@@ -4,7 +4,8 @@ import {Hs} from './pixel.js';
 import {BUILDINGS,DECOR,SIGNS,TREES,isW,map} from './map.js';
 import {ground} from './ground.js';
 import {banyanSprite,boatSprite,buffaloSprite,buildingSprite,personSprite,signSprite,treeSprite,wellSprite} from './sprites.js';
-import {MG,NPCS,P,S,age,coLook,npcOn} from './state.js';
+import {MG,NPCS,P,S,age,npcLook,npcOn} from './state.js';
+import {isKid} from './person.js';
 import {floats} from './ui.js';
 import {drawTracks} from './dialogs.js';
 import {update} from './input.js';
@@ -45,13 +46,13 @@ function render(){
     const a=age();
     if(!MG)exploreDraw(list,clock,camX,camY);
     for(const n of NPCS){if(!npcOn(n))continue;if(n.x<x0-2||n.x>x1+2||n.y<y0-2||n.y>y1+2)continue;
-      const look=n.id==='co'?coLook():n.look,dpx=S.x-n.x,dpy=S.y-n.y;let dir=n.moving?n.face:'down';
+      const look=npcLook(n),dpx=S.x-n.x,dpy=S.y-n.y;let dir=n.moving?n.face:'down';
       if(!n.moving&&Math.hypot(dpx,dpy)<3)dir=Math.abs(dpx)>Math.abs(dpy)?(dpx>0?'right':'left'):(dpy>0?'down':'up');
       const fr=n.moving?[1,0,2,0][Math.floor(clock*8)%4]:0;
-      list.push({y:n.y,f:()=>{shadow(n.x,n.y,10);drawSprite(personSprite(look,dir,fr),n.x,n.y)},lab:Math.hypot(dpx,dpy)<4?[n.name,n.x,n.y-(look.kid?1.6:2.2)]:null})}
+      list.push({y:n.y,f:()=>{shadow(n.x,n.y,10);drawSprite(personSprite(look,dir,fr),n.x,n.y)},lab:Math.hypot(dpx,dpy)<4?[n.name,n.x,n.y-(isKid(look)?1.55:2)]:null})}
     list.push({y:S.buffalo.y,f:()=>{shadow(S.buffalo.x,S.buffalo.y,22);drawSprite(buffaloSprite(S.buffalo.dir||'left'),S.buffalo.x,S.buffalo.y)}});
-    const look={shirt:S.path==='van'?'#2f4f62':S.path==='vo'?'#7a3328':'#6b4a2e',hair:a<14?'kid':'man',kid:a<14,band:S.path==='vo',long:S.path==='van'};
-    const fr=P.moving?[1,0,2,0][Math.floor(P.walk)%4]:0;
+    const look={id:a<14?'ban_be':S.path==='van'?'ban_van':S.path==='vo'?'ban_vo':'ban_nong'};
+    const fr=MG&&MG.swing>0?(MG.swing>.17?'a0':'a1'):P.moving?[1,0,2,0][Math.floor(P.walk)%4]:0;
     list.push({y:S.y,f:()=>{if(MG&&MG.inv>0&&Math.floor(clock*14)%2)return;shadow(S.x,S.y,10);drawSprite(personSprite(look,P.dir,fr),S.x,S.y)}});
   }
   if(MG&&MG.draw)MG.draw(list);

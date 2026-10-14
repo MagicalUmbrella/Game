@@ -29,30 +29,32 @@ export function loadSave(){try{const s=localStorage.getItem('dvmd-save');if(!s)r
   if(r.ev&&r.ev.toado&&!r.quests.lo&&r.year<1285)r.quests.lo='active';return r}catch(e){return null}}
 
 export const P={dir:'down',walk:0,moving:false};
-export const LOOK_THAO={shirt:'#4f7a5a',hair:'woman'};
+export const LOOK_THAO={id:'thao'};
 export const NPCS=[
- {id:'me',name:'Mẹ',x:45.5,y:50.4,look:{shirt:'#7b4656',hair:'woman'},talk:talkMe},
- {id:'cha',name:'Cha',x:42.5,y:56.4,look:{shirt:'#5b4a35',hair:'man',hat:true},talk:talkCha,show:()=>S.cha},
- {id:'thay',name:'Thầy đồ Chu',x:33.8,y:42.7,look:{shirt:'#33505c',hair:'old',long:true},talk:talkThay,show:()=>S.thay},
- {id:'vosu',name:'Lão võ sư Hoàng',x:48.5,y:38.5,look:{shirt:'#6e2f26',hair:'old',band:true},talk:talkVo},
- {id:'su',name:'Sư cụ',x:24.6,y:14.4,look:{shirt:'#a8692d',hair:'monk'},talk:talkSu},
- {id:'batu',name:'Bà Tư',x:52.4,y:49.9,look:{shirt:'#4f4a3c',hair:'oldwoman'},talk:talkBaTu},
+ {id:'me',name:'Mẹ',x:45.5,y:50.4,look:{id:'me'},talk:talkMe},
+ {id:'cha',name:'Cha',x:42.5,y:56.4,look:{id:'cha'},talk:talkCha,show:()=>S.cha},
+ {id:'thay',name:'Thầy đồ Chu',x:33.8,y:42.7,look:{id:'thay'},talk:talkThay,show:()=>S.thay},
+ {id:'vosu',name:'Lão võ sư Hoàng',x:48.5,y:38.5,look:{id:'vosu'},talk:talkVo},
+ {id:'su',name:'Sư cụ',x:24.6,y:14.4,look:{id:'su'},talk:talkSu},
+ {id:'batu',name:'Bà Tư',x:52.4,y:49.9,look:{id:'batu'},talk:talkBaTu},
  {id:'thao',name:'Thảo',x:49.3,y:50.6,look:LOOK_THAO,talk:talkThao,show:()=>!!S.ev.thao&&S.thao!=='gone',at:()=>S.thao==='wife'?[47.4,50.7]:S.thao==='co'?[36.4,49.7]:[49.3,50.6]},
- {id:'sen',name:'Bé Sen',x:46.6,y:51.7,look:{shirt:'#c9785a',hair:'kid',kid:true},talk:()=>say('Bé Sen',pickR(['Bố ơi, bế con!','Bố ơi, mẹ Thảo bảo tối nay có canh cua.','Con biết đếm đến mười rồi đấy!'])),show:()=>S.child},
- {id:'ly',name:'Cụ lý trưởng',x:35.8,y:36.9,look:{shirt:'#2c3a45',hair:'old',long:true},talk:talkLy},
+ {id:'sen',name:'Bé Sen',x:46.6,y:51.7,look:{id:'sen',kid:true},talk:()=>say('Bé Sen',pickR(['Bố ơi, bế con!','Bố ơi, mẹ Thảo bảo tối nay có canh cua.','Con biết đếm đến mười rồi đấy!'])),show:()=>S.child},
+ {id:'ly',name:'Cụ lý trưởng',x:35.8,y:36.9,look:{id:'ly'},talk:talkLy},
  {id:'co',name:'Cò',x:38.5,y:45.2,wander:true,home:[38.5,45.2],talk:talkCo,show:()=>S.co==='village'},
- {id:'hsach',name:'Chủ hàng sách',x:39.6,y:15.6,look:{shirt:'#3a4a3a',hair:'man'},talk:talkSach},
- {id:'hren',name:'Bác thợ rèn',x:44.6,y:15.6,look:{shirt:'#4a3a30',hair:'man',band:true},talk:talkRen},
- {id:'tong',name:'Lái buôn người Tống',x:59.6,y:15.6,look:{shirt:'#3f6f9a',hair:'man',long:true},talk:talkTong,show:()=>S.year>=1275},
- {id:'dan1',name:'Người bán hàng',x:59.6,y:15.6,look:{shirt:'#6a5a7a',hair:'woman'},talk:()=>say('Người bán hàng','Gian hàng này sắp có người mới thuê đấy. Nghe đâu là người phương bắc.'),show:()=>S.year<1275},
- {id:'gom',name:'Bà hàng gốm',x:63.6,y:18.5,look:{shirt:'#5a6a5a',hair:'oldwoman'},talk:()=>say('Bà hàng gốm','Bát đĩa men ngọc, gốm hoa nâu đây con. Mua về cho mẹ đựng cà muối.')},
- {id:'linh1',name:'Lính gác',x:51.3,y:20.5,look:{shirt:'#7a2b22',hair:'man',band:true,spear:true},talk:talkLinh},
- {id:'linh2',name:'Lính gác',x:55.7,y:20.5,look:{shirt:'#7a2b22',hair:'man',band:true,spear:true},talk:talkLinh},
- {id:'hocquan',name:'Học quan',x:42.6,y:8.8,look:{shirt:'#24425a',hair:'old',long:true},talk:talkHocQuan},
- {id:'voquan',name:'Võ quan',x:66.4,y:12.8,look:{shirt:'#7a2b22',hair:'man',band:true},talk:talkVoQuan},
- {id:'ngu',name:'Chàng trai đọc sách',x:74.5,y:30.4,look:{shirt:'#5a5040',hair:'man'},talk:talkNgu,show:()=>S.year>=1272&&S.year<=1277},
+ {id:'hsach',name:'Chủ hàng sách',x:39.6,y:15.6,look:{id:'hsach'},talk:talkSach},
+ {id:'hren',name:'Bác thợ rèn',x:44.6,y:15.6,look:{id:'hren'},talk:talkRen},
+ {id:'tong',name:'Lái buôn người Tống',x:59.6,y:15.6,look:{id:'tong'},talk:talkTong,show:()=>S.year>=1275},
+ {id:'dan1',name:'Người bán hàng',x:59.6,y:15.6,look:{id:'dan1'},talk:()=>say('Người bán hàng','Gian hàng này sắp có người mới thuê đấy. Nghe đâu là người phương bắc.'),show:()=>S.year<1275},
+ {id:'gom',name:'Bà hàng gốm',x:63.6,y:18.5,look:{id:'gom'},talk:()=>say('Bà hàng gốm','Bát đĩa men ngọc, gốm hoa nâu đây con. Mua về cho mẹ đựng cà muối.')},
+ {id:'linh1',name:'Lính gác',x:51.3,y:20.5,look:{id:'linh'},talk:talkLinh},
+ {id:'linh2',name:'Lính gác',x:55.7,y:20.5,look:{id:'linh'},talk:talkLinh},
+ {id:'hocquan',name:'Học quan',x:42.6,y:8.8,look:{id:'hocquan'},talk:talkHocQuan},
+ {id:'voquan',name:'Võ quan',x:66.4,y:12.8,look:{id:'voquan'},talk:talkVoQuan},
+ {id:'ngu',name:'Chàng trai đọc sách',x:74.5,y:30.4,look:{id:'ngu'},talk:talkNgu,show:()=>S.year>=1272&&S.year<=1277},
 ];
-export const coLook=()=>age()<14?{shirt:'#7a6a3a',hair:'kid',kid:true}:{shirt:'#7a6a3a',hair:'man',band:S.year>=1284};
+export const coLook=()=>age()<14?{id:'co_be',kid:true}:{id:S.year>=1284?'co_do':'co'};
+/* Hình người của NPC lúc này: Cò lớn lên, cha mẹ già đi. */
+export const npcLook=n=>n.id==='co'?coLook():(n.id==='me'||n.id==='cha')&&S&&S.year>=1280?{id:n.id+'_gia'}:n.look;
 export function npcOn(n){if(MG&&MG.hideNPC)return false;if(n.show&&!n.show())return false;if(n.at){const p=n.at();n.x=p[0];n.y=p[1]}return true}
 
 

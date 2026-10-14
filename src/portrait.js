@@ -2,8 +2,8 @@
 /* Chân dung người nói trong hội thoại: cắt phần đầu, vai từ sprite người (person.js), phóng to, đặt trên
    nền màu theo mùa. Tranh phong cảnh pixel theo mùa ở đầu khung sự kiện. Đều vẽ bằng code, lưu data URL. */
 import {Hs,mk,shade} from './pixel.js';
-import {BODY_H,KID_HEAD,personSprite} from './person.js';
-import {LOOK_THAO,NPCS,S,coLook} from './state.js';
+import {personSprite} from './person.js';
+import {LOOK_THAO,NPCS,S,coLook,npcLook} from './state.js';
 
 const SKY=[['#f3d9c8','#e9b9a8'],['#bfe0e8','#8ec5d6'],['#f1d79a','#e2a866'],['#c9d3d8','#9fb0b8']]; // xuân, hạ, thu, đông
 
@@ -12,19 +12,20 @@ function lookOf(who){
   if(who==='Cò')return coLook();
   if(who==='Thảo')return LOOK_THAO;
   const n=NPCS.find(n=>n.name===who);
-  return n?n.look:null;
+  return n?npcLook(n):null;
 }
 
 const pcache={};
 export function portrait(who){
   const look=lookOf(who);if(!look)return null;
   const season=S?S.season:0,key=JSON.stringify(look)+season;if(pcache[key])return pcache[key];
-  const sp=personSprite(look,'down',0),top=sp.ay-BODY_H+(look.kid?KID_HEAD:0);  // hàng đầu tiên của đầu
-  const y0=Math.max(0,top-(look.plume?8:look.hat?5:look.helm?4:3)),hgt=top+19-y0;  // từ trên đầu tới ngang ngực
+  const sp=personSprite(look,'down',0),px=sp.getContext('2d').getImageData(0,0,sp.width,sp.height).data;
+  let top=0;while(top<sp.height-1&&![...Array(sp.width).keys()].some(x=>px[(top*sp.width+x)*4+3]))top++;  // hàng đầu tiên có hình
+  const y0=Math.max(0,top-1),hgt=21;  // từ đỉnh đầu (cả mũ nón) tới ngang ngực
   const [c,g]=mk(24,24);
   const [a,b]=SKY[season];for(let y=0;y<24;y++){g.fillStyle=y<14?a:b;g.fillRect(0,y,24,1)}
   for(let x=0;x<24;x++)if(Hs(x,1,season)<.3){g.fillStyle=shade(b,-.1);g.fillRect(x,20+Math.floor(Hs(x,2)*3),1,4)}
-  g.drawImage(sp,0,y0,22,hgt,1,24-Math.min(24,hgt),22,Math.min(24,hgt));
+  g.drawImage(sp,5,y0,22,hgt,1,24-hgt,22,hgt);
   return pcache[key]=c.toDataURL();
 }
 

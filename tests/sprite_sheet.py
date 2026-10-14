@@ -7,29 +7,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import playtest as pt
 from playwright.sync_api import sync_playwright
 
-# Danh sách kiểu nhân vật: tên, look (giống trong src/state.js, src/render.js, src/climax.js).
-LOOKS = [
-    ('Bạn lúc nhỏ', {'shirt': '#6b4a2e', 'hair': 'kid', 'kid': True}),
-    ('Bạn · văn', {'shirt': '#2f4f62', 'hair': 'man', 'long': True}),
-    ('Bạn · võ', {'shirt': '#7a3328', 'hair': 'man', 'band': True}),
-    ('Bạn · nông', {'shirt': '#6b4a2e', 'hair': 'man'}),
-    ('Mẹ', {'shirt': '#7b4656', 'hair': 'woman'}),
-    ('Cha', {'shirt': '#5b4a35', 'hair': 'man', 'hat': True}),
-    ('Thảo', {'shirt': '#4f7a5a', 'hair': 'woman'}),
-    ('Bà Tư', {'shirt': '#4f4a3c', 'hair': 'oldwoman'}),
-    ('Bé Sen', {'shirt': '#c9785a', 'hair': 'kid', 'kid': True}),
-    ('Thầy đồ', {'shirt': '#33505c', 'hair': 'old', 'long': True}),
-    ('Võ sư', {'shirt': '#6e2f26', 'hair': 'old', 'band': True}),
-    ('Sư cụ', {'shirt': '#a8692d', 'hair': 'monk'}),
-    ('Cò', {'shirt': '#7a6a3a', 'hair': 'man', 'band': True}),
-    ('Lính gác', {'shirt': '#7a2b22', 'hair': 'man', 'band': True, 'spear': True}),
-    ('Giặc', {'shirt': '#3e4450', 'hair': 'helm', 'helm': True}),
-    ('Giặc kỵ', {'shirt': '#4a3a2a', 'hair': 'helm', 'helm': True, 'plume': True}),
-]
+# Danh sách nhân vật: đọc từ src/assets/nguoi.json (do tools/ve_nguoi.py sinh ra).
+import json
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src', 'assets', 'nguoi.json'), encoding='utf-8') as _f:
+    LOOKS = [(v['name'], {'id': k}) for k, v in json.load(_f)['people'].items()]
 
 DRAW = """([looks, scale, bg]) => {
-  const dirs = ['down', 'left', 'right', 'up'], frames = [0, 1, 2];
-  const cw = 26 * scale, ch = 46 * scale, labelH = 18;
+  const dirs = ['down', 'left', 'right', 'up'], frames = [0, 1, 2, 'a0', 'a1'];
+  const cw = 34 * scale, ch = 42 * scale, labelH = 18;
   const c = document.createElement('canvas');
   c.width = cw * dirs.length * frames.length + 140; c.height = (ch + labelH) * looks.length + 10;
   const g = c.getContext('2d'); g.imageSmoothingEnabled = false;

@@ -292,7 +292,7 @@
     if (M.sk.filter(s => s.st === 'safe').length !== 1) errs.push('không có đúng một bao thóc giấu sẵn');
     const trai = M.al.filter(a => a.id.startsWith('trai'));
     if (!trai.length) errs.push('kiểu nhân vật thử phải có trai làng');
-    if (trai.some(a => a.dmg !== 2 || !a.look.spear)) errs.push('trai làng chưa có giáo');
+    if (trai.some(a => a.dmg !== 2 || a.look.id !== 'trai_giao')) errs.push('trai làng chưa có giáo');
     window.__bots.climaxTeleport(true);
     d.mpick(0); // Nhìn lại cuộc đời
     const chron = document.querySelector('#modal').innerText;
