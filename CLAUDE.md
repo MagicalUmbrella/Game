@@ -141,7 +141,7 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 
 ## Kiểm tra
 
-**Gọi agent `game-tester` (`.claude/agents/game-tester.md`) sau mỗi lần sửa game.** Hoặc tự chạy:
+**Gọi agent `game-tester` (`.claude/agents/game-tester.md`) sau mỗi lần sửa game.** Sửa đồ họa, câu chữ, sự kiện thì gọi thêm agent `nguoi-choi-thu` (`.claude/agents/nguoi-choi-thu.md`): chạy `tests/tham_quan.py` chụp ảnh mọi vùng theo 4 mùa, hội thoại từng NPC, từng khung sự kiện của một lượt chơi, đêm 1285 (kèm `chu.jsonl` chứa toàn bộ chữ), rồi xem bằng mắt và báo lỗi đồ họa, chính tả, câu chữ, nhịp truyện. Hoặc tự chạy:
 
 1. `npm run build`: bắt lỗi cú pháp và lỗi import.
 2. `npm test` (khoảng 20 giây): build bản test (`vite build --mode test` → `dist-test/`, có hook `window.__dv` khai báo cuối `src/main.js`) rồi chạy `tests/playtest.py`. Cần `pip install playwright`. Chromium có sẵn trong `/opt/pw-browsers`, script tự tìm, đừng chạy `playwright install`. Các phần:
