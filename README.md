@@ -57,7 +57,7 @@ Game cần bàn phím, nên chơi trên máy tính.
 | 1284 | Vét sông Tô Lịch; duyệt binh Đông Bộ Đầu; Hội nghị Diên Hồng |
 | 1285 | Quân Nguyên đánh Vạn Kiếp, Gia Lâm; quân ta thích chữ "Sát Thát" |
 
-Làng An Phú, gia đình nhân vật, Cò, Thảo, thầy đồ Chu, bà Tư và các tình huống cá nhân là hư cấu. Cảnh nhân vật gặp anh Ngũ (Phạm Ngũ Lão lúc trẻ) đứng đọc sách, ngâm thơ bên đường đi Phù Ủng cũng là hư cấu; Toàn thư chỉ chép anh người làng Phù Ủng, được Hưng Đạo Vương thấy có kỳ tài.
+Làng An Phú, gia đình nhân vật, Cò, Thảo, thầy đồ Chu, bà Tư và các tình huống cá nhân là hư cấu. Cảnh nhân vật gặp anh Ngũ (Phạm Ngũ Lão lúc trẻ) bên đường đi Phù Ủng là hư cấu. Toàn thư (mục năm 1320, khi ông mất) chép ông người làng Phù Ủng, rất thích đọc sách, thích ngâm thơ, hơn hai mươi tuổi được Hưng Đạo Vương thấy có kỳ tài; câu thơ "Hoành sáo giang sơn cáp kỷ thu" game dẫn theo đúng bản Toàn thư ấy.
 
 ## Bật GitHub Pages
 
