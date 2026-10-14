@@ -26,6 +26,10 @@ const STATS=[
     note:()=>'Giúp làng, lo việc chung thì Đức tăng; bỏ mặc làng thì giảm. Giữ được đê năm 1270 và theo đường nông, mỗi điều thêm một trai làng; nói "hòa" ở Diên Hồng thì bớt một.'},
 ];
 
+/* Tiến độ của chỉ số k tới mốc kế tiếp (cho HUD): {pct, next} hoặc null nếu không có mốc. */
+export function statProgress(k){const st=STATS.find(x=>x.k===k);if(!st)return null;const v=S[k],next=st.marks.find(([m])=>v<m),prev=[...st.marks].reverse().find(([m])=>v>=m),lo=prev?prev[0]:0,hi=next?next[0]:lo;
+  return{pct:next?Math.round(100*(v-lo)/Math.max(1,hi-lo)):100,next:next&&next[0]}}
+
 function block(st){
   const v=S[st.k],next=st.marks.find(([m])=>v<m),prev=[...st.marks].reverse().find(([m])=>v>=m),lo=prev?prev[0]:0,hi=next?next[0]:100;
   const pct=Math.round(100*Math.min(1,(v-lo)/Math.max(1,hi-lo)));

@@ -40,7 +40,9 @@ Mỗi file mở đầu bằng comment `/* ===== tên ===== */`. Các module impo
 
 | File | Nội dung |
 |---|---|
-| `style.css` | Giao diện HUD kiểu sơn mài viền đồng, cạnh vuông, bóng cứng. Chỉ một giao diện tối, có chủ đích. |
+| `style.css` | Giao diện HUD kiểu sơn mài viền đồng, cạnh vuông, bóng cứng, đinh đồng ở bốn góc khung (`.panel::before`), dải hồi văn ở mép trên khung lớn, thông báo kiểu giấy dó. Chỉ một giao diện tối, có chủ đích. |
+| `icons.js` | Biểu tượng pixel vẽ bằng code (mẫu chữ): Văn cuộn sách, Võ kiếm, Đức hoa sen, tiền đồng xu, Sức bát cơm, tim, bốn mùa. `ico(tên, cỡ)` trả về thẻ `<img>`. `chips(ghi chú)` đổi "+2 Văn", "−1 Sức" thành nhãn màu có biểu tượng. |
+| `portrait.js` | `portrait(tên người nói)`: chân dung cắt từ sprite, cho khung hội thoại. `banner(mùa)`: tranh phong cảnh pixel theo mùa ở đầu khung sự kiện (modal có dòng đầu bắt đầu bằng tên mùa). |
 | `constants.js` | `TS=16`, `Z=3`, `T=48`, bản đồ `W=96 × H=72` ô. Mã ô: `G` cỏ, `WA` sông Tô Lịch (xanh), `WR` sông Hồng (nâu phù sa), `FI` ruộng, `PA` đường đất, `TR` cây, `MO` núi, `WL` tường thành, `SA` cát, `BR` cầu, `ST` đá lát, `GA` cổng thành. Hàm `canchi(năm)` tính can chi. |
 | `pixel.js` | `mk`, `shade`, `Hs` (hash cố định theo tọa độ), `outline`, `disc`, `flip`. |
 | `map.js` | `buildMap()` sinh bản đồ bằng RNG có seed 1258, nên bản đồ luôn giống nhau. Có `BUILDINGS`, `DECOR`, `SIGNS`, `TREES`. `bsolid` đánh dấu ô bị chặn bởi nhà, decor, biển. |
@@ -48,7 +50,7 @@ Mỗi file mở đầu bằng comment `/* ===== tên ===== */`. Các module impo
 | `sprites.js` | Trâu, cây, cây đa, giếng, thuyền, biển, nhà (`buildingSprite`, `roofPx` mái đầu đao). Mọi sprite được cache. Chuyển tiếp `personSprite` từ `person.js`. |
 | `person.js` | `personSprite(look, hướng, khung)`: người ghép từ mẫu điểm ảnh viết bằng chữ (đầu, thân, tay, chân; búi tó, khăn vấn, nón lá, khăn đỏ, râu, mũ trụ giặc). `look`: `shirt`, `hair` (`man`, `kid`, `old`, `woman`, `oldwoman`, `monk`), `kid`, `long`, `band`, `hat`, `spear`, `helm`, `plume`. Xem cả bảng bằng `python3 tests/sprite_sheet.py ảnh.png --scale 6 --only "Mẹ,Giặc"`. |
 | `state.js` | `S` là trạng thái game (lưu vào `localStorage` key `dvmd-save`). `MG` là minigame đang chạy hoặc `null`. `NPCS` có `show()` và `at()` cho vị trí động. `npcOn(n)` quyết định NPC có hiện không. |
-| `ui.js` | `say()` mở hội thoại, `showModal()` xếp hàng modal (`modalQueue`), `toast()`, `floatAt()`, `renderHUD()`, `setKeys()` đổi dòng hướng dẫn phím. |
+| `ui.js` | `say()` mở hội thoại (chân dung, thẻ tên, chữ hiện dần), `showModal()` xếp hàng modal (`modalQueue`), `toast()`, `floatAt()`, `renderHUD()`, `setKeys()` đổi dòng hướng dẫn phím. |
 | `dialogs.js` | `talkX()` cho từng NPC, `doorAction()`, `chooseFocus()` + `fastForward()` để thời gian trôi nhanh, câu cá, làm đồng, toàn bộ cơ chế con trâu. |
 | `events.js` | `advanceOne()` sang mùa; `EVENTS` là danh sách sự kiện `{id, y: năm, s: mùa 0–3, mg?, run}`; `eventCuoi`, `choosePath`, `setPath`. |
 | `minigames/` | Lụt 1270 (`startFlood`), kỳ thi 1275 (`QBANK`, `startExam`), tập trận 1283 (`startTraining`). `daily.js`: việc hằng ngày chơi trong modal 5–15 giây: tập viết nhớ nét (`startWriting`), luyện võ canh nhịp (`startDrill`), làm đồng bấm theo nhịp (`startField`), câu cá canh phao (`startFishing`); luôn có nút "Làm qua loa". `dailyReward(base,q)`: khá = mức cũ, giỏi +1, kém hoặc qua loa −1. |
