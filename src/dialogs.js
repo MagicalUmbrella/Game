@@ -109,7 +109,7 @@ export function talkVoQuan(){
 }
 export function talkNgu(){
   const first=!S.nguMet;S.nguMet=true;
-  say('Chàng trai đọc sách',first?'Một chàng trai to khỏe đứng tựa gốc cây bên vệ đường đọc sách, thỉnh thoảng lại ngâm nga mấy câu thơ. Anh tên Ngũ, người làng Phù Ủng. Anh bảo làm trai mà chưa lập được công danh thì còn thẹn lắm.':'Anh Ngũ vẫn đứng đọc sách bên đường, miệng ngâm: "Hoành sóc giang sơn cáp kỷ thu..."',
+  say('Chàng trai đọc sách',first?'Một chàng trai to khỏe đứng tựa gốc cây bên vệ đường đọc sách, thỉnh thoảng lại ngâm nga mấy câu thơ. Anh tên Ngũ, người làng Phù Ủng. Anh bảo làm trai mà chưa lập được công danh thì còn thẹn lắm.':'Anh Ngũ vẫn đứng đọc sách bên đường, miệng ngâm: "Hoành sáo giang sơn cáp kỷ thu..."',
     first?[{label:'Ngồi nghe anh bàn chuyện binh pháp',fn:()=>{gain('vo',2);gain('van',1);toast('Bạn thấy trong lòng sục sôi chí lớn. Anh Ngũ sẽ nhớ mặt bạn.')}}]:[]);
 }
 export const PEN={x:44.5,y:58.6};
