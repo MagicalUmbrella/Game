@@ -50,6 +50,6 @@ export function banner(season){
     for(let y=-4;y<=1;y++){const w=3-Math.abs(y+1.5)/1.5|0;g.fillRect(tx-w,20+y,w*2+1,1)}}
   // hoa lá theo mùa
   for(let i=0;i<26;i++){const x=Math.floor(Hs(i,11,season)*W),y=Math.floor(Hs(i,13,season)*30);
-    if(season===0)px(x,y,i%2?'#f2a7b5':'#fbd8df');else if(season===2)px(x,y,i%2?'#d08a54':'#e2bf72');else if(season===3){px(x,y,'#eef3f5')}else if(i<10)px(x,y+8,'#e58fa0')}
+    if(season===0)px(x,y,i%2?'#f2a7b5':'#fbd8df');else if(season===2)px(x,y,i%2?'#d08a54':'#e2bf72');else if(season===3){px(x,y,'#c8d4dc');px(x,y+1,'#aebcc6')}else if(i<10)px(x,y+8,'#e58fa0')}
   return bcache[season]=c.toDataURL();
 }

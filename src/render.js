@@ -51,7 +51,8 @@ function render(){
   if(S){
     const a=age();
     if(!MG)exploreDraw(list,clock,camX,camY);
-    for(const n of NPCS){if(!npcOn(n))continue;if(n.x<x0-2||n.x>x1+2||n.y<y0-2||n.y>y1+2)continue;
+    for(const n of NPCS){if(!npcOn(n))continue;if(S.res&&S.res.lost&&S.res.lost.includes(n.name))continue;   // người đã bị giặc bắt đi thì không còn ở làng
+      if(n.x<x0-2||n.x>x1+2||n.y<y0-2||n.y>y1+2)continue;
       const look=npcLook(n),dpx=S.x-n.x,dpy=S.y-n.y;let dir=n.moving?n.face:'down';
       if(!n.moving&&Math.hypot(dpx,dpy)<3)dir=Math.abs(dpx)>Math.abs(dpy)?(dpx>0?'right':'left'):(dpy>0?'down':'up');
       const fr=n.moving?[1,0,2,0][Math.floor(clock*8)%4]:0;
@@ -69,13 +70,14 @@ function render(){
   for(const o of list)if(o.lab)label(o.lab[0],o.lab[1]*T-camX,o.lab[2]*T-camY,'#e2bf72');
   for(const sg of SIGNS)if(Math.hypot(sg.x-S.x,sg.y-S.y)<5)label(sg.name,(sg.x+.5)*T-camX,(sg.y-.2)*T-camY,'#9fcaa9');
   ctx.fillStyle=['rgba(255,220,230,.04)','rgba(255,210,120,.05)','rgba(220,160,60,.07)','rgba(150,180,220,.11)'][s];ctx.fillRect(0,0,VW,VH);
-  if(!reduce&&s!==1&&!(MG&&MG.post)){ctx.fillStyle=s===0?'#f3b6c4':s===2?'#d99a3a':'rgba(235,242,250,.85)';
-    const PW=VW+60,PH=VH+60,fall=s===3?34:22,w=Z*(s===3?1:2);
+  if(S&&S.res&&!MG){ctx.fillStyle='rgba(70,45,50,.32)';ctx.fillRect(0,0,VW,VH)}   // sau đêm 1285: trời hửng, khói làng cháy
+  if(!reduce&&s!==1&&!(MG&&MG.post)){ctx.fillStyle=s===0?'#f3b6c4':s===2?'#d99a3a':'rgba(205,218,230,.5)';   // đông: mưa phùn (vệt mảnh, rơi nhanh), không phải tuyết
+    const PW=VW+60,PH=VH+60,fall=s===3?120:22,w=Z*(s===3?1:2),hh=Z*(s===3?3:1);
     for(const p of parts){const sway=Math.sin(clock*1.1+p.p)*7*Z+clock*(s===2?9:4)*Z;
       const x=pmod(p.u*PW-camX+sway,PW)-30,y=pmod(p.v*PH-camY+clock*fall*p.s*Z,PH)-30;
-      ctx.fillRect(Math.round(x/Z)*Z,Math.round(y/Z)*Z,w,Z)}}
+      ctx.fillRect(Math.round(x/Z)*Z,Math.round(y/Z)*Z,w,hh)}}
   ctx.font='700 14px "Be Vietnam Pro", system-ui, sans-serif';ctx.textAlign='center';
-  for(const f of floats){ctx.globalAlpha=Math.max(0,1-f.t/1.6);const fx2=f.x*T-camX,fy2=f.y*T-camY-90-f.t*26;ctx.fillStyle='#0b0d0c';ctx.fillText(f.txt,fx2+2,fy2+2);ctx.fillStyle=f.color;ctx.fillText(f.txt,fx2,fy2)}ctx.globalAlpha=1;
+  for(const f of floats){ctx.globalAlpha=Math.max(0,1-f.t/1.6);const fx2=f.x*T-camX,fy2=f.y*T-camY-90-f.t*26-(f.dy||0);ctx.fillStyle='#0b0d0c';ctx.fillText(f.txt,fx2+2,fy2+2);ctx.fillStyle=f.color;ctx.fillText(f.txt,fx2,fy2)}ctx.globalAlpha=1;
   if(MG&&MG.hud)MG.hud();
   drawMini();
 }

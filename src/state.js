@@ -26,7 +26,9 @@ export function loadSave(){try{const s=localStorage.getItem('dvmd-save');if(!s)r
   // bản lưu cũ còn uy tín làng riêng (flags.lang): quy sang Đức, mỗi điểm uy tín bằng 3 Đức
   if(!o.ducMerged){r.duc=Math.max(0,Math.min(100,r.duc+3*(r.flags.lang||0)));r.ducMerged=true}delete r.flags.lang;
   // bản lưu cũ đã qua tin Toa Đô mà chưa có việc "Lo trước ngày giặc đến"
-  if(r.ev&&r.ev.toado&&!r.quests.lo&&r.year<1285)r.quests.lo='active';return r}catch(e){return null}}
+  if(r.ev&&r.ev.toado&&!r.quests.lo&&r.year<1285)r.quests.lo='active';
+  // bản lưu cũ: việc Tứ thư còn dở khi thầy đã mất, việc lo trước còn dở khi đã sang 1285
+  if(!r.thay&&r.quests.sach==='active')delete r.quests.sach;if(r.year>=1285&&r.quests.lo==='active')delete r.quests.lo;return r}catch(e){return null}}
 
 export const P={dir:'down',walk:0,moving:false};
 export const LOOK_THAO={id:'thao'};
@@ -38,13 +40,13 @@ export const NPCS=[
  {id:'su',name:'Sư cụ',x:24.6,y:14.4,look:{id:'su'},talk:talkSu},
  {id:'batu',name:'Bà Tư',x:52.4,y:49.9,look:{id:'batu'},talk:talkBaTu},
  {id:'thao',name:'Thảo',x:49.3,y:50.6,look:LOOK_THAO,talk:talkThao,show:()=>!!S.ev.thao&&S.thao!=='gone',at:()=>S.thao==='wife'?[47.4,50.7]:S.thao==='co'?[36.4,49.7]:[49.3,50.6]},
- {id:'sen',name:'Bé Sen',x:46.6,y:51.7,look:{id:'sen',kid:true},talk:()=>say('Bé Sen',pickR(['Bố ơi, bế con!','Bố ơi, mẹ Thảo bảo tối nay có canh cua.','Con biết đếm đến mười rồi đấy!'])),show:()=>S.child},
+ {id:'sen',name:'Bé Sen',x:46.6,y:51.7,look:{id:'sen',kid:true},talk:()=>say('Bé Sen',pickR(['Cha ơi, bế con!','Cha ơi, mẹ Thảo bảo tối nay có canh cua.','Con biết đếm đến mười rồi đấy!'])),show:()=>S.child},
  {id:'ly',name:'Cụ lý trưởng',x:35.8,y:36.9,look:{id:'ly'},talk:talkLy},
  {id:'co',name:'Cò',x:38.5,y:45.2,wander:true,home:[38.5,45.2],talk:talkCo,show:()=>S.co==='village'},
  {id:'hsach',name:'Chủ hàng sách',x:39.6,y:15.6,look:{id:'hsach'},talk:talkSach},
  {id:'hren',name:'Bác thợ rèn',x:44.6,y:15.6,look:{id:'hren'},talk:talkRen},
  {id:'tong',name:'Lái buôn người Tống',x:59.6,y:15.6,look:{id:'tong'},talk:talkTong,show:()=>S.year>=1275},
- {id:'dan1',name:'Người bán hàng',x:59.6,y:15.6,look:{id:'dan1'},talk:()=>say('Người bán hàng','Gian hàng này sắp có người mới thuê đấy. Nghe đâu là người phương bắc.'),show:()=>S.year<1275},
+ {id:'dan1',name:'Người bán hàng',x:59.6,y:15.6,look:{id:'dan1'},talk:()=>say('Người bán hàng',S.year>=1274?'Gian hàng này sắp có người mới thuê đấy. Nghe đâu là người phương bắc.':'Kim chỉ, quạt nan, nón lá đủ cả. Cậu xem có món nào mua về cho mẹ không?'),show:()=>S.year<1275},
  {id:'gom',name:'Bà hàng gốm',x:63.6,y:18.5,look:{id:'gom'},talk:()=>say('Bà hàng gốm','Bát đĩa men ngọc, gốm hoa nâu đây con. Mua về cho mẹ đựng cà muối.')},
  {id:'linh1',name:'Lính gác',x:51.3,y:20.5,look:{id:'linh'},talk:talkLinh},
  {id:'linh2',name:'Lính gác',x:55.7,y:20.5,look:{id:'linh'},talk:talkLinh},
