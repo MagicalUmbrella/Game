@@ -3,7 +3,7 @@
    cho thầy Chu. S.chains[id] = {st, n, last}: st 'off' (chưa bắt đầu), 'on', 'done', 'no' (từ chối),
    'fail' (quá hạn); n: số bước đã làm; last: mùa làm bước gần nhất (mỗi mùa một bước).
    Lựa chọn hiện trong hội thoại (chainChoices), hạn chót xét mỗi mùa (checkChains), mỗi kết cục có
-   dòng biên niên (chainChronicle). Bước chặt tre nằm ở explore.js (chỗ 'tre'). */
+   dòng biên niên (chainChronicle). Bước chặt tre nằm ở explore.js (chỗ 'tre', và mọi bụi tre trong TREES). */
 import {S,age} from './state.js';
 import {doneQuest,gain,renderHUD,say,spend,startQuest,toast} from './ui.js';
 
@@ -13,7 +13,7 @@ const quest={co:'cco',thao:'cthao',thay:'cthay'};
 
 export const CHAIN_INFO={
   co:{title:'Dạy Cò biết chữ',hint:c=>`Mỗi mùa dạy Cò một buổi (nói chuyện với Cò). Đã dạy ${c.n}/3 buổi. Phải xong trước khi bạn 15 tuổi.`},
-  thao:{title:'Mái nhà bà Tư',hint:c=>c.n<3?`Chặt tre ở bụi tre bìa rừng phía tây (mỗi mùa một bó). Đã có ${c.n}/3 bó. Phải xong trước năm 1279.`:'Đủ tre rồi. Sang nhà bà Tư cùng Thảo lợp lại mái (tốn 2 Sức).'},
+  thao:{title:'Mái nhà bà Tư',hint:c=>c.n<3?`Chặt tre ở bụi tre nào cũng được, nhiều nhất ở rừng phía tây (đứng sát gốc bấm E, mỗi mùa một bó). Đã có ${c.n}/3 bó. Phải xong trước năm 1279.`:'Đủ tre rồi. Sang nhà bà Tư cùng Thảo lợp lại mái (tốn 2 Sức).'},
   thay:{title:'Chép sách cho thầy',hint:c=>`Mỗi mùa chép cho thầy Chu một buổi (nói chuyện với thầy). Đã chép ${c.n}/3 buổi.`},
 };
 export const chainHint=id=>CHAIN_INFO[id].hint(C(id));

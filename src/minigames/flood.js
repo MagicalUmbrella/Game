@@ -3,9 +3,14 @@ import {TS,Z,ctx} from '../constants.js';
 import {Hs} from '../pixel.js';
 import {tolichY} from '../map.js';
 import {simple} from '../sprites.js';
-import {MG,P,S,save,setMG} from '../state.js';
+import {MG,P,S,coLook,save,setMG} from '../state.js';
 import {floatAt,gain,renderHUD,setKeys,showModal} from '../ui.js';
-import {VH,VW,camX,camY,clock,drawSprite,reduce} from '../render.js';
+import {VH,VW,camX,camY,clock,drawSprite,reduce,shadow} from '../render.js';
+import {personSprite} from '../sprites.js';
+import {isKid} from '../person.js';
+import {solidAt} from '../input.js';
+import {dirOf} from '../climax.js';
+import {nextStep,stepTo} from '../pathfind.js';
 
 export const sackSprite=()=>simple('sack',12,11,s=>{s(2,2,8,8,'#a8885a');s(3,1,6,1,'#a8885a');s(2,2,8,1,'#c4a472');s(4,0,4,2,'#7a5f3a');s(8,3,2,7,'#8a6c42');s(2,9,8,1,'#7a5f3a')},6,10);
 export function mark(x,y,col){const sx=Math.round(x*TS)*Z-camX,sy=Math.round(y*TS)*Z-camY,b=Math.round(Math.sin(clock*6)*1.5)*Z;ctx.fillStyle='#0b0d0c';ctx.fillRect(sx-2*Z,sy-7*Z+b,4*Z,9*Z);ctx.fillStyle=col;ctx.fillRect(sx-Z,sy-6*Z+b,2*Z,4*Z);ctx.fillRect(sx-Z,sy-Z+b,2*Z,2*Z)}
@@ -13,15 +18,27 @@ export function hudBox(x,y,w,h){ctx.fillStyle='#0b0d0c';ctx.fillRect(x-3,y-3,w+6
 export function hudBar(x,y,w,frac,col){ctx.fillStyle='#0b0d0c';ctx.fillRect(x,y,w,12);ctx.fillStyle=col;ctx.fillRect(x+2,y+2,Math.max(0,(w-4)*Math.min(1,frac)),8)}
 export function startFlood(){
   const xs=[31,37,44,50,57];
-  setMG({type:'flood',carry:false,level:0,coT:7,br:xs.map(x=>({x:x+.5,y:Math.floor(tolichY(x)+2.6)+.5,got:0})),pile:{x:41.5,y:33.4},
+  setMG({type:'flood',carry:false,level:0,coT:4,co:S.rel.co>=3?{x:43.5,y:34.6,dir:'up',walk:0,moving:false,bag:false,tgt:null,pause:0}:null,hide:['co'],br:xs.map(x=>({x:x+.5,y:Math.floor(tolichY(x)+2.6)+.5,got:0})),pile:{x:41.5,y:33.4},
     update:floodUpdate,findTarget:floodTarget,draw:floodDraw,hud:floodHud,post:rainPost,speedMul:()=>MG.carry?.75:1});
   S.x=41.5;S.y=34.8;P.dir='up';document.body.classList.add('mg');
   setKeys('<span><kbd>E</kbd> vác bao đất ở đống đất, đắp vào chỗ đê vỡ</span><span><kbd>Shift</kbd> chạy</span><span>Mỗi chỗ vỡ cần 2 bao</span>');
 }
 function floodUpdate(dt){const M=MG,open=M.br.filter(b=>b.got<2).length;
   M.level+=dt*(.004+.0023*open);
-  if(S.rel.co>=3&&open){M.coT-=dt;if(M.coT<=0){M.coT=8;const b=M.br.find(b=>b.got<2);b.got++;floatAt('Cò đắp giúp một bao!',b.x,b.y,'#e2bf72')}}
+  if(M.co&&open)coUpdate(M,dt);
   if(!M.br.some(b=>b.got<2))endFlood(true);else if(M.level>=1)endFlood(false)}
+/* Cò (thân với bạn từ 3 trở lên) ra đê giúp: chạy ra đống đất vác bao, chạy tới chỗ vỡ gần nhất đắp xuống.
+   Mỗi lần lấy bao cách nhau ít nhất 8 giây (coT), giữ nhịp như trước. Đi theo đường thật, 4 hướng. */
+const okCo=(x,y)=>!solidAt(x+.5,y+.5);
+function coUpdate(M,dt){const c=M.co;M.coT-=dt;c.moving=false;if((c.pause=Math.max(0,c.pause-dt))>0)return;
+  let tx,ty;
+  if(!c.bag){tx=M.pile.x+1.2;ty=M.pile.y+.2;
+    if(Math.hypot(tx-c.x,ty-c.y)<.3){c.dir='left';if(M.coT<=0){c.bag=true;M.coT=8;c.pause=.4}return}}
+  else{if(!c.tgt||c.tgt.got>=2){c.tgt=null;let bd=1e9;for(const b of M.br)if(b.got<2){const d=Math.hypot(b.x-c.x,b.y-c.y);if(d<bd){bd=d;c.tgt=b}}}
+    const b=c.tgt;tx=b.x;ty=b.y;
+    if(Math.hypot(tx-c.x,ty-c.y)<1){b.got++;c.bag=false;c.tgt=null;c.pause=.5;c.dir=dirOf(tx-c.x,ty-c.y);floatAt(b.got>=2?'Cò chặn được một chỗ!':'Cò đắp giúp một bao!',b.x,b.y,'#e2bf72');return}}
+  const st=nextStep(c,tx,ty,okCo,clock);if(!st)return;
+  const [mx,my]=stepTo(c,st,(c.bag?3:3.8)*dt,okCo);c.x+=mx;c.y+=my;c.moving=true;c.walk+=dt*9;if(mx||my)c.dir=dirOf(mx,my)}
 function floodTarget(){const M=MG;if(!M.carry&&Math.hypot(M.pile.x-S.x,M.pile.y-S.y)<1.7)return{label:'Vác bao đất',act:()=>{M.carry=true}};
   if(M.carry){let best=1.7,tb=null;for(const b of M.br)if(b.got<2){const d=Math.hypot(b.x-S.x,b.y-S.y);if(d<best){best=d;tb=b}}
     if(tb)return{label:'Đắp chỗ đê vỡ',act:()=>{tb.got++;M.carry=false;floatAt(tb.got>=2?'Đã chặn được!':'Thêm một bao nữa!',tb.x,tb.y,'#9fcaa9')}}}
@@ -31,6 +48,9 @@ function floodDraw(list){const M=MG;
   list.push({y:M.pile.y,f:()=>{for(let i=0;i<6;i++)drawSprite(sackSprite(),M.pile.x-.45+(i%3)*.45,M.pile.y-Math.floor(i/3)*.4)},lab:Math.hypot(M.pile.x-S.x,M.pile.y-S.y)<5?['Đống bao đất',M.pile.x,M.pile.y-1.1]:null});
   for(const b of M.br)list.push({y:b.y,f:()=>{if(b.got>=2){for(let i=0;i<3;i++)drawSprite(sackSprite(),b.x-.45+i*.45,b.y)}else{gush(b.x,b.y);if(b.got)drawSprite(sackSprite(),b.x,b.y+.15);mark(b.x,b.y-1.1,'#e07f6b')}}});
   if(M.carry)list.push({y:S.y+.01,f:()=>drawSprite(sackSprite(),S.x,S.y-1.55)});
+  const c=M.co;if(c){const look=coLook(),kid=isKid(look);
+    list.push({y:c.y,f:()=>{shadow(c.x,c.y,10);drawSprite(personSprite(look,c.dir,c.moving?[1,0,2,0][Math.floor(c.walk)%4]:0),c.x,c.y);if(c.bag)drawSprite(sackSprite(),c.x,c.y-(kid?1.3:1.55))},
+      lab:Math.hypot(c.x-S.x,c.y-S.y)<5?['Cò',c.x,c.y-(kid?1.55:2)-(c.bag?.75:0)]:null})}
 }
 function floodHud(){const M=MG,w=Math.min(420,VW-32),x=Math.round(VW/2-w/2);hudBox(x,16,w,64);
   ctx.font='600 12px "Be Vietnam Pro", system-ui, sans-serif';ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillStyle='#9fcaa9';ctx.fillText('Nước lên',x+12,32);hudBar(x+90,26,w-102,M.level,'#5aa0c0');

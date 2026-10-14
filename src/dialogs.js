@@ -11,6 +11,7 @@ import {camX,camY} from './render.js';
 import {DUC_FF_CAP} from './stats.js';
 import {trauYeu} from './life.js';
 import {chainChoices} from './chains.js';
+import {step4} from './pathfind.js';
 
 export const pickR=a=>a[Math.floor(Math.random()*a.length)];
 function vanLesson(){const v=S.van;return v<10?'Thầy dạy chữ trên khay cát, từng nét một.':v<25?'Thầy giảng sách dạy đạo làm người.':v<45?'Bạn đọc Luận ngữ, tập viết văn sách.':v<70?'Bạn học Kinh Thi, Kinh Thư, bình luận chuyện xưa.':'Bạn đọc Đại Việt sử ký, bàn về phép trị nước.'}
@@ -127,7 +128,7 @@ export function loseBuffalo(){const b=S.buffalo;b.tracks=[];b.bolts=0;b.stop=fal
   const last=b.run[b.run.length-1];if(last!=null){b.x=last%W+.5;b.y=((last/W)|0)+.6}b.st='lost';b.run=null}
 export function buffaloUpdate(dt){const b=S.buffalo,d=Math.hypot(S.x-b.x,S.y-b.y);
   if(b.st==='run'&&b.run){const i=b.run[b.ri];if(i==null){b.st='lost';b.run=null;return}const tx=i%W+.5,ty=((i/W)|0)+.6,dx=tx-b.x,dy=ty-b.y,dd=Math.hypot(dx,dy);
-    if(dd<.15)b.ri++;else{const m=Math.min(dd,6*dt);b.x+=dx/dd*m;b.y+=dy/dd*m;if(Math.abs(dx)>.05)b.dir=dx>0?'right':'left'}return}
+    if(dd<.15)b.ri++;else{const [mx,my]=step4(b,tx,ty,6*dt);b.x+=mx;b.y+=my;if(Math.abs(mx)>1e-4)b.dir=mx>0?'right':'left'}return}
   if(b.st==='lost'&&S.quests.trau==='active'){
     if(d<3.6&&P.moving&&keys.shift&&(b.bolts||0)<2){b.bolts=(b.bolts||0)+1;sendBuffalo(b.x,b.y,6,14);toast('Con trâu giật mình, rống lên rồi chạy mất vào rừng sâu! Lại gần thì đi chậm thôi, đừng giữ Shift.',4600);return}
     hintT-=dt;if(hintT<=0&&d<11){hintT=6;const dir=Math.abs(b.x-S.x)>Math.abs(b.y-S.y)?(b.x>S.x?'phía đông':'phía tây'):(b.y>S.y?'phía nam':'phía bắc');
@@ -135,7 +136,7 @@ export function buffaloUpdate(dt){const b=S.buffalo,d=Math.hypot(S.x-b.x,S.y-b.y
     return}
   if(b.st==='follow'){
     if(!b.stop){b.gz=(b.gz??8)-dt;if(b.gz<=0){b.stop=true;toast('Con trâu dừng lại gặm cỏ, nhất định không đi. Lại gần bấm E để kéo thừng.',4000)}}
-    if(!b.stop&&d>1.4){const m=Math.min(d-1.3,4.2*dt*(keys.shift?1.6:1)),nx=b.x+(S.x-b.x)/d*m,ny=b.y+(S.y-b.y)/d*m;b.dir=S.x>b.x?'right':'left';if(!solidAt(nx,ny)){b.x=nx;b.y=ny}else if(d>6){b.x=S.x-.8;b.y=S.y}}
+    if(!b.stop&&d>1.4){const [mx,my]=step4(b,S.x,S.y,Math.min(d-1.3,4.2*dt*(keys.shift?1.6:1))),nx=b.x+mx,ny=b.y+my;if(Math.abs(mx)>1e-4)b.dir=mx>0?'right':'left';if(!solidAt(nx,ny)){b.x=nx;b.y=ny}else if(d>6){b.x=S.x-.8;b.y=S.y}}
     if(b.stop&&d>9){b.stop=false;b.st='lost';b.bolts=2;toast('Bạn bỏ con trâu lại quá xa, nó lại lang thang mất rồi. Quay lại tìm đi!',4200)}}}
 export function buffaloLabel(){const b=S.buffalo;if(b.st==='lost')return S.quests.trau==='active'?'Nắm thừng dắt trâu':null;if(b.st==='follow')return b.stop?'Kéo thừng':null;if(b.st==='pen')return'Xem con trâu';return null}
 export function talkBuffalo(){const b=S.buffalo;

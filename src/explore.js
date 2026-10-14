@@ -7,6 +7,7 @@ import {TS,Z,ctx} from './constants.js';
 import {S,age,has} from './state.js';
 import {gain,renderHUD,showModal,toast} from './ui.js';
 import {tre} from './chains.js';
+import {TREES} from './map.js';
 
 const src=t=>`<p class="src">Toàn thư chép: ${t}</p>`;
 const now=()=>S.year*4+S.season;
@@ -33,7 +34,7 @@ export const SPOTS=[
   {id:'soi',x:51.5,y:27.5,name:'Bãi sỏi ven sông',
     act:()=>give('Sỏi trắng','Giữa bãi sỏi có một hòn sỏi trắng tròn, nhẵn như quả trứng. Bạn bỏ vào túi, nghĩ bụng sẽ tặng ai đó.')},
   // bước chặt tre của chuỗi "Mái nhà bà Tư" (chains.js); không tính vào số nơi khám phá
-  {id:'tre',x:17.5,y:49.5,name:'Bụi tre bìa rừng',quest:true,once:false,when:()=>tre().st==='on'&&tre().n<3,ready:()=>tre().last!==now(),
+  {id:'tre',x:17.5,y:49.5,name:'Bụi tre',quest:true,once:false,when:()=>tre().st==='on'&&tre().n<3,ready:()=>tre().last!==now(),
     act:()=>{if(S.suc<1)return{text:'Bạn mệt rồi, về nghỉ đã rồi hãy chặt.',keep:true};const c=tre();S.suc--;c.n++;c.last=now();renderHUD();
       return c.n<3?`Bạn chặt được một bó tre thẳng, vác về đầu ngõ nhà bà Tư. Đã có ${c.n}/3 bó (mỗi mùa chặt một bó).`:'Đủ ba bó tre rồi. Sang nhà bà Tư cùng Thảo lợp mái thôi.'}},
   {id:'do',x:55.5,y:27.5,name:'Bến đò',when:()=>age()>=8,
@@ -54,14 +55,20 @@ function open(p){
 export function exploreTarget(best){
   let t=null;
   for(const p of SPOTS){if(!visible(p))continue;const d=Math.hypot(p.x-S.x,p.y-S.y);if(d<best){best=d;t={d,label:'Xem: '+p.name,act:()=>open(p)}}}
+  // đang lo mái nhà bà Tư: bụi tre nào cũng chặt được (đứng sát gốc)
+  const ts=TRE_SPOT();if(ts&&visible(ts))for(const b of TREES){if(b.v!==1)continue;const d=Math.hypot(b.x+.5-S.x,b.y+.6-S.y);if(d<Math.min(best,1.3)){best=d;t={d,label:'Chặt tre',act:()=>open(ts)}}}
   return t;
 }
 
+const TRE_SPOT=()=>SPOTS.find(p=>p.id==='tre');
 /* Lấp lánh ở những chỗ còn xem được, khi người chơi ở gần (render.js). Lần đầu thấy thì nhắc. */
 export function exploreDraw(list,clock,camX,camY){
-  for(const p of SPOTS){if(!visible(p))continue;const d=Math.hypot(p.x-S.x,p.y-S.y);if(d>7)continue;
+  const ts=TRE_SPOT(),pts=SPOTS.filter(visible);
+  // bụi tre gần nhất (trong 6 ô) cũng lấp lánh khi đang cần chặt tre
+  if(ts&&visible(ts)){let bb=null,bd=6;for(const b of TREES)if(b.v===1){const d=Math.hypot(b.x+.5-S.x,b.y+.6-S.y);if(d<bd){bd=d;bb=b}}if(bb)pts.push({x:bb.x+.5,y:bb.y-1.6,top:true})}
+  for(const p of pts){const d=Math.hypot(p.x-S.x,p.y-S.y);if(d>7)continue;
     if(!S.flags.sparkHint&&d<5){S.flags.sparkHint=true;toast('Có gì đó lấp lánh gần đây. Lại gần bấm E mà xem.',4200)}
-    list.push({y:p.y,f:()=>{const a=Math.max(0,1-d/7),ph=(clock*2+p.x)%1,sx=Math.round(p.x*TS)*Z-camX,sy=Math.round((p.y-.4)*TS)*Z-camY;
+    list.push({y:p.top?p.y+3.6:p.id==='tre'?p.y+1.5:p.y,f:()=>{const a=Math.max(0,1-d/7),ph=(clock*2+p.x)%1,sx=Math.round(p.x*TS)*Z-camX,sy=Math.round((p.y-.4)*TS)*Z-camY;
       const k=.55+.45*Math.sin(ph*Math.PI*2),r=k>.8?4:3;ctx.globalAlpha=Math.min(1,a*1.4);
       ctx.fillStyle='rgba(30,20,10,.55)';ctx.fillRect(sx-2*Z,sy-(r+1)*Z,4*Z,(2*r+2)*Z);ctx.fillRect(sx-(r+1)*Z,sy-2*Z,(2*r+2)*Z,4*Z);
       ctx.fillStyle='#ffd86b';ctx.fillRect(sx-Z,sy-r*Z,2*Z,2*r*Z);ctx.fillRect(sx-r*Z,sy-Z,2*r*Z,2*Z);ctx.fillStyle='#fffbe8';ctx.fillRect(sx-Z,sy-Z,2*Z,2*Z);ctx.globalAlpha=1}});

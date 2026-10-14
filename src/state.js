@@ -57,7 +57,7 @@ export const NPCS=[
 export const coLook=()=>age()<14?{id:'co_be',kid:true}:{id:S.year>=1284?'co_do':'co'};
 /* Hình người của NPC lúc này: Cò lớn lên, cha mẹ già đi. */
 export const npcLook=n=>n.id==='co'?coLook():(n.id==='me'||n.id==='cha')&&S&&S.year>=1280?{id:n.id+'_gia'}:n.look;
-export function npcOn(n){if(MG&&MG.hideNPC)return false;if(n.show&&!n.show())return false;if(n.at){const p=n.at();n.x=p[0];n.y=p[1]}return true}
+export function npcOn(n){if(MG&&(MG.hideNPC||MG.hide&&MG.hide.includes(n.id)))return false;if(n.show&&!n.show())return false;if(n.at){const p=n.at();n.x=p[0];n.y=p[1]}return true}
 
 
 export function setS(v){S=v}

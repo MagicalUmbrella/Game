@@ -8,6 +8,7 @@ import {dirOf} from './climax.js';
 import {playing} from './intro.js';
 import {showStats} from './stats.js';
 import {exploreTarget} from './explore.js';
+import {step4} from './pathfind.js';
 
 export const keys={};let lastAxis='y';
 addEventListener('keydown',e=>{
@@ -41,7 +42,7 @@ export function update(dt){
   }
   buffaloUpdate(dt);
   for(const n of NPCS)if(n.wander){n.t=(n.t||0)-dt;if(n.t<=0){n.t=2+Math.random()*3;n.tx=n.home[0]+(Math.random()*4-2);n.ty=n.home[1]+(Math.random()*2-1)}
-    const d=Math.hypot(n.tx-n.x,n.ty-n.y);if(d>.05){const nx=n.x+(n.tx-n.x)/d*1.2*dt,ny=n.y+(n.ty-n.y)/d*1.2*dt;n.face=dirOf(n.tx-n.x,n.ty-n.y);if(!solidAt(nx,ny)){n.x=nx;n.y=ny;n.moving=true}else n.tx=n.x}else n.moving=false}
+    const d=Math.hypot(n.tx-n.x,n.ty-n.y);if(d>.05){const [mx,my]=step4(n,n.tx,n.ty,1.2*dt),nx=n.x+mx,ny=n.y+my;n.face=dirOf(mx,my);if(!solidAt(nx,ny)){n.x=nx;n.y=ny;n.moving=true}else{n.tx=n.x;n.ty=n.y}}else n.moving=false}
   findTarget();
   if(MG&&MG.update)MG.update(dt);
   for(const f of floats)f.t+=dt;while(floats.length&&floats[0].t>1.6)floats.shift();
