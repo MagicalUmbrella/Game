@@ -166,6 +166,8 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 - Giặc đêm 1285 từng đi thẳng xuyên sông, cây, nhà; điểm xuất hiện bờ bắc từng rơi vào ô cây, tường thành. Test `terrain` trong `tests/checks.js` canh lỗi này.
 - Màn kết 1285 từng ghi "Không bỏ lại ai" cả khi có người bị bắt.
 - Giặc từng đứng dàn hàng ở bìa rừng khi bạn đã vào rừng (vẫn coi bạn là mục tiêu mà không vào được). Test `noCamping` canh lỗi này.
+- Đánh nhau đêm 1285: giặc từng đứng chồng lên nhau (62% thời gian khi có đuốc) và kẹt đứng im quanh đuốc cắm sát rừng; bấm Space hay chém trượt vì phải quay mặt trước. Nay giặc dàn quanh đuốc, chỗ lục lọi (`around`), tự đẩy nhau ra (`separate`), kẹt thì tìm đường lại; đuốc cắm trong rừng không dụ được ai; đánh thì tự quay mặt về giặc gần nhất. Test `combat` canh lỗi này.
+- Cánh hoa, lá rơi từng dính vào camera khi đi lại và rơi theo tốc độ khung hình; nay gắn với cảnh, tính theo giây.
 - Đường văn từng gần như luôn ngã xuống ở đêm 1285 (chỉ có 2–3 cây đuốc 7 giây, điểm Văn vô dụng), và ngã xuống khi không có đồng minh từng làm mất hết người chưa cứu. Bảng độ khó trong `npm test` canh lại việc này.
 
 ## Hướng phát triển tiếp

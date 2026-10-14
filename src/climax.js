@@ -37,6 +37,14 @@ function reachSafe(p){p.st='safe';p.path=null;floatAt(p.name+' đã an toàn',p.
 // Chỗ giặc lục lọi khi không có ai để đuổi: sân các nhà, kho thóc, đình, ruộng.
 const LOOT=[[43.5,51.5],[47.5,51.2],[52.5,51],[36.5,38.5],[34.5,38.5],[44.5,44.5],[40.5,46.5],[49.5,46],[38.5,52.5],[46.5,56.5]];
 function pickLoot(e){let p;do p=LOOT[Math.floor(Math.random()*LOOT.length)];while(e.loot&&p===e.loot&&LOOT.length>1);e.lootT=1+Math.random()*2.5;return p}
+/* Vị trí riêng của mỗi tên giặc quanh một điểm (đuốc, chỗ lục lọi), để chúng dàn ra thay vì dồn vào một chỗ. */
+function around(p,e,r){if(e.slot==null)e.slot=Math.random()*Math.PI*2;const x=p.x+Math.cos(e.slot)*r,y=p.y+Math.sin(e.slot)*r;
+  return okEnemy(Math.floor(x),Math.floor(y))&&!inZone(x,y)?{x,y}:p}
+/* Giặc đứng gần nhau quá thì đẩy nhau ra (không vào ô cấm, không vào rừng). */
+function separate(en){const R=.7;
+  for(let i=0;i<en.length;i++)for(let j=i+1;j<en.length;j++){const a=en[i],b=en[j];let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);if(d>=R)continue;
+    if(d<1e-3){dx=Math.cos(i+j);dy=Math.sin(i+j);d=1}const k=(R-d)/2/d;
+    for(const [o,s] of [[a,-1],[b,1]]){const nx=o.x+s*dx*k,ny=o.y+s*dy*k;if(okEnemy(Math.floor(nx),Math.floor(ny))&&(o.st==='flee'||!inZone(nx,ny))){o.x=nx;o.y=ny}}}}
 const FIRES=[[53.5,21.6],[24.5,20.2],[48.5,21.2]];
 export function startClimax(){
   const v=[],add=(id,name,x,y,look,slow)=>v.push({id,name,x,y,look,st:'wait',slow:slow||1,walk:0,dir:'down'});
@@ -64,8 +72,11 @@ export function startClimax(){
   if(S.path==='van'){const n=MG.decoys,M=MG;setTimeout(()=>{if(MG===M)toast(`Dân làng tin người có chữ: bấm E để chỉ đường, họ tự tìm vào rừng. Bạn có ${n} cây đuốc nghi binh (Q).`,6000)},4800)}
 }
 const pDmg=()=>1+(S.path==='vo'?1:0)+(has('Kiếm sắt')?1:0)+voDmg();
-function clKey(k){if(k===' '){clAttack();return true}if(k==='q'&&MG.decoys>0){MG.decoys--;MG.decoy={x:S.x,y:S.y,t:TORCH_T};toast('Bạn cắm đuốc, hò hét giả làm quân mai phục. Giặc kéo về phía ánh lửa!');return true}return false}
-function clAttack(){const M=MG;if(M.cd>0)return;M.cd=(S.path==='vo'?.3:.45)*(voFast()?.8:1);M.slash=.15;const v={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[P.dir];
+function clKey(k){if(k===' '){clAttack();return true}if(k==='q'&&MG.decoys>0){if(inZone(S.x,S.y)){toast('Trong rừng giặc không dám vào, cắm đuốc ở đây chẳng dụ được ai. Ra ngoài làng mà cắm.');return true}MG.decoys--;MG.decoy={x:S.x,y:S.y,t:TORCH_T};toast('Bạn cắm đuốc, hò hét giả làm quân mai phục. Giặc kéo về phía ánh lửa!');return true}return false}
+function clAttack(){const M=MG;if(M.cd>0)return;M.cd=(S.path==='vo'?.3:.45)*(voFast()?.8:1);M.slash=.15;
+  // có giặc trong tầm thì tự quay mặt về tên gần nhất, khỏi phải bấm hướng trước
+  let near=null,nd=1.6;for(const e of M.en){if(e.dead)continue;const d=Math.hypot(e.x-S.x,e.y-S.y);if(d<nd){nd=d;near=e}}if(near)P.dir=dirOf(near.x-S.x,near.y-S.y);
+  const v={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[P.dir];
   for(const e of M.en){if(e.dead)continue;const dx=e.x-S.x,dy=e.y-S.y,d=Math.hypot(dx,dy);if(d<1.6&&(d<.8||(dx*v[0]+dy*v[1])/d>.2))hitEnemy(e,pDmg(),S.x,S.y)}}
 function hitEnemy(e,dmg,fx,fy){e.hp-=dmg;const d=Math.hypot(e.x-fx,e.y-fy)||1,kx=e.x+(e.x-fx)/d*.6,ky=e.y+(e.y-fy)/d*.6;if(okEnemy(Math.floor(kx),Math.floor(ky))){e.x=kx;e.y=ky}e.flash=.15;
   if(e.hp<=0){e.dead=true;MG.kills++;if(e.cap){e.cap.st='wait';e.cap.x=e.x;e.cap.y=e.y;floatAt('Cứu được '+e.cap.name+'!',e.x,e.y,'#9fcaa9');e.cap=null}}}
@@ -94,7 +105,7 @@ function clUpdate(dt){
   for(const e of M.en){if(e.dead)continue;e.flash=Math.max(0,e.flash-dt);let tx,ty;
     if(e.cap||e.st==='flee'||M.ngu){e.st='flee';tx=e.home[0];ty=e.home[1]}
     else{let tg=null;
-      if(M.decoy&&Math.hypot(M.decoy.x-e.x,M.decoy.y-e.y)<11)tg=M.decoy;
+      if(M.decoy&&!inZone(M.decoy.x,M.decoy.y)&&Math.hypot(M.decoy.x-e.x,M.decoy.y-e.y)<11)tg=around(M.decoy,e,1.6);
       else{let best=1e9;for(const p of M.v)if(p.st==='wait'||p.st==='follow'||p.st==='self'){const d=Math.hypot(p.x-e.x,p.y-e.y);if(d<best){best=d;tg=p}}
         // bạn đã vào rừng thì giặc thôi đuổi (giặc không dám theo vào rừng)
         if(!inZone(S.x,S.y)&&(!tg||Math.hypot(S.x-e.x,S.y-e.y)<best*1.2))tg={x:S.x,y:S.y};
@@ -102,11 +113,14 @@ function clUpdate(dt){
       if(!tg){ // không còn ai ngoài rừng để đuổi: đi lục lọi trong làng, dừng lại một lúc ở mỗi chỗ
         if(!e.loot)e.loot=pickLoot(e);
         else if(Math.hypot(e.loot[0]-e.x,e.loot[1]-e.y)<.6&&(e.lootT-=dt)<=0)e.loot=pickLoot(e);
-        tg={x:e.loot[0],y:e.loot[1]}}
+        tg=around({x:e.loot[0],y:e.loot[1]},e,.9)}
       else e.loot=null;
       tx=tg.x;ty=tg.y}
     const dx=tx-e.x,dy=ty-e.y,d=Math.hypot(dx,dy);
     if(d>.05){const st=nextStep(e,tx,ty,okEnemy,M.T-M.t);if(st){const sx=st[0]-e.x,sy=st[1]-e.y,sd=Math.hypot(sx,sy)||1,m=Math.min(sd,e.sp*dt*(e.st==='flee'?1.15:1)*(wading(e)?.5:1)),nx=e.x+sx/sd*m,ny=e.y+sy/sd*m;if(!(inZone(nx,ny)&&e.st!=='flee')){e.x=nx;e.y=ny}e.walk+=dt*9;e.dir=dirOf(sx,sy)}}
+    // kẹt (đứng im lâu mà chưa tới nơi): tìm đường lại; đang đi lục lọi thì đổi chỗ
+    if(d>1.2&&e.lx!=null&&Math.hypot(e.x-e.lx,e.y-e.ly)<.004){if((e.stuck=(e.stuck||0)+dt)>1.2){e.stuck=0;e.path=null;if(e.loot)e.loot=pickLoot(e)}}else e.stuck=0;
+    e.lx=e.x;e.ly=e.y;
     if(e.cap){e.cap.x=e.x+.45;e.cap.y=e.y+.15}
     if(e.st==='flee'&&d<.3){e.dead=true;if(e.cap){e.cap.st='lost';toast(e.cap.name+' đã bị giặc bắt đi mất...',4200);e.cap=null}continue}
     if(e.st!=='flee'){
@@ -115,6 +129,7 @@ function clUpdate(dt){
         if(M.carry){M.carry.st='wait';M.carry.x=S.x;M.carry.y=S.y;M.carry=null;toast('Bạn bị đánh trúng, đánh rơi bao thóc!')}floatText('−1 máu','#e07f6b')}
       for(const a of M.al)if(!a.down&&!a.quan&&a.inv<=0&&Math.hypot(a.x-e.x,a.y-e.y)<.6){a.hp--;a.inv=1;if(a.hp<=0){a.down=true;toast(a.name+' bị thương nặng, ngã xuống!',3800)}}}}
   M.en=M.en.filter(e=>!e.dead);
+  separate(M.en);
   for(const a of M.al){if(a.down)continue;a.cd=Math.max(0,a.cd-dt);a.inv=Math.max(0,a.inv-dt);a.slash=Math.max(0,(a.slash||0)-dt);let tg=null,best=a.quan?60:9;
     for(const e of M.en){const d=Math.hypot(e.x-a.x,e.y-a.y);if(d<best&&(a.quan||Math.hypot(e.x-42,e.y-44)<15)){best=d;tg=e}}
     const tx=tg?tg.x:S.x+(a.id==='co'?-1.3:1.3),ty=tg?tg.y:S.y+.7,dx=tx-a.x,dy=ty-a.y,d=Math.hypot(dx,dy);

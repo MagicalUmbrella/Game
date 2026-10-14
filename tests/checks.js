@@ -468,5 +468,37 @@
     return {errs};
   }
 
-  window.__checks = {chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  /* Đánh nhau ở đêm 1285: giặc không đứng chồng lên nhau, không kẹt đứng im, không vào rừng; bấm Space
+     khi giặc đứng cạnh (dù đang quay mặt hướng khác) vẫn chém trúng. Bot giỏi chơi cả đường võ lẫn đường văn (có đuốc). */
+  function combat() {
+    const d = D(), errs = [], out = {};
+    for (const [name, build] of [['võ', {path: 'vo', vo: 70, co: 'village', duc: 40}], ['văn', {path: 'van', van: 55, co: 'army', duc: 5, dothi: true}]]) {
+      d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, cha: true, thao: 'wife', child: true, quests: {trau: 'done'}}, build));
+      d.S.ev.thao = 1; d.S.flags.tolich = 'done'; d.startClimax();
+      const M = d.MG, Z = d.ZONE, inZ = (x, y) => x >= Z.x0 && x <= Z.x1 + 1 && y >= Z.y0 && y <= Z.y1 + 1;
+      let n = 0, overlap = 0, stuck = 0, inside = 0; const last = new Map(), still = new Map();
+      const orig = d.step;
+      d.step = dt => { orig(dt); if (d.MG !== M) return; const live = M.en.filter(e => !e.dead);
+        for (const e of live) { n++; if (inZ(e.x, e.y) && e.st !== 'flee') inside++;
+          for (const f of live) if (f !== e && Math.hypot(e.x - f.x, e.y - f.y) < .25) { overlap++; break; }
+          const l = last.get(e); if (l && Math.hypot(e.x - l[0], e.y - l[1]) < 1e-4 && Math.hypot(e.x - d.S.x, e.y - d.S.y) > 1.5 && !e.cap) { still.set(e, (still.get(e) || 0) + dt); if (still.get(e) > 2) stuck++; } else still.set(e, 0);
+          last.set(e, [e.x, e.y]); } };
+      window.__bots.climaxBot('giỏi'); d.step = orig;
+      out[name] = {overlap: +(100 * overlap / Math.max(1, n)).toFixed(1), stuck, inside};
+      if (overlap / Math.max(1, n) > .05) errs.push(`${name}: giặc đứng chồng lên nhau ${out[name].overlap}% thời gian`);
+      if (stuck > n * .01) errs.push(`${name}: giặc đứng im kẹt ${stuck} lần`);
+      if (inside) errs.push(`${name}: giặc vào trong rừng ${inside} lần`);
+      while (d.modalOpen) d.nextModal();
+    }
+    // tự quay mặt: giặc đứng bên phải, người chơi quay lên trên, bấm Space vẫn trúng
+    d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, path: 'vo', vo: 30, co: 'army', quests: {trau: 'done'}}));
+    d.startClimax(); const M = d.MG; M.spawnT = 1e9; d.P.dir = 'up';
+    M.en.push({x: d.S.x + 1, y: d.S.y, home: [d.S.x + 20, d.S.y], hp: 9, sp: 0, st: 'hunt', cap: null, walk: 0, dir: 'left', flash: 0, dead: false});
+    ev(' ', true); ev(' ', false);
+    if (M.en[0].hp === 9) errs.push('bấm Space khi giặc đứng bên cạnh mà không chém trúng (không tự quay mặt)');
+    d.setMG(null); document.body.classList.remove('mg');
+    return {errs, out};
+  }
+
+  window.__checks = {combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();
