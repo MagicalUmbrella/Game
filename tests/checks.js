@@ -162,5 +162,55 @@
     return {errs, samples, wade, south};
   }
 
-  window.__checks = {reach, noDiagonal, buffalo, terrain};
+  /* Đường văn: bấm E chỉ đường thì người ấy tự đi vào rừng theo lối đi được, không cần người chơi dẫn.
+     Không có giặc (tắt chỗ xuất hiện) để chỉ thử đường đi. */
+  function selfWalk() {
+    const d = D(), S = d.S, errs = [];
+    Object.assign(S, {year: 1285, season: 0, path: 'van', cha: true, thao: 'wife', child: true});
+    S.ev.thao = 1; S.flags.tolich = 'done';
+    d.startClimax();
+    const M = d.MG;
+    M.spawnT = 1e9;
+    for (const p of M.v) {
+      S.x = p.x; S.y = p.y;
+      const tg = M.findTarget();
+      if (!tg || !/^Chỉ đường/.test(tg.label)) { errs.push(`đứng cạnh ${p.name} mà không có lựa chọn chỉ đường (${tg && tg.label})`); continue; }
+      tg.act();
+      if (p.st !== 'self') errs.push(`${p.name} không tự đi sau khi được chỉ đường (st=${p.st})`);
+    }
+    const Z = d.ZONE; S.x = Z.x0 - 6; S.y = Z.y0 - 6; // người chơi đứng xa, không dẫn ai
+    const start = new Map(M.v.map(p => [p, `${Math.floor(p.x)},${Math.floor(p.y)}`]));
+    let bad = 0;
+    for (let i = 0; i < 60 * 60 && d.MG === M && M.v.some(p => p.st === 'self'); i++) {
+      d.step(DT);
+      for (const p of M.v) if (p.st === 'self' && `${Math.floor(p.x)},${Math.floor(p.y)}` !== start.get(p) && !d.walkable(Math.floor(p.x), Math.floor(p.y))) bad++;
+    }
+    const stuck = M.v.filter(p => p.st === 'self').map(p => `${p.name} (${p.x.toFixed(1)}, ${p.y.toFixed(1)})`);
+    if (stuck.length) errs.push('sau 60 giây vẫn chưa vào tới rừng: ' + stuck.join(', '));
+    if (bad) errs.push(`${bad} lần người tự đi đứng trên ô cấm (đi xuyên cây, nhà, sông)`);
+    const safe = M.v.filter(p => p.st === 'safe').length;
+    d.setMG(null); document.body.classList.remove('mg');
+    return {errs, safe, total: M.v.length};
+  }
+
+  /* Ngã xuống khi không có ai đỡ: người đang đi theo bị bắt; người chưa dẫn, người đang tự đi
+     thì kẹt lại trong làng, không bị bắt. */
+  function downRule() {
+    const d = D(), S = d.S, errs = [];
+    Object.assign(S, {year: 1285, season: 0, path: 'vo', co: 'army', cha: true, thao: 'wife', child: true});
+    S.ev.thao = 1; S.flags.de = 'lost'; S.flags.lang = 0;
+    d.startClimax();
+    const M = d.MG, [a, b, c] = M.v;
+    if (M.al.length) errs.push('kiểu nhân vật thử không được có đồng minh');
+    a.st = 'follow'; b.st = 'self'; b.dest = [a.x, a.y]; // c vẫn 'wait'
+    M.hp = 0; d.step(DT);
+    const r = S.res || {};
+    if (r.reason !== 'down') errs.push(`hết máu mà không kết thúc kiểu ngã xuống (${r.reason})`);
+    if (a.st !== 'lost') errs.push(`người đang đi theo (${a.name}) phải bị bắt, thực tế ${a.st}`);
+    if (b.st !== 'left') errs.push(`người đang tự đi (${b.name}) phải kẹt lại trong làng, thực tế ${b.st}`);
+    if (c.st !== 'left') errs.push(`người chưa dẫn (${c.name}) phải kẹt lại trong làng, thực tế ${c.st}`);
+    return {errs};
+  }
+
+  window.__checks = {reach, noDiagonal, buffalo, terrain, selfWalk, downRule};
 })();

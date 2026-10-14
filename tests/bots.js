@@ -126,7 +126,10 @@
       const live = M.en.filter(e => !e.dead);
       const near = live.filter(e => Math.hypot(e.x - S.x, e.y - S.y) < 1.5).sort((a, b) => Math.hypot(a.x - S.x, a.y - S.y) - Math.hypot(b.x - S.x, b.y - S.y))[0];
       const thief = live.find(e => e.cap);
-      if (M.decoys > 0 && live.filter(e => Math.hypot(e.x - S.x, e.y - S.y) < 7).length >= 3) w.tap('q');
+      // đuốc: khi bị vây, hoặc khi giặc sắp chạm tới dân làng gần mình (đuốc kéo giặc trong vòng 11 ô)
+      if (M.decoys > 0 && !M.decoy && (live.filter(e => Math.hypot(e.x - S.x, e.y - S.y) < 7).length >= 3 ||
+          live.some(e => !e.cap && e.st !== 'flee' && Math.hypot(e.x - S.x, e.y - S.y) < 10 &&
+            M.v.some(p => ['wait', 'follow', 'self'].includes(p.st) && Math.hypot(p.x - e.x, p.y - e.y) < 4)))) w.tap('q');
       if (near && (react -= DT) <= 0) {
         // quay mặt về phía giặc (một nhịp bấm hướng) rồi đánh
         w.only(DIRKEY[dirOf(near.x - S.x, near.y - S.y)]);
@@ -180,7 +183,7 @@
       if (d.MG !== M) return;
       if (p.st !== 'wait' || (!full && Math.random() < skip)) continue;
       S.x = p.x; S.y = p.y; act(); toZone();
-      for (let i = 0; i < 900 && d.MG === M && p.st === 'follow'; i++) d.step(1 / 30);
+      for (let i = 0; i < 900 && d.MG === M && (p.st === 'follow' || p.st === 'self'); i++) d.step(1 / 30);
     }
     for (const s of M.sk) {
       if (d.MG !== M) return;

@@ -115,7 +115,9 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 
 - Đồng minh: Cò (nếu còn ở làng), trai làng (`flags.de==='saved'`, `flags.lang>=6`, đường nông; trừ đi nếu nói "hòa" ở Diên Hồng), quân Phạm Ngũ Lão đến khi còn 45 giây (nếu đã gặp anh Ngũ).
 - Giặc và người cùng đánh đi theo đường thật (`src/pathfind.js`). Đã vét sông Tô Lịch thì giặc chỉ qua được bằng cầu; không vét thì giặc lội qua sông (chậm một nửa) và có thêm chỗ xuất hiện ở bờ bắc. Giữ thóc thì thêm một bao phải cứu.
-- Đường võ thêm máu và sát thương; tập trận xuất sắc thêm máu. Đường văn có đuốc nghi binh (đỗ thì thêm một cây). Đường nông vác thóc nhanh.
+- Đường võ thêm máu và sát thương; tập trận xuất sắc thêm máu. Đường nông vác thóc nhanh, thêm một trai làng.
+- **Đường văn** (người có chữ, mưu trí, không giỏi đánh): bấm E với dân làng là **chỉ đường**, người ấy tự tìm lối vào rừng (chậm hơn khi được dẫn, giặc gặp trên đường vẫn bắt được). **Đuốc nghi binh** (Q): 2 cây, cứ 25 Văn thêm một cây (tối đa 5), đỗ Thái học sinh thêm một cây, mỗi cây cháy 10 giây. Hằng số `SELF_SPEED`, `TORCH_T`, hàm `torches()` ở đầu `src/climax.js`.
+- **Ngã xuống** (hết máu): người đang đi theo bạn bị bắt nếu không có đồng minh đỡ; người chưa dẫn hoặc đang tự đi thì kẹt lại trong làng (thoát nạn, nhà bị đốt), không bị bắt.
 - Người bị giặc bắt đi được nhắc ở phần mở đầu chương hai.
 
 ## Kiểm tra
@@ -146,10 +148,10 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 - Thời gian trôi nhanh chạy xuyên qua sự kiện: vòng lặp phải dừng khi `modalOpen`, không phải khi `modalQueue.length`.
 - Giặc đêm 1285 từng đi thẳng xuyên sông, cây, nhà; điểm xuất hiện bờ bắc từng rơi vào ô cây, tường thành. Test `terrain` trong `tests/checks.js` canh lỗi này.
 - Màn kết 1285 từng ghi "Không bỏ lại ai" cả khi có người bị bắt.
+- Đường văn từng gần như luôn ngã xuống ở đêm 1285 (chỉ có 2–3 cây đuốc 7 giây, điểm Văn vô dụng), và ngã xuống khi không có đồng minh từng làm mất hết người chưa cứu. Bảng độ khó trong `npm test` canh lại việc này.
 
 ## Hướng phát triển tiếp
 
 - **Chương hai (1285–1288):** cứu người bị bắt; Chương Dương, Hàm Tử, giải phóng Thăng Long (1285); cuộc kháng chiến lần ba; **trận Bạch Đằng 1288** với cơ chế canh thủy triều, cắm cọc (ý tưởng gốc của chủ dự án). Đối chiếu Toàn thư năm Ất Dậu 1285 đến Mậu Tý 1288 trước khi viết.
 - Cân bằng độ khó (tốc độ nước lũ, lượng giặc) cần người chơi thật thử.
-- **Đường văn trong đêm 1285 quá khó** (bot giỏi ngã xuống 3/4 lượt, kể cả có Cò): chỉ có đuốc nghi binh, điểm Văn không có tác dụng gì ở cao trào. Đang bàn phương án với chủ dự án.
 - Chương hai nên nằm trong thư mục riêng (ví dụ `src/chapter2/`), tách dữ liệu sự kiện khỏi logic.
