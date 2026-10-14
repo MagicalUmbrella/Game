@@ -6,6 +6,7 @@
 import {TS,Z,ctx} from './constants.js';
 import {S,age,has} from './state.js';
 import {gain,renderHUD,showModal,toast} from './ui.js';
+import {tre} from './chains.js';
 
 const src=t=>`<p class="src">Toàn thư chép: ${t}</p>`;
 const now=()=>S.year*4+S.season;
@@ -31,17 +32,22 @@ export const SPOTS=[
     act:()=>{gain('duc',1);return'Bạn trèo lên cây đa, thấy tổ chim có ba quả trứng lốm đốm. Bạn chỉ nhìn rồi trèo xuống, không động vào.'}},
   {id:'soi',x:51.5,y:27.5,name:'Bãi sỏi ven sông',
     act:()=>give('Sỏi trắng','Giữa bãi sỏi có một hòn sỏi trắng tròn, nhẵn như quả trứng. Bạn bỏ vào túi, nghĩ bụng sẽ tặng ai đó.')},
+  // bước chặt tre của chuỗi "Mái nhà bà Tư" (chains.js); không tính vào số nơi khám phá
+  {id:'tre',x:17.5,y:49.5,name:'Bụi tre bìa rừng',quest:true,once:false,when:()=>tre().st==='on'&&tre().n<3,ready:()=>tre().last!==now(),
+    act:()=>{if(S.suc<1)return{text:'Bạn mệt rồi, về nghỉ đã rồi hãy chặt.',keep:true};const c=tre();S.suc--;c.n++;c.last=now();renderHUD();
+      return c.n<3?`Bạn chặt được một bó tre thẳng, vác về đầu ngõ nhà bà Tư. Đã có ${c.n}/3 bó (mỗi mùa chặt một bó).`:'Đủ ba bó tre rồi. Sang nhà bà Tư cùng Thảo lợp mái thôi.'}},
   {id:'do',x:55.5,y:27.5,name:'Bến đò',when:()=>age()>=8,
     act:()=>{gain('van',1);gain('vo',1);return'Ông lái đò già ngồi hút thuốc lào, kể chuyện năm bạn ra đời: vua Thái Tông cùng Thái tử ngự lâu thuyền xuôi dòng, đánh tan quân Mông Cổ ở bến Đông Bộ Đầu. "Thuyền của ta khi ấy cũng chở quân đấy," ông cười.'+src('vua Trần Thái Tông cùng Thái tử ngự lâu thuyền tiến đến bến Đông Bộ Đầu, phá tan quân Mông Cổ.')}},
 ];
 
 const visible=p=>(!p.when||p.when())&&(p.ready?p.ready():!S.found[p.id]);
-export const foundCount=()=>SPOTS.filter(p=>S.found[p.id]!=null).length;
+export const foundCount=()=>SPOTS.filter(p=>!p.quest&&S.found[p.id]!=null).length;
+export const spotTotal=()=>SPOTS.filter(p=>!p.quest).length;
 
 function open(p){
   let r=p.act();const keep=typeof r==='object'&&r.keep;if(typeof r==='object')r=r.text;
   if(!keep&&p.once!==false)S.found[p.id]=true;
-  showModal({kicker:`Khám phá · ${foundCount()}/${SPOTS.length} nơi`,title:p.name,body:`<p>${r}</p>`});
+  showModal({kicker:p.quest?'Việc cần làm':`Khám phá · ${foundCount()}/${spotTotal()} nơi`,title:p.name,body:`<p>${r}</p>`});
 }
 
 /* Gọi từ findTarget (input.js): chỗ gần nhất trong bán kính best, hoặc null. */

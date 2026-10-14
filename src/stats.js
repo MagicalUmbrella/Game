@@ -4,7 +4,7 @@
    Đức gộp cả uy tín với làng: giúp làng, lo việc chung thì tăng; bỏ mặc làng, nói "hòa" thì giảm. */
 import {S} from './state.js';
 import {showModal} from './ui.js';
-import {SPOTS,foundCount} from './explore.js';
+import {foundCount,spotTotal} from './explore.js';
 
 // Đêm 1285
 export const traiFromDuc=()=>S.duc>=60?3:S.duc>=40?2:S.duc>=20?1:0; // số trai làng đứng ra vì Đức
@@ -38,6 +38,6 @@ export function showStats(){
   showModal({wide:true,kicker:'Bảng chỉ số',title:S.name,body:'<div class="stat-grid">'+STATS.map(block).join('')+'</div>'+
     '<p class="note"><b>Sức:</b> mỗi mùa 4, mỗi việc (học, luyện, làm đồng, giúp làng) tốn 1. Ăn cơm mẹ +1, thuốc bổ +2 (mỗi mùa một lần). '+
     '<b>Tiền:</b> mua sách, kiếm, lụa, thuốc; từ thu 1282 đến hết 1284 dùng để lo trước ngày giặc đến. '+
-    `<b>Khám phá:</b> ${foundCount()}/${SPOTS.length} nơi. Thấy lấp lánh thì lại gần bấm E.</p>`,
+    `<b>Khám phá:</b> ${foundCount()}/${spotTotal()} nơi. Thấy lấp lánh thì lại gần bấm E.</p>`,
     choices:[{label:'Đóng'}]});
 }

@@ -415,6 +415,7 @@
     const want = {tien: S => S.tien >= 8, thuoc: S => S.items.includes('Lá thuốc'), de: S => S.items.includes('Dế chọi'), bia: S => S.van === 32,
       kiem: S => S.items.includes('Kiếm gỉ'), thuyen: S => S.suc === 3, to: S => S.duc === 1, soi: S => S.items.includes('Sỏi trắng'), do: S => S.van === 31 && S.vo === 1};
     for (const p of d.SPOTS) {
+      if (p.quest) continue;
       fresh({van: p.id === 'bia' || p.id === 'do' ? 30 : 0, suc: p.id === 'thuyen' ? 2 : 4, year: p.id === 'kiem' ? 1270 : 1268});
       const txt = press(p);
       if (!txt) { errs.push(`${p.name}: đứng tại chỗ bấm E không có gì`); continue; }
@@ -430,5 +431,42 @@
     return {errs, nspot: d.SPOTS.length};
   }
 
-  window.__checks = {explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  /* Chuỗi nhiệm vụ: làm trọn từng chuỗi qua hội thoại thật; quá hạn thì thành 'fail'; mỗi mùa một bước. */
+  function chains() {
+    const d = D(), errs = [];
+    const fresh = (o) => { d.setS(Object.assign(d.newState('Thử'), {quests: {hoc: 'done', trau: 'done', ca: 'done'}, lifeWait: 1e9}, o)); d.S.ev = new Proxy({}, {get: () => 1}); d.startPlay(false); while (d.modalOpen) d.nextModal(); };
+    const season = () => { d.advanceOne(); while (d.modalOpen) d.nextModal(); d.S.suc = 4; };
+    const talk = (fn, ...labels) => { d[fn](); for (const l of labels) if (!choose(l)) { errs.push(`${fn}: không thấy lựa chọn "${l}"`); break; } closeDialog(); };
+    // Cò
+    fresh({year: 1268, van: 12}); const co0 = d.S.rel.co;
+    talk('talkCo', 'Sao trông cậu buồn', 'Để tớ dạy');
+    for (let i = 0; i < 3; i++) { talk('talkCo', 'Dạy Cò học chữ'); d.talkCo(); if (choose('Dạy Cò học chữ')) errs.push('Cò: một mùa dạy được hai buổi'); closeDialog(); season(); }
+    if (d.S.chains.co.st !== 'done') errs.push(`Cò: dạy đủ 3 buổi mà chưa xong (${d.S.chains.co.st}, ${d.S.chains.co.n})`);
+    if (d.S.rel.co < co0 + 3) errs.push('Cò: xong mà không thân hơn');
+    fresh({year: 1271, van: 12}); talk('talkCo', 'Sao trông cậu buồn', 'Để tớ dạy');
+    for (let i = 0; i < 8; i++) season();
+    if (d.S.chains.co.st !== 'fail') errs.push(`Cò: quá 15 tuổi mà chưa thành bỏ dở (${d.S.chains.co.st})`);
+    // Thảo
+    fresh({year: 1273}); d.S.ev = {thao: 1}; d.S.ev = new Proxy({thao: 1}, {get: () => 1}); d.S.thao = 'none';
+    talk('talkThao', 'Em có chuyện gì', 'Để anh lo');
+    const treSpot = d.SPOTS.find(p => p.id === 'tre');
+    for (let i = 0; i < 3; i++) {
+      d.S.x = treSpot.x; d.S.y = treSpot.y; d.step(DT); ev('e', true); ev('e', false); while (d.modalOpen) d.nextModal();
+      d.step(DT); ev('e', true); ev('e', false); while (d.modalOpen) d.nextModal(); // lần hai trong mùa không tính
+      season();
+    }
+    if (d.S.chains.thao.n !== 3) errs.push(`Thảo: chặt tre được ${d.S.chains.thao.n}/3 bó sau 3 mùa`);
+    const th0 = d.S.rel.thao; talk('talkThao', 'Cùng Thảo lợp');
+    if (d.S.chains.thao.st !== 'done' || d.S.rel.thao < th0 + 3) errs.push('Thảo: lợp mái xong mà chuỗi chưa xong');
+    // thầy Chu
+    fresh({year: 1275, van: 22}); const v0 = d.S.van;
+    talk('talkThay', 'Thầy trông mệt', 'Con xin chép');
+    for (let i = 0; i < 3; i++) { talk('talkThay', 'Chép sách cho thầy'); season(); }
+    if (d.S.chains.thay.st !== 'done' || d.S.van < v0 + 6) errs.push(`thầy Chu: chép đủ mà chưa xong (${d.S.chains.thay.st}, Văn +${d.S.van - v0})`);
+    fresh({year: 1280, van: 22}); talk('talkThay', 'Thầy trông mệt', 'Con xin chép'); d.S.thay = false; season();
+    if (d.S.chains.thay.st !== 'fail') errs.push('thầy Chu: thầy mất mà chuỗi chưa thành dở dang');
+    return {errs};
+  }
+
+  window.__checks = {chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();

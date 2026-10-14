@@ -128,7 +128,7 @@ def balance(page, fails):
 
 def mechanics(page, fails):
     """Đi tới được mọi nơi, không đi chéo, trâu giật mình."""
-    for name, fn in (('khám phá: mọi chỗ, đồ dùng được', 'explore'), ('việc hằng ngày: phần thưởng theo mức chơi', 'daily'), ('đi tới được (BFS)', 'reach'), ('không đi chéo', 'noDiagonal'), ('trâu giật mình', 'buffalo'),
+    for name, fn in (('chuỗi nhiệm vụ Cò, Thảo, thầy Chu', 'chains'), ('khám phá: mọi chỗ, đồ dùng được', 'explore'), ('việc hằng ngày: phần thưởng theo mức chơi', 'daily'), ('đi tới được (BFS)', 'reach'), ('không đi chéo', 'noDiagonal'), ('trâu giật mình', 'buffalo'),
                      ('đường văn: dân tự vào rừng', 'selfWalk'), ('ngã xuống: ai bị bắt, ai kẹt lại', 'downRule'),
                      ('giặc không đứng dàn hàng ở bìa rừng', 'noCamping'),
                      ('giấy bút, thuốc bổ mỗi mùa một lần', 'shopLimit'), ('lo trước ngày giặc đến', 'prep'),

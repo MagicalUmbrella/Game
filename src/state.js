@@ -1,6 +1,7 @@
 /* ================= state ================= */
 import {say} from './ui.js';
 import {pickR,talkBaTu,talkCha,talkCo,talkHocQuan,talkLinh,talkLy,talkMe,talkNgu,talkRen,talkSach,talkSu,talkThao,talkThay,talkTong,talkVo,talkVoQuan} from './dialogs.js';
+import {chainHint} from './chains.js';
 
 export let S=null,MG=null;
 export const age=()=>S.year-1258;
@@ -12,11 +13,14 @@ export const QUESTS={
   ca:{title:'Bát canh cá',hint:'Đứng sát mép sông, quay mặt ra nước, bấm E để câu cá, rồi mang cho bà Tư.'},
   sach:{title:'Bộ Tứ thư cho thầy',hint:'Lên kinh thành Thăng Long (phía bắc, qua cầu), mua ở Hàng sách. Biếu thầy thì kỳ thi sau này dễ hơn.'},
   lo:{title:'Lo trước ngày giặc đến',hint:'Từ nay đến hết năm 1284, có tiền thì lo trước cho đêm giặc đến: góp tiền dựng lán trong rừng (cụ lý trưởng, 12 quan), rèn giáo cho trai làng (bác thợ rèn, 10 quan), cất bớt thóc vào rừng (cha, hoặc mẹ nếu cha đã mất; 6 quan).'},
+  cco:{title:'Dạy Cò biết chữ',hint:()=>chainHint('co')},
+  cthao:{title:'Mái nhà bà Tư',hint:()=>chainHint('thao')},
+  cthay:{title:'Chép sách cho thầy',hint:()=>chainHint('thay')},
   lua:{title:'Tấm lụa cho mẹ',hint:'Mua lụa của lái buôn người Tống ở phường Nhai Tuân, mang về biếu mẹ. (Cũng có thể tặng Thảo.)'},
 };
 export function newState(name){return{name,year:1264,season:0,suc:4,van:0,vo:0,duc:0,tien:3,items:[],quests:{},path:null,ev:{},x:43.5,y:50.4,ate:false,
   buffalo:{x:44.5,y:58.6,st:'pen',tracks:[],bolts:0},nguMet:false,thayBonus:false,dothi:false,ended:false,
-  rel:{co:2,thao:0},flags:{},ducMerged:true,cha:true,thay:true,co:'village',thao:'none',married:false,child:false,thaoHelped:false,coPlayed:false,paper:false,tonic:false,life:{},lifeWait:2,found:{},toi:'',pending:null}}
+  rel:{co:2,thao:0},flags:{},ducMerged:true,cha:true,thay:true,co:'village',thao:'none',married:false,child:false,thaoHelped:false,coPlayed:false,paper:false,tonic:false,life:{},lifeWait:2,found:{},chains:{},toi:'',pending:null}}
 export function save(){try{localStorage.setItem('dvmd-save',JSON.stringify(S))}catch(e){}}
 export function loadSave(){try{const s=localStorage.getItem('dvmd-save');if(!s)return null;const o=JSON.parse(s),b=newState('');const r=Object.assign(b,o);r.rel=Object.assign(newState('').rel,o.rel||{});r.flags=Object.assign({},o.flags||{});if(!r.buffalo||!r.buffalo.st){r.buffalo={x:44.5,y:58.6,st:'pen',tracks:[],bolts:0};if(r.quests&&r.quests.trau==='active')r._reLose=true}
   // bản lưu cũ còn uy tín làng riêng (flags.lang): quy sang Đức, mỗi điểm uy tín bằng 3 Đức

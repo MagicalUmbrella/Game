@@ -54,6 +54,7 @@ Mỗi file mở đầu bằng comment `/* ===== tên ===== */`. Các module impo
 | `minigames/` | Lụt 1270 (`startFlood`), kỳ thi 1275 (`QBANK`, `startExam`), tập trận 1283 (`startTraining`). `daily.js`: việc hằng ngày chơi trong modal 5–15 giây: tập viết nhớ nét (`startWriting`), luyện võ canh nhịp (`startDrill`), làm đồng bấm theo nhịp (`startField`), câu cá canh phao (`startFishing`); luôn có nút "Làm qua loa". `dailyReward(base,q)`: khá = mức cũ, giỏi +1, kém hoặc qua loa −1. |
 | `pathfind.js` | `gridPath`, `nextStep`: tìm đường BFS cho người do máy điều khiển (giặc, người cùng đánh) để không đi xuyên sông, cây, nhà. |
 | `life.js` | Chuyện đời thường (hư cấu): `LIFE` gồm 23 chuyện nhỏ theo tuổi, mùa (bắt dế, cháy xóm, năm hạn, cho vay…). `maybeLife()` sau mỗi lần sang mùa không có sự kiện lịch sử, cứ khoảng 1–2 mùa một chuyện. Lựa chọn ghi `S.life[id]`, có hậu quả và dòng trong mục "Những chuyện nhỏ" ở màn kết (`lifeChronicle`). Thêm chuyện mới: mỗi khóa kết quả phải có dòng `chron`. |
+| `chains.js` | Chuỗi nhiệm vụ (hư cấu), mỗi mùa một bước, có hạn chót: dạy Cò biết chữ (10–14 tuổi, 3 buổi), mái nhà bà Tư cùng Thảo (1272–1278, chặt 3 bó tre ở chỗ `tre` trong `explore.js` rồi lợp mái), chép sách cho thầy Chu (Văn 20, trước khi thầy mất). `S.chains[id]={st,n,last}`, st: `off`, `on`, `done`, `no` (từ chối), `fail` (quá hạn). Mỗi kết cục có dòng biên niên (`chainChronicle`). |
 | `explore.js` | Khám phá: `SPOTS` gồm 9 chỗ hay rải khắp bản đồ (gốc tre có hũ tiền, bụi lá thuốc, hang dế, bia đá ở chùa, kiếm gỉ, thuyền nan bãi sông Hồng, tổ chim, sỏi trắng, ông lái đò kể chuyện Đông Bộ Đầu). Lấp lánh khi lại gần (`exploreDraw`), bấm E (`exploreTarget`). Đồ nhặt được dùng ở chỗ khác: lá thuốc (trâu ốm, cha ốm), dế chọi (tặng Cò), kiếm gỉ (thợ rèn rèn lại 3 quan), sỏi trắng (tặng Thảo). `S.found[id]`. Thêm chỗ mới: chạy `npm test`, bài BFS kiểm tra tới được. |
 | `stats.js` | Mốc chỉ số và tác dụng: `traiFromDuc`, `followFast`, `voHp`, `voDmg`, `voFast`, `DUC_FF_CAP`; bảng chỉ số `showStats()` (phím C). Đổi mốc thì sửa ở đây, đêm 1285 và bảng chỉ số cùng đọc. |
 | `prep.js` | Lo trước ngày giặc đến (thu 1282 → hết 1284, hư cấu): `PREP` gồm dựng lán (cụ lý, 12 quan), rèn giáo cho trai làng (thợ rèn, 10), cất bớt thóc vào rừng (cha hoặc mẹ, 6). `prepChoice`, `prepClimax`, `prepChronicle`. |
@@ -91,6 +92,7 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 - `buffalo`: `{x, y, st: 'pen'|'lost'|'run'|'follow', tracks, bolts, stop}`.
 - `ev`: sự kiện đã xảy ra. `quests`: `hoc`, `trau`, `ca`, `sach`, `lua`.
 - `toi`: món bốc lúc thôi nôi. `res`: kết quả màn cao trào.
+- `found`: chỗ đã khám phá. `chains`: tiến độ chuỗi nhiệm vụ.
 - `life`: kết quả chuyện đời thường; `lifeWait`: số mùa nghỉ trước chuyện kế; `trauYeu`: trâu yếu đến hết năm này (làm đồng bớt 1 quan); `vayYear`: năm cho hàng xóm vay.
 
 `loadSave()` bù các trường thiếu cho bản lưu cũ. **Khi thêm trường mới vào `newState`, nhớ xử lý bản lưu cũ.**

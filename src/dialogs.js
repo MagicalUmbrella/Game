@@ -10,6 +10,7 @@ import {keys,solidAt} from './input.js';
 import {camX,camY} from './render.js';
 import {DUC_FF_CAP} from './stats.js';
 import {trauYeu} from './life.js';
+import {chainChoices} from './chains.js';
 
 export const pickR=a=>a[Math.floor(Math.random()*a.length)];
 function vanLesson(){const v=S.van;return v<10?'Thầy dạy chữ trên khay cát, từng nét một.':v<25?'Thầy giảng sách dạy đạo làm người.':v<45?'Bạn đọc Luận ngữ, tập viết văn sách.':v<70?'Bạn học Kinh Thi, Kinh Thư, bình luận chuyện xưa.':'Bạn đọc Đại Việt sử ký, bàn về phép trị nước.'}
@@ -41,6 +42,7 @@ export function talkThay(){
   const a=age(),ch=[];
   if(S.quests.hoc==='active'){doneQuest('hoc');gain('van',2)}
   ch.push({label:'Học chữ',note:'−1 Sức · tập viết · +Văn',fn:()=>{if(!spend())return;startWriting(q=>{gain('van',dailyReward(2,q)+(S.thayBonus?1:0));toast(vanLesson())})}});
+  ch.push(...chainChoices('thay'));
   if(a>=12&&!S.quests.sach)ch.push({label:'Thầy có cần con giúp gì không?',fn:()=>{startQuest('sach');say('Thầy đồ Chu','Bộ Tứ thư của thầy mối mọt hết rồi. Trong kinh thành có hàng sách bán bản mới, giá sáu quan. Con mua giúp thầy được không?')}});
   if(S.quests.sach==='active'&&has('Tứ thư'))ch.push({label:'Biếu thầy bộ Tứ thư',fn:()=>{S.items=S.items.filter(i=>i!=='Tứ thư');doneQuest('sach');S.thayBonus=true;gain('van',5);gain('duc',2);say('Thầy đồ Chu','Quý hóa quá! Từ nay thầy kèm riêng cho con. Mỗi buổi học con được thêm một điểm Văn, và đi thi sẽ vững vàng hơn.')}});
   say('Thầy đồ Chu',S.path==='van'?'Học trò của thầy đã vào Quốc học viện rồi. Thầy mừng lắm.':S.flags.dieu==='di'&&a<12?'Hôm trước trò trốn học đi thả diều phải không? Lần này thầy bỏ qua.':a<10?'Muốn biết chữ thì phải chăm. Mỗi lần đến, thầy dạy con một bài.':'Học để hiểu đạo lý, không phải chỉ để thi đỗ đâu con.',ch);
@@ -62,6 +64,7 @@ export function talkThao(){
   const ch=[],r=S.rel.thao;
   if(!S.thaoHelped)ch.push({label:'Giúp Thảo gánh nước',note:'−1 Sức · thân thiết hơn',fn:()=>{if(!spend())return;S.thaoHelped=true;S.rel.thao++;renderHUD();toast('Hai người vừa gánh nước vừa chuyện trò. Thảo cười nhiều hơn.')}});
   if(has('Lụa'))ch.push({label:'Tặng Thảo tấm lụa',note:'thân thiết hơn nhiều',fn:()=>{S.items.splice(S.items.indexOf('Lụa'),1);S.rel.thao+=3;renderHUD();say('Thảo','Lụa của người Tống ở phường Nhai Tuân phải không? Em... em cảm ơn anh.')}});
+  ch.push(...chainChoices('thao'));
   if(has('Sỏi trắng'))ch.push({label:'Tặng Thảo hòn sỏi trắng',note:'thân thiết hơn',fn:()=>{S.items.splice(S.items.indexOf('Sỏi trắng'),1);S.rel.thao++;renderHUD();say('Thảo','Tròn như quả trứng... Em sẽ để trên bậu cửa sổ.')}});
   say('Thảo',r<2?'Em là Thảo, cháu bà Tư. Bố mẹ em mất sau năm nước to, em lên đây ở với bà.':r<5?'Hôm nay anh lại sang à? Bà em khen anh mãi.':'Anh mà đi xa, em... em sẽ nhớ anh đấy.',ch);
 }
@@ -78,6 +81,7 @@ export function talkCo(){
   else if(S.flags.exam==='khoe')t='Ông Thái học sinh lại về làng à? Thôi, tôi đi làm ruộng đây.';
   else t=a<10?'Ê! Chiều nay ra bờ sông bắt cá không? Đừng để mẹ cậu biết đấy.':a<16?'Tớ nghe nói trong kinh thành có chợ to lắm. Lần nào đi rủ tớ với.':'Làm trai phải có chí, cậu nhỉ. Tớ thì chỉ mong ruộng nhà được mùa.';
   if(!S.coPlayed)ch.push({label:a<14?'Rủ Cò đi chơi':'Ngồi uống nước với Cò',note:'−1 Sức · thân thiết hơn',fn:()=>{if(!spend())return;S.coPlayed=true;S.rel.co++;renderHUD();toast(a<14?'Hai đứa lội ruộng bắt cua đến tối mịt.':'Hai người ngồi dưới gốc đa, nói đủ thứ chuyện trên trời dưới biển.')}});
+  ch.push(...chainChoices('co'));
   if(has('Dế chọi'))ch.push({label:'Tặng Cò con dế chọi',note:'Cò thân hơn nhiều',fn:()=>{S.items.splice(S.items.indexOf('Dế chọi'),1);S.rel.co+=2;renderHUD();toast('Cò mắt sáng rỡ: "Con này đá thì nhất xóm!"')}});
   say('Cò',t,ch);
 }

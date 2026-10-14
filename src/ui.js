@@ -46,5 +46,5 @@ export function renderHUD(){
    ${pathName?`<div class="path">${pathName}</div>`:''}${rels?`<div class="sub"><span>${rels}</span></div>`:''}${S.items.length?`<div class="sub"><span>Hành trang: ${S.items.join(', ')}</span></div>`:''}`;
   $('status').querySelector('.name').textContent=S.name;
   const qs=Object.entries(S.quests);
-  $('quests').innerHTML=`<h3>Việc cần làm</h3>`+(qs.length?qs.sort((x,y)=>(x[1]==='done')-(y[1]==='done')).map(([id,st])=>`<div class="q ${st}"><b>${QUESTS[id].title}</b>${st==='active'?`<span>${QUESTS[id].hint}</span>`:''}</div>`).join(''):`<div class="q"><span>Đi gặp mọi người trong làng để nhận việc.</span></div>`)+`<div class="q"><span>Về nhà để ngủ sang mùa mới, hoặc chọn việc chính và cho thời gian trôi nhanh.</span></div>`;
+  $('quests').innerHTML=`<h3>Việc cần làm</h3>`+(qs.length?qs.sort((x,y)=>(x[1]==='done')-(y[1]==='done')).map(([id,st])=>`<div class="q ${st}"><b>${QUESTS[id].title}</b>${st==='active'?`<span>${typeof QUESTS[id].hint==='function'?QUESTS[id].hint():QUESTS[id].hint}</span>`:''}</div>`).join(''):`<div class="q"><span>Đi gặp mọi người trong làng để nhận việc.</span></div>`)+`<div class="q"><span>Về nhà để ngủ sang mùa mới, hoặc chọn việc chính và cho thời gian trôi nhanh.</span></div>`;
 }
