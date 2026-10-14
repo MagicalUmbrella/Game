@@ -349,11 +349,14 @@ def frame(spec, d, f, atk=None):
     if d == 'left':
         bare = torso_name in ('vest', 'apron')
         put(kidcut(side_arm(f if atk is None else 0, bare=bare)), bob, BX)
-    # đầu; nhìn nghiêng thì bỏ 2 cột tóc sau gáy (cột 10, 11) cho đầu bớt sâu, tóc không lùi ra sau quá xa
+    # đầu; nhìn nghiêng thì bỏ 1 cột tóc sau gáy (cột 10) cho đầu bớt sâu, tóc không lùi ra sau quá xa,
+    # mà đầu vẫn tròn (bỏ 2 cột thì gáy thẳng đuột như cái hộp)
     def sq(layer):
         if d != 'left': return layer
-        return [(y, r[:10] + r[12:] + '..' if x == 0 else r, x) for y, r, x in layer]
+        return [(y, r[:10] + r[11:] + '.' if x == 0 else r, x) for y, r, x in layer]
     hair = sq(HAIR[spec['hair']][d])
+    if d == 'left':   # gáy tròn: phần sau đỉnh đầu (hàng 1, 2) nhô thêm một điểm ảnh
+        hair = [(y, r[:12] + 'G' + r[13:] if y in (1, 2) and r[11] != '.' and r[12] == '.' else r, x) for y, r, x in hair]
     put(hair, bob, HX)
     face = FACE_W if spec.get('face') == 'w' else FACE_KID if kid else FACE
     if spec['hair'] in ('bun',) and d != 'up' and spec.get('face') == 'w':
