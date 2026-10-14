@@ -38,3 +38,15 @@ export function step4(o,tx,ty,m){
   const X=ax==='x',a=X?dx:dy,b=X?dy:dx,u=Math.min(Math.abs(a),m),v=Math.min(Math.abs(b),m-u),p=Math.sign(a)*u,q=Math.sign(b)*v;
   o.axis=v>1e-6?(X?'y':'x'):ax;
   return X?[p,q]:[q,p]}
+
+/* Đi tới điểm st do nextStep trả về, 4 hướng. Đã cùng hàng ô (hay cùng cột ô) với điểm ấy thì
+   đi thẳng sang, không cần về đúng tâm ô: vẫn trong ô đi được, và hai người đứng sát nhau (bị
+   separate đẩy ra) không phải giành nhau một đường tâm ô rồi kẹt. */
+export function stepTo(o,st,m,ok){
+  const cx=Math.floor(o.x)===Math.floor(st[0]),cy=Math.floor(o.y)===Math.floor(st[1]),
+    tx=cy&&!cx?st[0]:cx&&!cy?o.x:st[0],ty=cy&&!cx?o.y:cx&&!cy?st[1]:st[1];
+  if(!ok)return step4(o,tx,ty,m);
+  // lệch khỏi đường (bị đánh bật, bị đẩy): đi chữ L có thể cắt qua góc ô cấm; thử trục kia, không được thì tìm đường lại
+  const ax=o.axis,d=step4(o,tx,ty,m);if(ok(Math.floor(o.x+d[0]),Math.floor(o.y+d[1])))return d;
+  o.axis=(o.axis||ax)==='x'?'y':'x';const e=step4(o,tx,ty,m);if(ok(Math.floor(o.x+e[0]),Math.floor(o.y+e[1])))return e;
+  o.axis=ax;o.path=null;return[0,0]}
