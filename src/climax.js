@@ -78,7 +78,7 @@ function clAttack(){const M=MG;if(M.cd>0)return;M.cd=(S.path==='vo'?.3:.45)*(voF
   let near=null,nd=1.6;for(const e of M.en){if(e.dead)continue;const d=Math.hypot(e.x-S.x,e.y-S.y);if(d<nd){nd=d;near=e}}if(near)P.dir=dirOf(near.x-S.x,near.y-S.y);
   const v={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[P.dir];
   for(const e of M.en){if(e.dead)continue;const dx=e.x-S.x,dy=e.y-S.y,d=Math.hypot(dx,dy);if(d<1.6&&(d<.8||(dx*v[0]+dy*v[1])/d>.2))hitEnemy(e,pDmg(),S.x,S.y)}}
-function hitEnemy(e,dmg,fx,fy){e.hp-=dmg;const d=Math.hypot(e.x-fx,e.y-fy)||1,kx=e.x+(e.x-fx)/d*.6,ky=e.y+(e.y-fy)/d*.6;if(okEnemy(Math.floor(kx),Math.floor(ky))){e.x=kx;e.y=ky}e.flash=.15;
+function hitEnemy(e,dmg,fx,fy){e.hp-=dmg;const d=Math.hypot(e.x-fx,e.y-fy)||1,kx=e.x+(e.x-fx)/d*.6,ky=e.y+(e.y-fy)/d*.6;if(okEnemy(Math.floor(kx),Math.floor(ky))){e.x=kx;e.y=ky}e.flash=.15;e.stun=.8;
   if(e.hp<=0){e.dead=true;MG.kills++;if(e.cap){e.cap.st='wait';e.cap.x=e.x;e.cap.y=e.y;floatAt('Cứu được '+e.cap.name+'!',e.x,e.y,'#9fcaa9');e.cap=null}}}
 function spawnEnemy(){const M=MG,pts=[[53.5,21.8],[24.5,20.4]];
   if(S.flags.tolich!=='done')for(let k=0;k<10;k++){const x=30+Math.floor(Math.random()*30),y=tolichY(x)-2.4;if(walkable(x,Math.floor(y))){pts.push([x+.5,y]);break}}
@@ -94,7 +94,11 @@ function clUpdate(dt){
     toast(S.flags.nguKnows?'Tiếng tù và! Phạm Ngũ Lão dẫn quân đến. Ông nhận ra bạn từ buổi tập trận năm nào!':'Tiếng tù và! Một đội quân áo đỏ phi đến. Người đi đầu chính là anh Ngũ ngồi đọc sách bên đường năm xưa!',5600)}
   let lead={x:S.x,y:S.y};
   for(const p of M.v){
-    if(p.st==='follow'){const d=Math.hypot(lead.x-p.x,lead.y-p.y);if(d>.9){const m=Math.min(d-.85,4.3*p.slow*(followFast()?1.15:1)*dt);p.x+=(lead.x-p.x)/d*m;p.y+=(lead.y-p.y)/d*m;p.moving=true;p.walk+=dt*8;p.dir=dirOf(lead.x-p.x,lead.y-p.y)}else p.moving=false;lead=p;
+    if(p.st==='follow'){
+      // giặc ở gần (không phải tên đang chạy về): đứng lại, lùi ra xa, không đi thẳng vào giữa trận
+      let en=null,ed=1.2;for(const e of M.en)if(!e.dead&&!e.cap&&e.st!=='flee'){const q=Math.hypot(e.x-p.x,e.y-p.y);if(q<ed){ed=q;en=e}}
+      if(en){const q=ed||1,m=Math.min(1.2-ed,2.2*dt);p.x+=(p.x-en.x)/q*m;p.y+=(p.y-en.y)/q*m;p.moving=true;p.walk+=dt*8;p.dir=dirOf(en.x-p.x,en.y-p.y);lead=p;continue}
+      const d=Math.hypot(lead.x-p.x,lead.y-p.y);if(d>.9){const m=Math.min(d-.85,4.3*p.slow*(followFast()?1.15:1)*dt);p.x+=(lead.x-p.x)/d*m;p.y+=(lead.y-p.y)/d*m;p.moving=true;p.walk+=dt*8;p.dir=dirOf(lead.x-p.x,lead.y-p.y)}else p.moving=false;lead=p;
       if(inZone(p.x,p.y))reachSafe(p)}
     else if(p.st==='self'){const st=p.dest&&nextStep(p,p.dest[0],p.dest[1],okAlly,M.T-M.t);
       if(st){const sx=st[0]-p.x,sy=st[1]-p.y,sd=Math.hypot(sx,sy)||1,m=Math.min(sd,4.3*p.slow*SELF_SPEED*dt);p.x+=sx/sd*m;p.y+=sy/sd*m;p.moving=true;p.walk+=dt*8;p.dir=dirOf(sx,sy)}else p.moving=false;
@@ -102,8 +106,8 @@ function clUpdate(dt){
     else if(p.st==='safe'){const d=Math.hypot(p.spot[0]-p.x,p.spot[1]-p.y);if(d>.1){const m=Math.min(d,2*dt);p.x+=(p.spot[0]-p.x)/d*m;p.y+=(p.spot[1]-p.y)/d*m;p.moving=true;p.walk+=dt*8;p.dir=dirOf(p.spot[0]-p.x,p.spot[1]-p.y)}else{p.moving=false;p.dir='right'}}
     else p.moving=false}
   if(M.carry&&inZone(S.x,S.y)){M.carry.st='safe';M.carry.x=ZONE.x0+1.2+Math.random()*4;M.carry.y=ZONE.y0+1.5+Math.random()*10;M.carry=null;floatText('Đã giấu thóc!','#e2bf72')}
-  for(const e of M.en){if(e.dead)continue;e.flash=Math.max(0,e.flash-dt);let tx,ty;
-    if(e.cap||e.st==='flee'||M.ngu){e.st='flee';tx=e.home[0];ty=e.home[1]}
+  for(const e of M.en){if(e.dead)continue;e.flash=Math.max(0,e.flash-dt);e.stun=Math.max(0,(e.stun||0)-dt);let tx,ty;
+    if(e.cap||e.st==='flee'||M.ngu){e.st='flee';e.tgt=null;tx=e.home[0];ty=e.home[1]}
     else{let tg=null;
       if(M.decoy&&!inZone(M.decoy.x,M.decoy.y)&&Math.hypot(M.decoy.x-e.x,M.decoy.y-e.y)<11)tg=around(M.decoy,e,1.6);
       else{let best=1e9;for(const p of M.v)if(p.st==='wait'||p.st==='follow'||p.st==='self'){const d=Math.hypot(p.x-e.x,p.y-e.y);if(d<best){best=d;tg=p}}
@@ -115,7 +119,7 @@ function clUpdate(dt){
         else if(Math.hypot(e.loot[0]-e.x,e.loot[1]-e.y)<.6&&(e.lootT-=dt)<=0)e.loot=pickLoot(e);
         tg=around({x:e.loot[0],y:e.loot[1]},e,.9)}
       else e.loot=null;
-      tx=tg.x;ty=tg.y}
+      e.tgt=tg;tx=tg.x;ty=tg.y}
     const dx=tx-e.x,dy=ty-e.y,d=Math.hypot(dx,dy);
     if(d>.05){const st=nextStep(e,tx,ty,okEnemy,M.T-M.t);if(st){const sx=st[0]-e.x,sy=st[1]-e.y,sd=Math.hypot(sx,sy)||1,m=Math.min(sd,e.sp*dt*(e.st==='flee'?1.15:1)*(wading(e)?.5:1)),nx=e.x+sx/sd*m,ny=e.y+sy/sd*m;if(!(inZone(nx,ny)&&e.st!=='flee')){e.x=nx;e.y=ny}e.walk+=dt*9;e.dir=dirOf(sx,sy)}}
     // kẹt (đứng im lâu mà chưa tới nơi): tìm đường lại; đang đi lục lọi thì đổi chỗ
@@ -124,7 +128,7 @@ function clUpdate(dt){
     if(e.cap){e.cap.x=e.x+.45;e.cap.y=e.y+.15}
     if(e.st==='flee'&&d<.3){e.dead=true;if(e.cap){e.cap.st='lost';toast(e.cap.name+' đã bị giặc bắt đi mất...',4200);e.cap=null}continue}
     if(e.st!=='flee'){
-      for(const p of M.v)if((p.st==='wait'||p.st==='follow'||p.st==='self')&&Math.hypot(p.x-e.x,p.y-e.y)<.55){p.st='cap';p.path=null;e.cap=p;e.st='flee';toast(p.name+' bị giặc bắt! Đuổi theo đánh hạ tên lính để cứu.',3800);break}
+      if(e.stun<=0)for(const p of M.v)if((p.st==='wait'||p.st==='self'||(p.st==='follow'&&e.tgt===p))&&Math.hypot(p.x-e.x,p.y-e.y)<.55){p.st='cap';p.path=null;e.cap=p;e.st='flee';toast(p.name+' bị giặc bắt! Đuổi theo đánh hạ tên lính để cứu.',3800);break}
       if(!e.cap&&M.inv<=0&&Math.hypot(S.x-e.x,S.y-e.y)<.6){M.hp--;M.inv=1.1;const kd=Math.hypot(S.x-e.x,S.y-e.y)||1,nx=S.x+(S.x-e.x)/kd*.9,ny=S.y+(S.y-e.y)/kd*.9;if(canStand(nx,ny)){S.x=nx;S.y=ny}
         if(M.carry){M.carry.st='wait';M.carry.x=S.x;M.carry.y=S.y;M.carry=null;toast('Bạn bị đánh trúng, đánh rơi bao thóc!')}floatText('−1 máu','#e07f6b')}
       for(const a of M.al)if(!a.down&&!a.quan&&a.inv<=0&&Math.hypot(a.x-e.x,a.y-e.y)<.6){a.hp--;a.inv=1;if(a.hp<=0){a.down=true;toast(a.name+' bị thương nặng, ngã xuống!',3800)}}}}

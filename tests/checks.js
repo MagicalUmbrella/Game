@@ -490,6 +490,17 @@
       if (inside) errs.push(`${name}: giặc vào trong rừng ${inside} lần`);
       while (d.modalOpen) d.nextModal();
     }
+    // dân đang đi theo không bị giặc đang đánh mình tiện tay bắt mất (6 lượt bot khá, đếm số lần người đi theo bị bắt)
+    let caught = 0;
+    for (let i = 0; i < 6; i++) {
+      d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, cha: true, thao: 'wife', child: true, path: i % 2 ? 'vo' : 'nong', vo: 30, co: 'army', quests: {trau: 'done'}}));
+      d.S.ev.thao = 1; d.S.flags.tolich = 'done'; d.startClimax();
+      const M = d.MG, prev = new Map(M.v.map(p => [p, p.st])), orig = d.step;
+      d.step = dt => { orig(dt); if (d.MG !== M) return; for (const p of M.v) { if (p.st === 'cap' && prev.get(p) === 'follow') caught++; prev.set(p, p.st); } };
+      window.__bots.climaxBot('khá'); d.step = orig; while (d.modalOpen) d.nextModal();
+    }
+    out.followCaught = caught;
+    if (caught > 3) errs.push(`người đang đi theo bị bắt ${caught} lần trong 6 lượt (tối đa 3)`);
     // tự quay mặt: giặc đứng bên phải, người chơi quay lên trên, bấm Space vẫn trúng
     d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, path: 'vo', vo: 30, co: 'army', quests: {trau: 'done'}}));
     d.startClimax(); const M = d.MG; M.spawnT = 1e9; d.P.dir = 'up';
