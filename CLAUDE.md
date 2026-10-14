@@ -17,7 +17,7 @@ Game pixel art thế giới mở chạy trên trình duyệt máy tính. Ngườ
 2. **Nhân vật và tình huống hư cấu phải ghi rõ là hư cấu** (README có mục này): làng An Phú, gia đình nhân vật, Cò, Thảo, bé Sen, thầy đồ Chu, bà Tư, cụ lý trưởng, lão võ sư Hoàng.
 3. **Mọi lựa chọn phải có hậu quả** về sau, ít nhất hiện trong phần "Biên niên đời bạn" ở màn kết (`endChapter`). Đây là yêu cầu cốt lõi của chủ dự án.
 4. **Phong cách pixel art.** Tile 16×16 px, phóng to ×3 (`Z=3`), viền đậm. Cảnh vật, đồ vật vẽ bằng code (viền bằng `outline()`). **Người** theo mẫu chủ dự án chọn (pixel thô, đầu to, viền đen dày, màu tươi phẳng, mắt vuông 2×2): vẽ bằng script `tools/ve_nguoi.py` ra ảnh `src/assets/nguoi.png`, game đọc ảnh này (chủ dự án đã đồng ý dùng file ảnh; sửa được bằng Aseprite, Piskel, nhưng chạy lại script sẽ ghi đè).
-5. **Nhân vật chỉ đi 4 hướng, không đi chéo.** Giữ hai phím thì theo phím bấm sau cùng (`lastAxis`).
+5. **Mọi nhân vật chỉ đi 4 hướng, không đi chéo**, cả người chơi lẫn NPC, giặc, dân làng, đồng minh, con trâu. Người chơi giữ hai phím thì theo phím bấm sau cùng (`lastAxis`). Người do máy điều khiển đi bằng `step4` (`pathfind.js`), đừng cộng thẳng theo vector chéo.
 6. **JavaScript thuần chia module trong `src/`, đóng gói bằng Vite.** Mỗi mảng lớn một file; phần mới (ví dụ chương hai, minigame mới) thì tạo file mới, đừng nhồi vào file có sẵn. Thêm thư viện npm chỉ khi thật cần và nói rõ lý do. Font từ Google Fonts (Alegreya SC, Be Vietnam Pro), có font dự phòng.
 7. Khi sửa xong, chạy kiểm tra (xem dưới), rồi commit với trailer theo cấu hình phiên.
 
@@ -59,9 +59,9 @@ Mỗi file mở đầu bằng comment `/* ===== tên ===== */`. Các module impo
 | `dialogs.js` | `talkX()` cho từng NPC, `doorAction()`, `chooseFocus()` + `fastForward()` để thời gian trôi nhanh, câu cá, làm đồng, toàn bộ cơ chế con trâu. |
 | `events.js` | `advanceOne()` sang mùa; `EVENTS` là danh sách sự kiện `{id, y: năm, s: mùa 0–3, mg?, run}`; `eventCuoi`, `choosePath`, `setPath`. |
 | `minigames/` | Lụt 1270 (`startFlood`), kỳ thi 1275 (`QBANK`, `startExam`), tập trận 1283 (`startTraining`). `daily.js`: việc hằng ngày chơi trong modal 5–15 giây: tập viết nhớ nét (`startWriting`), luyện võ canh nhịp (`startDrill`), làm đồng bấm theo nhịp (`startField`), câu cá canh phao (`startFishing`); luôn có nút "Làm qua loa". `dailyReward(base,q)`: khá = mức cũ, giỏi +1, kém hoặc qua loa −1. |
-| `pathfind.js` | `gridPath`, `nextStep`: tìm đường BFS cho người do máy điều khiển (giặc, người cùng đánh) để không đi xuyên sông, cây, nhà. |
+| `pathfind.js` | `gridPath`, `nextStep`: tìm đường BFS cho người do máy điều khiển (giặc, người cùng đánh, Cò ở màn lụt) để không đi xuyên sông, cây, nhà. `step4(o,tx,ty,m)`: bước đi 4 hướng, đi hết một trục rồi mới rẽ (giữ `o.axis`), trả về `[dx,dy]`. Bị đánh bật cũng theo trục trội (`axisDir` trong `climax.js`). |
 | `life.js` | Chuyện đời thường (hư cấu): `LIFE` gồm 29 chuyện nhỏ theo tuổi, mùa (bắt dế, cháy xóm, năm hạn, cho vay…). `maybeLife()` sau mỗi lần sang mùa không có sự kiện lịch sử, cứ khoảng 1–2 mùa một chuyện. Lựa chọn ghi `S.life[id]`, có hậu quả và dòng trong mục "Những chuyện nhỏ" ở màn kết (`lifeChronicle`). Thêm chuyện mới: mỗi khóa kết quả phải có dòng `chron`. |
-| `chains.js` | Chuỗi nhiệm vụ (hư cấu), mỗi mùa một bước, có hạn chót: dạy Cò biết chữ (10–14 tuổi, 3 buổi), mái nhà bà Tư cùng Thảo (1272–1278, chặt 3 bó tre ở chỗ `tre` trong `explore.js` rồi lợp mái), chép sách cho thầy Chu (Văn 20, trước khi thầy mất). `S.chains[id]={st,n,last}`, st: `off`, `on`, `done`, `no` (từ chối), `fail` (quá hạn). Mỗi kết cục có dòng biên niên (`chainChronicle`). |
+| `chains.js` | Chuỗi nhiệm vụ (hư cấu), mỗi mùa một bước, có hạn chót: dạy Cò biết chữ (10–14 tuổi, 3 buổi), mái nhà bà Tư cùng Thảo (1272–1278, chặt 3 bó tre ở bụi tre bất kỳ (`TREES` loại 1, bụi gần nhất lấp lánh; xử lý trong `exploreTarget`, `exploreDraw`) rồi lợp mái), chép sách cho thầy Chu (Văn 20, trước khi thầy mất). `S.chains[id]={st,n,last}`, st: `off`, `on`, `done`, `no` (từ chối), `fail` (quá hạn). Mỗi kết cục có dòng biên niên (`chainChronicle`). |
 | `explore.js` | Khám phá: `SPOTS` gồm 9 chỗ hay rải khắp bản đồ (gốc tre có hũ tiền, bụi lá thuốc, hang dế, bia đá ở chùa, kiếm gỉ, thuyền nan bãi sông Hồng, tổ chim, sỏi trắng, ông lái đò kể chuyện Đông Bộ Đầu). Lấp lánh khi lại gần (`exploreDraw`), bấm E (`exploreTarget`). Đồ nhặt được dùng ở chỗ khác: lá thuốc (trâu ốm, cha ốm), dế chọi (tặng Cò), kiếm gỉ (thợ rèn rèn lại 3 quan), sỏi trắng (tặng Thảo). `S.found[id]`. Thêm chỗ mới: chạy `npm test`, bài BFS kiểm tra tới được. |
 | `stats.js` | Mốc chỉ số và tác dụng: `traiFromDuc`, `followFast`, `voHp`, `voDmg`, `voFast`, `DUC_FF_CAP`; bảng chỉ số `showStats()` (phím C). Đổi mốc thì sửa ở đây, đêm 1285 và bảng chỉ số cùng đọc. |
 | `prep.js` | Lo trước ngày giặc đến (thu 1282 → hết 1284, hư cấu): `PREP` gồm dựng lán (cụ lý, 12 quan), rèn giáo cho trai làng (thợ rèn, 10), cất bớt thóc vào rừng (cha hoặc mẹ, 6). `prepChoice`, `prepClimax`, `prepChronicle`. |
@@ -81,7 +81,7 @@ Minigame là một object gắn vào `MG`, có thể có các hàm:
 - `key(k)`: bắt phím khi đang chơi (Space đánh, Q đuốc).
 - `modalKey(k)`, `tick(dt)`: cho minigame chạy trong modal (tập trận).
 - `speedMul()`: hệ số tốc độ người chơi.
-- `hideNPC`: ẩn NPC thường.
+- `hideNPC`: ẩn NPC thường; `hide: ['co']`: chỉ ẩn vài NPC (màn lụt có Cò riêng chạy vác bao, `M.co`).
 
 Khi bắt đầu, thêm class `mg` vào `body` (đẩy toast xuống). Khi kết thúc: `setMG(null); setKeys(); body.classList.remove('mg'); S.pending=null` (trong `state.js` thì gán `MG=null` trực tiếp).
 
