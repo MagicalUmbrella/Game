@@ -212,7 +212,20 @@ def torso_vest(d):  # Cò: áo cộc tay, để tay trần
     if d == 'left': return T('....LCCCCCc...', '...ACCCCCCcc..', '...LACCCCCcc..', '...LCACCCCcc..', '...BBBBBBBqq..', '...LCCCCCCcc..', '...LCCCCCCcc..', '...cccccccc...', y=10)
     return T('.SLCCCCCCCCcs.', 'SSLCCCCCCCCcss', 'SSKCCCCCCCCKss', 'SSKCCCCCCCCKss', 'SSKBBBBqqBBKss', 'SSKCCCCCCCCKss', 'SsKCCCCCCCCKss', '..KccccccccK..', y=10)
 
-TORSO = dict(shirt=torso_shirt, robe=torso_robe, dress=torso_dress, monk=torso_monk, armor=torso_armor, tuong=torso_tuong, apron=torso_apron, vest=torso_vest)
+def slim(fn):
+    """Thân nhìn nghiêng mỏng lại 2 điểm ảnh ở phía lưng, cho lưng thẳng xuống từ gáy (không phình như gù)."""
+    def f(d):
+        rows = fn(d)
+        if d != 'left': return rows
+        out = []
+        for y, r, x in rows:
+            j = max(i for i, ch in enumerate(r) if ch != '.')
+            k = max(j - 2, min(i for i, ch in enumerate(r) if ch != '.') + 3)
+            out.append((y, r[:k] + r[k + 2:] + '..', x))
+        return out
+    return f
+
+TORSO = {k: slim(v) for k, v in dict(shirt=torso_shirt, robe=torso_robe, dress=torso_dress, monk=torso_monk, armor=torso_armor, tuong=torso_tuong, apron=torso_apron, vest=torso_vest).items()}
 LONG = {'robe', 'dress', 'monk'}       # áo dài tới chân: chỉ thấy bàn chân
 
 # tay phía trước khi nhìn nghiêng: ống tay 2 cột, nắm tay 2×2; vung theo bước
@@ -304,6 +317,8 @@ def frame(spec, d, f, atk=None):
         for y, x, ch in lst: grid[(x, y + dy)] = ch
 
     torso_name = spec['torso']
+    # nhìn nghiêng: đầu lùi ra sau 1 cột cho đầu nằm ngay trên thân (không chúi ra trước như gù)
+    HX, BX = (1, 0) if d == 'left' else (0, 0)
     bob = 1 if (f and atk is None) else 0
     # trẻ con: thân ngắn (bỏ 3 hàng), chân 2 hàng
     def kidcut(layer):
@@ -316,7 +331,7 @@ def frame(spec, d, f, atk=None):
     if hold:
         cols = WEAPON[wpn][0]
         if d == 'down': pix(stroke(13, 17, 0, -1, cols, 1), bob)
-        elif d == 'left': pix(stroke(3, 17, 0, -1, cols, 1), bob)
+        elif d == 'left': pix(stroke(3 + BX, 17, 0, -1, cols, 1), bob)
         else: pix(stroke(0, 17, 0, -1, cols, 1), bob)
     # chân
     if kid:
@@ -324,27 +339,27 @@ def frame(spec, d, f, atk=None):
         legs = [({18: 15, 20: 16}[y], r, x) for y, r, x in legs if y != 19]  # 2 hàng: 15, 16
     else:
         legs = LEGS[spec['legs']][d][f if atk is None else 0]
-    put(legs)
+    put(legs, 0, BX)
     # thân
     tor = TORSO[torso_name](d)
     if torso_name in LONG and f and atk is None:  # vạt áo dài đung đưa
         sw = 1 if f == 1 else -1
         tor = [(y, r, x + (sw if y >= 17 else 0)) for y, r, x in tor]
-    put(kidcut(tor), bob)
+    put(kidcut(tor), bob, BX)
     if d == 'left':
         bare = torso_name in ('vest', 'apron')
-        put(kidcut(side_arm(f if atk is None else 0, bare=bare)), bob)
+        put(kidcut(side_arm(f if atk is None else 0, bare=bare)), bob, BX)
     # đầu
     hair = HAIR[spec['hair']][d]
-    put(hair, bob)
+    put(hair, bob, HX)
     face = FACE_W if spec.get('face') == 'w' else FACE_KID if kid else FACE
     if spec['hair'] in ('bun',) and d != 'up' and spec.get('face') == 'w':
-        put(face[d], bob)
+        put(face[d], bob, HX)
     elif d != 'up':
-        put(face[d], bob)
-    if spec.get('beard'): put(BEARD[spec['beard']][d], bob)
-    if spec.get('hat'): put(HAT[spec['hat']][d], bob)
-    if spec.get('plume'): put(HAT['plume'][d], bob)
+        put(face[d], bob, HX)
+    if spec.get('beard'): put(BEARD[spec['beard']][d], bob, HX)
+    if spec.get('hat'): put(HAT[spec['hat']][d], bob, HX)
+    if spec.get('plume'): put(HAT['plume'][d], bob, HX)
     # chém
     if atk is not None and wpn:
         cols, back = WEAPON[wpn]
@@ -357,7 +372,7 @@ def frame(spec, d, f, atk=None):
                 grid.pop((xx, yy), None)
         elif d == 'left':
             if atk == 0: hx, hy = 9, 9; pix(stroke(hx + 1, hy, 1, -1, cols, back))
-            else: hx, hy = 2, 13; pix(stroke(hx - 1, hy, -1, 0, cols, back))
+            else: hx, hy = 1, 13; pix(stroke(hx - 1, hy, -1, 0, cols, back))
             hand = [(hy, hx, 'S'), (hy, hx + 1, 'S'), (hy + 1, hx, 's'), (hy + 1, hx + 1, 's')]
         else:
             if atk == 0: hx, hy = 12, 9; pix(stroke(hx + 1, hy, 1, -1, cols, back))

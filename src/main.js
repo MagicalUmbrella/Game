@@ -18,9 +18,12 @@ import {dailyFlush} from './minigames/daily.js';
 import {startClimax,finishClimax,ZONE} from './climax.js';
 import {personSprite} from './sprites.js';
 import {loadPeople} from './person.js';
+import {ground} from './ground.js';
 
 // chờ nạp ảnh nhân vật (src/assets/nguoi.png) rồi mới vẽ
-loadPeople().catch(e=>console.error('Không nạp được ảnh nhân vật',e)).then(()=>{requestAnimationFrame(loop);titleScreen();if(import.meta.env.MODE==='test')window.__dv=hook});
+loadPeople().catch(e=>console.error('Không nạp được ảnh nhân vật',e)).then(()=>{requestAnimationFrame(loop);titleScreen();
+  [0,1,2,3].forEach((s,i)=>setTimeout(()=>ground(s),400+i*250));   // vẽ sẵn nền 4 mùa lúc ở màn tiêu đề
+  if(import.meta.env.MODE==='test')window.__dv=hook});
 
 /* Hook cho tests/playtest.py và tests/bots.js. Chỉ có trong bản build `--mode test`, bản phát hành tự loại bỏ.
    step(dt) chạy đúng một nhịp cập nhật của game (phím, va chạm, minigame) để bot chơi nhanh hơn thời gian thật. */
@@ -29,4 +32,4 @@ const hook=import.meta.env.MODE==='test'&&{
   get modalOpen(){return ui.modalOpen},get dialogOpen(){return ui.dialogOpen},pick:ui.pick,closeDialog:ui.closeDialog,mpick:ui.mpick,nextModal:ui.nextModal,startQuest:ui.startQuest,
   advance,advanceOne,EVENTS,LIFE,SPOTS,runLife,lifeChronicle,fastForward,chooseFocus,talkThay,talkVo,talkLy,talkRen,talkCha,talkMe,talkSach,talkTong,talkCo,talkThao,startPlay,fieldAction,fishAction,
   startFlood,endFlood,startExam,startTraining,tmHit,startClimax,finishClimax,
-  dailyFlush,step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY,personSprite};
+  dailyFlush,step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY,personSprite,ground};

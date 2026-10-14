@@ -62,4 +62,6 @@ function buildMap(){
   for(const s of SIGNS)bsolid[s.y*W+s.x]=1;
 }
 buildMap();
-export const TREES=[];for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(map[y*W+x]===TR)TREES.push({x,y,v:Hs(x,y,5)<.5?0:1});
+export const TREES=[];for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(map[y*W+x]===TR){
+  // loại cây: rừng phía tây chủ yếu cây tán, lẫn tre; quanh làng, ven sông có tre, cau, chuối
+  const h=Hs(x,y,5),forest=x<26&&y>26;TREES.push({x,y,v:forest?(h<.8?0:1):h<.4?0:h<.68?1:h<.84?2:3})}

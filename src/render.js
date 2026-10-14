@@ -3,7 +3,8 @@ import {$,H,T,TS,W,Z,ctx,cv} from './constants.js';
 import {Hs} from './pixel.js';
 import {BUILDINGS,DECOR,SIGNS,TREES,isW,map} from './map.js';
 import {ground} from './ground.js';
-import {banyanSprite,boatSprite,buffaloSprite,buildingSprite,personSprite,signSprite,treeSprite,wellSprite} from './sprites.js';
+import {banyanSprite,boatSprite,buffaloSprite,buildingSprite,personSprite,propSprite,signSprite,treeSprite,wellSprite} from './sprites.js';
+import {PROPS,propAt} from './scenery.js';
 import {MG,NPCS,P,S,age,npcLook,npcOn} from './state.js';
 import {isKid} from './person.js';
 import {floats} from './ui.js';
@@ -38,7 +39,9 @@ function render(){
   if(S&&age()<12){ctx.fillStyle='#4a2c1c';for(let x=52;x<=54;x++)ctx.fillRect((x*TS+2)*Z-camX,(19*TS+2)*Z-camY,12*Z,14*Z);for(let y=11;y<=12;y++)ctx.fillRect((70*TS+2)*Z-camX,(y*TS+1)*Z-camY,12*Z,14*Z);ctx.fillStyle='#d9b14a';for(let x=52;x<=54;x++){ctx.fillRect((x*TS+5)*Z-camX,(19*TS+8)*Z-camY,Z,Z);ctx.fillRect((x*TS+10)*Z-camX,(19*TS+8)*Z-camY,Z,Z)}}
   drawTracks();
   const list=[];
-  for(const t of TREES)if(t.x>=x0-1&&t.x<=x1+1&&t.y>=y0&&t.y<=y1+2)list.push({y:t.y+.9,f:()=>drawSprite(treeSprite(s,t.v),t.x+.5,t.y+1)});
+  for(const t of TREES)if(t.x>=x0-2&&t.x<=x1+2&&t.y>=y0&&t.y<=y1+4)list.push({y:t.y+.9,f:()=>{const sp=treeSprite(s,t.v),hide=S&&Math.abs(S.x-t.x-.5)<sp.width/TS/2-.3&&S.y<t.y+.9&&S.y>t.y+1-sp.height/TS+.6;
+    if(hide)ctx.globalAlpha=.55;drawSprite(sp,t.x+.5,t.y+1);ctx.globalAlpha=1}});   // bạn đứng sau cây thì cây mờ đi
+  for(const p of PROPS)if(p.x>=x0-1&&p.x<=x1+1&&p.y>=y0&&p.y<=y1+2){const [px,py]=propAt(p);list.push({y:py-.05,f:()=>drawSprite(propSprite(p,s),px,py)})}
   for(const b of BUILDINGS){if(b.x>x1+2||b.x+b.w<x0-2||b.y>y1+3||b.y+b.h<y0-2)continue;list.push({y:b.y+b.h,f:()=>{const c=buildingSprite(b);blit(c,b.x*TS-c.ox,b.y*TS-c.oy)}})}
   for(const d of DECOR){if(d.x<x0-3||d.x>x1+3||d.y<y0-3||d.y>y1+3)continue;list.push({y:d.y+(d.kind==='boat'?.4:1),f:()=>{if(d.kind==='banyan')drawSprite(banyanSprite(s),d.x+.5,d.y+1);else if(d.kind==='well')drawSprite(wellSprite(),d.x+.5,d.y+1);else{const bob=reduce?0:Math.round(Math.sin(clock*1.5+d.x));drawSprite(boatSprite(),d.x+.5,d.y+.6+bob/TS)}}})}
   for(const sg of SIGNS)list.push({y:sg.y+1,f:()=>drawSprite(signSprite(),sg.x+.5,sg.y+1)});
