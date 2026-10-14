@@ -130,7 +130,8 @@ def mechanics(page, fails):
     for name, fn in (('đi tới được (BFS)', 'reach'), ('không đi chéo', 'noDiagonal'), ('trâu giật mình', 'buffalo'),
                      ('đường văn: dân tự vào rừng', 'selfWalk'), ('ngã xuống: ai bị bắt, ai kẹt lại', 'downRule'),
                      ('giặc không đứng dàn hàng ở bìa rừng', 'noCamping'),
-                     ('giấy bút, thuốc bổ mỗi mùa một lần', 'shopLimit'), ('lo trước ngày giặc đến', 'prep')):
+                     ('giấy bút, thuốc bổ mỗi mùa một lần', 'shopLimit'), ('lo trước ngày giặc đến', 'prep'),
+                     ('mốc chỉ số, phím C', 'statTiers')):
         fresh(page)
         r = page.evaluate(f'() => __checks.{fn}()')
         extra = (f" ({r['n']} điểm)" if 'n' in r else f" ({r['safe']}/{r['total']} vào tới rừng)" if 'safe' in r
@@ -192,13 +193,13 @@ def flood_table(page, fails, n):
 
 
 # Các kiểu nhân vật cho đêm 1285 (mã JS chạy trên S trước startClimax). Mọi kiểu đều có cha, vợ Thảo, bé Sen.
-CLIMAX_BUILDS = {
-    'võ, có Cò và trai làng': "S.path='vo';S.co='village';S.rel.co=4;S.flags.de='saved';S.flags.lang=6;S.flags.tolich='done';",
-    'võ, một mình': "S.path='vo';S.co='army';S.flags.tolich='done';",
-    'văn đỗ (Văn 55), có Cò': "S.path='van';S.van=55;S.dothi=true;S.co='village';S.rel.co=4;S.flags.tolich='done';",
-    'văn đỗ (Văn 55), một mình': "S.path='van';S.van=55;S.dothi=true;S.co='army';S.flags.tolich='done';",
-    'nông, có Cò, chưa vét sông': "S.path='nong';S.co='village';S.rel.co=2;S.flags.tolich='skip';",
-    'như trên, lo đủ 3 việc': "S.path='nong';S.co='village';S.rel.co=2;S.flags.tolich='skip';S.flags.lan=S.flags.giao=S.flags.catThoc=true;",
+CLIMAX_BUILDS = {  # chỉ số sát với người chơi thật theo từng đường
+    'võ (Võ 70), có Cò, Đức 40': "S.path='vo';S.vo=70;S.duc=40;S.co='village';S.rel.co=4;S.flags.de='saved';S.flags.tolich='done';",
+    'võ (Võ 70), một mình': "S.path='vo';S.vo=70;S.duc=10;S.co='army';S.flags.tolich='done';",
+    'văn đỗ (Văn 55), có Cò': "S.path='van';S.van=55;S.vo=10;S.duc=25;S.dothi=true;S.co='village';S.rel.co=4;S.flags.tolich='done';",
+    'văn đỗ (Văn 55), một mình': "S.path='van';S.van=55;S.vo=10;S.duc=10;S.dothi=true;S.co='army';S.flags.tolich='done';",
+    'nông (Võ 25, Đức 30), có Cò': "S.path='nong';S.vo=25;S.duc=30;S.co='village';S.rel.co=2;S.flags.tolich='skip';",
+    'như trên, lo đủ 3 việc': "S.path='nong';S.vo=25;S.duc=30;S.co='village';S.rel.co=2;S.flags.tolich='skip';S.flags.lan=S.flags.giao=S.flags.catThoc=true;",
 }
 REASON = {'done': 'đủ người', 'dawn': 'trời sáng', 'down': 'ngã xuống'}
 
@@ -221,7 +222,7 @@ def climax_table(page, fails, n):
             ends = ', '.join(f"{REASON.get(k, k)} {sum(r['reason'] == k for r in rs)}" for k in ('done', 'dawn', 'down') if any(r['reason'] == k for r in rs))
             out[(name, sk)] = (saved, total, down)
             print(f"  {name:30s} {sk:9s} {saved:4.1f}/{total:<2d} {sum(r['thoc'] for r in rs) / n:4.1f}/{rs[0]['thocT']:<2d} {down:>5d}/{n:<3d}  {ends}")
-    saved, total, down = out[('võ, có Cò và trai làng', 'giỏi')]
+    saved, total, down = out[('võ (Võ 70), có Cò, Đức 40', 'giỏi')]
     if down or saved < total - 1:
         fails.append(f"đêm 1285: nhân vật mạnh nhất, bot giỏi mà chỉ cứu TB {saved:.1f}/{total}, ngã xuống {down} lần (quá khó?)")
     return out

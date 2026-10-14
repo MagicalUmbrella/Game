@@ -26,7 +26,7 @@ export function pick(i){const c=curOpts[i];if(!c||c.disabled)return;closeDialog(
 export function showModal(m){modalQueue.push(m);if(!modalOpen)nextModal()}
 export function nextModal(){
   const m=modalQueue.shift();if(!m){modalOpen=false;$('modal').hidden=true;return}
-  modalOpen=true;closeDialog();const box=$('modal');box.hidden=false;const c=box.querySelector('.card');
+  modalOpen=true;closeDialog();const box=$('modal');box.hidden=false;const c=box.querySelector('.card');c.classList.toggle('wide',!!m.wide);
   c.innerHTML=`${m.kicker?`<div class="kicker">${m.kicker}</div>`:''}${m.big?`<h1>${m.title}</h1>`:`<h2>${m.title}</h2>`}<div class="body">${m.body||''}</div><div class="opts"></div>`;
   const ch=m.choices||[{label:'Tiếp tục'}];curOpts=ch;const o=c.querySelector('.opts');
   ch.forEach((x,i)=>{const b=document.createElement('button');b.className='opt';b.id='mopt'+i;b.disabled=!!x.disabled;

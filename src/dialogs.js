@@ -7,6 +7,7 @@ import {advance,advanceOne} from './events.js';
 import {prepChoice} from './prep.js';
 import {keys,solidAt} from './input.js';
 import {camX,camY} from './render.js';
+import {DUC_FF_CAP} from './stats.js';
 
 export const pickR=a=>a[Math.floor(Math.random()*a.length)];
 function vanLesson(){const v=S.van;return v<10?'Thầy dạy chữ trên khay cát, từng nét một.':v<25?'Thầy giảng sách dạy đạo làm người.':v<45?'Bạn đọc Luận ngữ, tập viết văn sách.':v<70?'Bạn học Kinh Thi, Kinh Thư, bình luận chuyện xưa.':'Bạn đọc Đại Việt sử ký, bàn về phép trị nước.'}
@@ -62,10 +63,9 @@ export function talkThao(){
   say('Thảo',r<2?'Em là Thảo, cháu bà Tư. Bố mẹ em mất sau năm nước to, em lên đây ở với bà.':r<5?'Hôm nay anh lại sang à? Bà em khen anh mãi.':'Anh mà đi xa, em... em sẽ nhớ anh đấy.',ch);
 }
 export function talkLy(){
-  const ch=[];if(age()>=10)ch.push({label:'Giúp việc làng',note:'−1 Sức · +Đức · +1 quan · làng quý',fn:()=>{if(!spend())return;S.flags.lang++;gain('duc',2);gain('tien',1);toast(pickR(['Bạn cùng trai làng đắp lại đoạn đê.','Bạn giúp dọn sân đình chuẩn bị lễ hội.','Bạn đi báo tin cho các xóm.']))}});
+  const ch=[];if(age()>=10)ch.push({label:'Giúp việc làng',note:'−1 Sức · +3 Đức · +1 quan',fn:()=>{if(!spend())return;gain('duc',3);gain('tien',1);toast(pickR(['Bạn cùng trai làng đắp lại đoạn đê.','Bạn giúp dọn sân đình chuẩn bị lễ hội.','Bạn đi báo tin cho các xóm.']))}});
   {const pc=prepChoice('lan');if(pc)ch.push(pc)}
-  const L=S.flags.lang;
-  say('Cụ lý trưởng',S.flags.dh==='hoa'?'Trước Diên Hồng, cháu lại bảo nên hòa. Ta không trách, nhưng trai làng nghe thế thì nản lòng.':S.year>=1282?'Tin từ kinh thành không lành. Người Nguyên đòi mượn đường sang đánh Chiêm Thành. Làng mình phải sẵn sàng.':L>=6?'Làng An Phú nhớ công cháu. Có việc gì, trai làng sẵn lòng theo cháu.':S.flags.de==='home'?'Năm nước to, nhà cháu lo dọn đồ, còn đê làng thì vỡ. Ta vẫn nhớ đấy.':'Làng An Phú ta ruộng tốt, người hiền. Ai có sức thì góp sức với làng.',ch);
+  say('Cụ lý trưởng',S.flags.dh==='hoa'?'Trước Diên Hồng, cháu lại bảo nên hòa. Ta không trách, nhưng trai làng nghe thế thì nản lòng.':S.year>=1282?'Tin từ kinh thành không lành. Người Nguyên đòi mượn đường sang đánh Chiêm Thành. Làng mình phải sẵn sàng.':S.duc>=40?'Làng An Phú nhớ công cháu. Có việc gì, trai làng sẵn lòng theo cháu.':S.flags.de==='home'?'Năm nước to, nhà cháu lo dọn đồ, còn đê làng thì vỡ. Ta vẫn nhớ đấy.':'Làng An Phú ta ruộng tốt, người hiền. Ai có sức thì góp sức với làng.',ch);
 }
 export function talkCo(){
   const a=age(),ch=[];let t;
@@ -153,13 +153,13 @@ export function chooseFocus(){const a=age();say('Những năm tới','Bạn dồ
   {label:'Tự học ở nhà',note:ffNote('van'),fn:()=>fastForward('van')},
   {label:'Tự luyện võ',note:a<8?'cần 8 tuổi':ffNote('vo'),disabled:a<8,fn:()=>fastForward('vo')},
   {label:'Làm ruộng',note:a<8?'cần 8 tuổi':`+${S.path==='nong'?3:2} quan mỗi mùa`,disabled:a<8,fn:()=>fastForward('tien')},
-  {label:'Lo việc làng',note:a<10?'cần 10 tuổi':'+1 Đức mỗi mùa, làng quý hơn',disabled:a<10,fn:()=>fastForward('lang')}])}
+  {label:'Lo việc làng',note:a<10?'cần 10 tuổi':S.duc>=DUC_FF_CAP?`ở nhà lo việc làng chỉ tới ${DUC_FF_CAP} Đức`:`+2 Đức mỗi mùa, tối đa ${DUC_FF_CAP}`,disabled:a<10,fn:()=>fastForward('lang')}])}
 export function fastForward(k){let n=0;
   for(let i=0;i<60;i++){
     /* mùa đang dở chỉ tính phần Sức còn lại, tránh vừa học ở lớp vừa được cộng thêm */
     const part=i?1:S.suc/4;
     if(k==='van'||k==='vo'){const c=FF_CAP[k]();if(S[k]<c&&Math.random()<part)S[k]=Math.min(c,S[k]+FF_RATE[k]())}
-    else if(k==='tien')S.tien+=Math.round((S.path==='nong'?3:2)*part);else{if(Math.random()<part)S.duc=Math.min(100,S.duc+1);if(i%2)S.flags.lang++}
+    else if(k==='tien')S.tien+=Math.round((S.path==='nong'?3:2)*part);else if(S.duc<DUC_FF_CAP&&Math.random()<part)S.duc=Math.min(DUC_FF_CAP,S.duc+2)
     n++;advanceOne();if(modalOpen||S.ended)break}
   toast(`${n} mùa trôi qua. Bây giờ là ${SEASONS[S.season].toLowerCase()} năm ${canchi(S.year)} (${S.year}), bạn ${age()} tuổi.`,4600);save();renderHUD()}
 export function fishAction(){if(!spend())return;

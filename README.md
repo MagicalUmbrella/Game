@@ -25,6 +25,7 @@ Mở thẳng `index.html` bằng cách bấm đúp không chạy được nữa,
 | `Shift` | Chạy |
 | `E` | Nói chuyện, tương tác |
 | `1`–`9` | Chọn đáp án trong hội thoại |
+| `C` | Bảng chỉ số: mỗi chỉ số đang ở mốc nào, mốc tiếp theo có tác dụng gì |
 | `Esc` | Đóng hội thoại |
 | `Space` | Đánh (màn cao trào) |
 | `Q` | Cắm đuốc nghi binh (màn cao trào, đường văn) |

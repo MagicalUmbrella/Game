@@ -22,7 +22,7 @@ export function startExam(){const qs=shuffle(QBANK).slice(0,5),need=S.quests.sac
       choices:q.a.map((t,j)=>({label:t,disabled:off.includes(j),note:off.includes(j)?'loại':'',fn:()=>{if(j===q.c)ok++;i++;if(i<5)ask();else examResult(ok,need)}}))})};
   ask()}
 function examResult(ok,need){S.pending=null;
-  if(ok>=need){S.dothi=true;S.flags.exam='pass';S.flags.lang+=2;gain('duc',3);
+  if(ok>=need){S.dothi=true;S.flags.exam='pass';gain('duc',6);
     showModal({kicker:'Ngày xướng danh',title:'Đỗ Thái học sinh',body:`<p>Bạn trả lời đúng ${ok}/5 câu. Đào Tiêu đỗ Trạng nguyên, Quách Nhẫn đỗ Thám hoa, và tên bạn nằm trong bảng 27 Thái học sinh! Cả làng An Phú mở tiệc mừng.</p>`});
     showModal({kicker:'Tiệc mừng ở nhà',title:'Cò đứng ngoài ngõ',body:'<p>Giữa tiệc, bạn thấy Cò đứng ngoài ngõ, không vào. Cậu mặc bộ áo cũ, tay còn dính bùn.</p>',choices:[
       {label:'Ra kéo Cò vào ngồi mâm trên',note:'Cò thân hơn',fn:()=>{S.flags.exam='pass';S.rel.co+=2;toast('"Ông Thái học sinh mà vẫn nhớ thằng bạn chăn trâu này à?" Cò cười, mắt đỏ hoe.',5000)}},

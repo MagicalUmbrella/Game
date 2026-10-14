@@ -53,6 +53,7 @@ Mỗi file mở đầu bằng comment `/* ===== tên ===== */`. Các module impo
 | `events.js` | `advanceOne()` sang mùa; `EVENTS` là danh sách sự kiện `{id, y: năm, s: mùa 0–3, mg?, run}`; `eventCuoi`, `choosePath`, `setPath`. |
 | `minigames/` | Lụt 1270 (`startFlood`), kỳ thi 1275 (`QBANK`, `startExam`), tập trận 1283 (`startTraining`). |
 | `pathfind.js` | `gridPath`, `nextStep`: tìm đường BFS cho người do máy điều khiển (giặc, người cùng đánh) để không đi xuyên sông, cây, nhà. |
+| `stats.js` | Mốc chỉ số và tác dụng: `traiFromDuc`, `followFast`, `voHp`, `voDmg`, `voFast`, `DUC_FF_CAP`; bảng chỉ số `showStats()` (phím C). Đổi mốc thì sửa ở đây, đêm 1285 và bảng chỉ số cùng đọc. |
 | `prep.js` | Lo trước ngày giặc đến (thu 1282 → hết 1284, hư cấu): `PREP` gồm dựng lán (cụ lý, 12 quan), rèn giáo cho trai làng (thợ rèn, 10), cất bớt thóc vào rừng (cha hoặc mẹ, 6). `prepChoice`, `prepClimax`, `prepChronicle`. |
 | `climax.js` | Đêm tháng giêng 1285: `startClimax`, `clUpdate`, `finishClimax`, `endChapter` (biên niên). |
 | `intro.js` | Màn tiêu đề, đặt tên, lễ thôi nôi, `startPlay(fromSave)`. |
@@ -79,11 +80,11 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 ## Trạng thái `S` (các trường quan trọng)
 
 - `year`, `season` (0 Xuân … 3 Đông), `age()` = `year − 1258`. Bắt đầu chơi năm 1264, lúc 6 tuổi.
-- `suc` (Sức, 4 mỗi mùa), `van`, `vo`, `duc`, `tien` (quan).
+- `suc` (Sức, 4 mỗi mùa), `van`, `vo`, `duc`, `tien` (quan). **Đức gộp cả uy tín với làng** (trước đây là `flags.lang` ẩn): giúp làng, lo việc chung thì tăng; bỏ mặc làng, nói "hòa" thì giảm (`gain('duc', âm)`). `ducMerged`: bản lưu cũ đã quy `flags.lang` sang Đức (×3) chưa.
 - `path`: `'van' | 'vo' | 'nong'`, chọn năm 1274.
 - `rel.co`, `rel.thao`: mức thân thiết.
 - `cha`, `thay`: còn sống hay không. `co`: `'village' | 'army'`. `thao`: `'none' | 'wife' | 'co' | 'gone'`. `married`, `child`.
-- `flags`: hậu quả các lựa chọn, gồm `lang` (uy tín với làng), `de`, `dieu`, `exam`, `train`, `daumua`, `tang`, `tolich`, `duyet`, `dh`, `rival`, `coStay`, `nguKnows`, `vay`, `cuoiCo`, `lan`, `giao`, `catThoc`.
+- `flags`: hậu quả các lựa chọn, gồm `de`, `dieu`, `exam`, `train`, `daumua`, `tang`, `tolich`, `duyet`, `dh`, `rival`, `coStay`, `nguKnows`, `vay`, `cuoiCo`, `lan`, `giao`, `catThoc`.
 - `paper`, `tonic`: mùa này đã mua giấy bút, thuốc bổ chưa (mỗi mùa một lần, đặt lại trong `advanceOne`).
 - `buffalo`: `{x, y, st: 'pen'|'lost'|'run'|'follow', tracks, bolts, stop}`.
 - `ev`: sự kiện đã xảy ra. `quests`: `hoc`, `trau`, `ca`, `sach`, `lua`.
@@ -116,10 +117,10 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 
 ### Hậu quả nối vào màn cao trào
 
-- Đồng minh: Cò (nếu còn ở làng), trai làng (`flags.de==='saved'`, `flags.lang>=6`, đường nông; trừ đi nếu nói "hòa" ở Diên Hồng), quân Phạm Ngũ Lão đến khi còn 45 giây (nếu đã gặp anh Ngũ).
+- Đồng minh: Cò (nếu còn ở làng); trai làng theo Đức (20/40/60 → 1/2/3 người), thêm một nếu giữ được đê 1270, một nếu đường nông, bớt một nếu nói "hòa" ở Diên Hồng, tối đa 4; quân Phạm Ngũ Lão đến khi còn 45 giây (nếu đã gặp anh Ngũ). Đức 60 thì dân làng đi theo nhanh hơn.
 - Bạn vào rừng thì giặc thôi đuổi bạn; không còn ai ngoài rừng thì giặc đi lục lọi các chỗ trong làng (`LOOT` trong `climax.js`), không đứng chờ ở bìa rừng.
 - Giặc và người cùng đánh đi theo đường thật (`src/pathfind.js`). Đã vét sông Tô Lịch thì giặc chỉ qua được bằng cầu; không vét thì giặc lội qua sông (chậm một nửa) và có thêm chỗ xuất hiện ở bờ bắc. Giữ thóc thì thêm một bao phải cứu.
-- Đường võ thêm máu và sát thương; tập trận xuất sắc thêm máu. Đường nông vác thóc nhanh, thêm một trai làng.
+- Võ cho mọi đường: 25 thêm 1 máu, 50 đánh mạnh hơn, 75 thêm 1 máu và ra đòn nhanh hơn. Đường võ thêm 2 máu và sát thương; tập trận xuất sắc thêm máu. Đường nông vác thóc nhanh, thêm một trai làng.
 - **Đường văn** (người có chữ, mưu trí, không giỏi đánh): bấm E với dân làng là **chỉ đường**, người ấy tự tìm lối vào rừng (chậm hơn khi được dẫn, giặc gặp trên đường vẫn bắt được). **Đuốc nghi binh** (Q): 2 cây, cứ 25 Văn thêm một cây (tối đa 5), đỗ Thái học sinh thêm một cây, mỗi cây cháy 10 giây. Hằng số `SELF_SPEED`, `TORCH_T`, hàm `torches()` ở đầu `src/climax.js`.
 - **Ngã xuống** (hết máu): người đang đi theo bạn bị bắt nếu không có đồng minh đỡ; người chưa dẫn hoặc đang tự đi thì kẹt lại trong làng (thoát nạn, nhà bị đốt), không bị bắt.
 - Lo trước (`prep.js`): dựng lán thì bà Tư, bé Sen ở sẵn trong rừng; rèn giáo thì trai làng thêm 1 máu, đánh mạnh gấp đôi, cầm giáo; cất thóc thì một bao thóc giấu sẵn.
@@ -144,6 +145,7 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 
 - Đến lớp thầy đồ: +2 Văn mỗi Sức (+1 nếu đã biếu Tứ thư). Võ sư: +2 Võ (+3 đường võ, +1 có kiếm). Quốc học viện +3, Giảng võ đường +4. Một mùa dùng hết Sức được 8 điểm trở lên.
 - "Chọn việc chính" ở nhà là tự học, tự luyện: +1 mỗi mùa (+2 nếu đúng đường), **có trần** 25 (45 nếu đúng đường), mùa đang dở chỉ tính theo Sức còn lại. Muốn Văn 55 (loại 2 đáp án khi thi) hay Võ cao thì phải đến lớp.
+- "Lo việc làng" ở nhà: +2 Đức mỗi mùa, trần `DUC_FF_CAP` = 40. Đức 60 phải giúp làng thật (cụ lý +3 Đức mỗi Sức) và qua các sự kiện.
 - Giấy bút (+2 Văn, 3 quan) và thuốc bổ (+2 Sức, 5 quan) mỗi mùa chỉ mua được một lần, để tiền không thay được việc học. `FF_RATE`, `FF_CAP` ở `src/dialogs.js`; đổi thì chạy lại `npm test`.
 
 ## Lỗi đã sửa (đừng để tái phát)

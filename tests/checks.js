@@ -198,7 +198,7 @@
   function downRule() {
     const d = D(), S = d.S, errs = [];
     Object.assign(S, {year: 1285, season: 0, path: 'vo', co: 'army', cha: true, thao: 'wife', child: true});
-    S.ev.thao = 1; S.flags.de = 'lost'; S.flags.lang = 0;
+    S.ev.thao = 1; S.flags.de = 'lost'; S.duc = 0;
     d.startClimax();
     const M = d.MG, [a, b, c] = M.v;
     if (M.al.length) errs.push('kiểu nhân vật thử không được có đồng minh');
@@ -276,7 +276,7 @@
   function prep() {
     const d = D(), S = d.S, errs = [];
     Object.assign(S, {year: 1281, season: 0, tien: 100, path: 'nong', cha: true, thao: 'wife', child: true});
-    S.ev.thao = 1; S.flags.lang = 6; S.flags.de = 'saved'; S.quests.trau = 'done';
+    S.ev.thao = 1; S.duc = 40; S.flags.de = 'saved'; S.quests.trau = 'done';
     d.talkLy(); if (choose('dựng lán')) errs.push('năm 1281 (chưa có tin Toa Đô) đã góp được tiền dựng lán'); closeDialog();
     S.year = 1283;
     for (const [talk, text] of [['talkLy', 'dựng lán'], ['talkRen', 'Rèn giáo'], ['talkCha', 'Cất bớt thóc']]) {
@@ -299,5 +299,35 @@
     return {errs};
   }
 
-  window.__checks = {reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep};
+  /* Mốc chỉ số: Đức quyết định số trai làng, Võ thêm máu và sát thương cho mọi đường; phím C mở bảng chỉ số. */
+  function statTiers() {
+    const d = D(), S = d.S, errs = [];
+    const night = (setup) => {
+      d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, path: 'van', co: 'army', quests: {trau: 'done'}}));
+      Object.assign(d.S, setup); d.startClimax();
+      const M = d.MG, r = {trai: M.al.filter(a => a.id.startsWith('trai')).length, hp: M.maxhp};
+      d.setMG(null); document.body.classList.remove('mg'); return r;
+    };
+    for (const [duc, want] of [[0, 0], [19, 0], [20, 1], [40, 2], [60, 3], [100, 3]]) {
+      const r = night({duc});
+      if (r.trai !== want) errs.push(`Đức ${duc}: ${r.trai} trai làng, mong ${want}`);
+    }
+    if (night({duc: 60, path: 'nong', flags: {de: 'saved'}}).trai !== 4) errs.push('Đức 60 + giữ đê + đường nông phải ra 4 trai làng (tối đa)');
+    if (night({duc: 40, flags: {dh: 'hoa'}}).trai !== 1) errs.push('nói "hòa" ở Diên Hồng phải bớt một trai làng');
+    for (const [vo, want] of [[0, 4], [25, 5], [74, 5], [75, 6]]) {
+      const r = night({vo});
+      if (r.hp !== want) errs.push(`Võ ${vo} (đường văn): ${r.hp} máu, mong ${want}`);
+    }
+    // phím C
+    d.setS(d.newState('Thử')); d.startPlay(false); while (d.modalOpen) d.nextModal();
+    S.duc = 0;
+    window.dispatchEvent(new KeyboardEvent('keydown', {key: 'c'})); window.dispatchEvent(new KeyboardEvent('keyup', {key: 'c'}));
+    const txt = d.modalOpen ? document.querySelector('#modal').innerText : '';
+    if (!/Bảng chỉ số/i.test(txt)) errs.push('bấm C không mở bảng chỉ số');
+    else for (const t of ['Văn', 'Võ', 'Đức', 'trai làng']) if (!txt.includes(t)) errs.push(`bảng chỉ số thiếu "${t}"`);
+    while (d.modalOpen) d.nextModal();
+    return {errs};
+  }
+
+  window.__checks = {reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers};
 })();

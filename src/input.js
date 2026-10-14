@@ -6,6 +6,7 @@ import {closeDialog,dialogOpen,floats,modalOpen,mpick,pick,say,toast} from './ui
 import {buffaloLabel,buffaloUpdate,doorAction,fieldAction,fishAction,talkBuffalo} from './dialogs.js';
 import {dirOf} from './climax.js';
 import {playing} from './intro.js';
+import {showStats} from './stats.js';
 
 export const keys={};let lastAxis='y';
 addEventListener('keydown',e=>{
@@ -17,6 +18,7 @@ addEventListener('keydown',e=>{
   if(modalOpen){if(/^[1-9]$/.test(k))mpick(+k-1);return}
   if(dialogOpen){if(/^[1-9]$/.test(k))pick(+k-1);else if(k==='escape')closeDialog();return}
   if(MG&&MG.key&&playing&&MG.key(k))return;
+  if(k==='c'&&playing&&!MG){showStats();return}
   if(k==='e'&&playing&&target)target.act();
 });
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
