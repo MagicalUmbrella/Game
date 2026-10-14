@@ -32,6 +32,7 @@ function render(){
   const fx=S?S.x:titleCam,fy=S?S.y:30;
   camX=Math.max(0,Math.min(W*T-VW,fx*T-VW/2));camY=Math.max(0,Math.min(H*T-VH,fy*T-VH/2));
   camX=Math.round(camX/Z)*Z;camY=Math.round(camY/Z)*Z;
+  if(MG&&MG.shake>0&&!reduce){const k=MG.shake*7;camX+=Math.round((Math.random()-.5)*k)*Z;camY+=Math.round((Math.random()-.5)*k)*Z}   // rung màn hình khi trúng đòn, nhà cháy
   ctx.fillStyle='#0f1311';ctx.fillRect(0,0,VW,VH);
   const s=season(),gc=ground(s);
   ctx.drawImage(gc,camX/Z,camY/Z,VW/Z,VH/Z,0,0,VW,VH);
@@ -84,7 +85,7 @@ function render(){
 const mini=$('mini'),mctx=mini.getContext('2d');
 function drawMini(){mctx.imageSmoothingEnabled=true;mctx.drawImage(ground(season()),0,0,192,144);mctx.fillStyle='#6b3a28';for(const b of BUILDINGS)mctx.fillRect(b.x*2,b.y*2,b.w*2,b.h*2);
   mctx.strokeStyle='rgba(255,255,255,.6)';mctx.strokeRect(camX/T*2+.5,camY/T*2+.5,VW/T*2,VH/T*2);
-  mctx.fillStyle='#fff';mctx.fillRect(S.x*2-2,S.y*2-2,4,4);mctx.fillStyle='#000';mctx.fillRect(S.x*2-1,S.y*2-1,2,2);}
+  if(MG&&MG.mini)MG.mini(mctx);mctx.fillStyle='#fff';mctx.fillRect(S.x*2-2,S.y*2-2,4,4);mctx.fillStyle='#000';mctx.fillRect(S.x*2-1,S.y*2-1,2,2);}
 
 export let last=performance.now();
 export function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;clock+=dt;if(MG&&MG.tick)MG.tick(dt);if(!S)titleCam=48+Math.sin(clock*.08)*22;if(S)update(dt);render();requestAnimationFrame(loop)}

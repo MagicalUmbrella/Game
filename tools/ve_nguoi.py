@@ -301,6 +301,9 @@ PEOPLE = [
     ('trai_giao', 'Trai làng (giáo)', dict(hair='knot', hat='band', torso='shirt', legs='bare', weapon='giao', hold=True, pal={**C('#7a5a3a'), **B2('#4a3a24'), **P2('#4a3e34')})),
     ('giac', 'Giặc', dict(hair='knot', hat='mugiac', beard='mus', torso='armor', legs='boots', weapon='dao', pal={**C('#3e4a62'), **B2('#3a2a1e'), **P2('#2a2826')})),
     ('giac_ky', 'Giặc kỵ', dict(hair='knot', hat='mugiac', plume=True, beard='full', torso='armor', legs='boots', weapon='dao', pal={**C('#6a4a2e'), **B2('#3a2a1e'), **P2('#2a2826')})),
+    # đêm 1285, hồi ba (hư cấu): tên đầu toán giặc áo đỏ thẫm, đai vàng; cu Tí con nhà hàng xóm
+    ('giac_dau', 'Tên đầu toán', dict(hair='knot', hat='mugiac', plume=True, beard='full', torso='armor', legs='boots', weapon='dao', pal={**C('#7a2622'), **B2('#d9b25a'), **P2('#241f1e')})),
+    ('ti', 'Cu Tí nhà bên', dict(hair='kid', torso='shirt', legs='bare', kid=True, pal={**C('#5a7890'), **B2('#33404e'), **P2('#4a4440')})),
 ]
 
 # ---------------------------------------------------------------- ghép một khung

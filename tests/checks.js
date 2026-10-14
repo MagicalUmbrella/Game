@@ -194,8 +194,8 @@
     return {errs, safe, total: M.v.length};
   }
 
-  /* Ngã xuống khi không có ai đỡ: người đang đi theo bị bắt; người chưa dẫn, người đang tự đi
-     thì kẹt lại trong làng, không bị bắt. */
+  /* Ngã xuống khi không có ai đỡ: bạn bị bắt ('captured'), người đang đi theo bị bắt cùng; người chưa dẫn,
+     người đang tự đi thì kẹt lại trong làng, không bị bắt. Có người cùng đánh còn đứng thì được kéo vào rừng ('down'). */
   function downRule() {
     const d = D(), S = d.S, errs = [];
     Object.assign(S, {year: 1285, season: 0, path: 'vo', co: 'army', cha: true, thao: 'wife', child: true});
@@ -206,10 +206,90 @@
     a.st = 'follow'; b.st = 'self'; b.dest = [a.x, a.y]; // c vẫn 'wait'
     M.hp = 0; d.step(DT);
     const r = S.res || {};
-    if (r.reason !== 'down') errs.push(`hết máu mà không kết thúc kiểu ngã xuống (${r.reason})`);
+    if (r.reason !== 'captured') errs.push(`hết máu, không ai đỡ mà không bị bắt (${r.reason})`);
+    if (!S.capt || S.capt.how !== 'captured') errs.push('bị bắt mà chưa ghi S.capt cho chương hai');
+    if (!/trại giặc/.test(document.querySelector('#modal').innerText)) errs.push('bị bắt mà không có lựa chọn giải về trại giặc');
     if (a.st !== 'lost') errs.push(`người đang đi theo (${a.name}) phải bị bắt, thực tế ${a.st}`);
     if (b.st !== 'left') errs.push(`người đang tự đi (${b.name}) phải kẹt lại trong làng, thực tế ${b.st}`);
     if (c.st !== 'left') errs.push(`người chưa dẫn (${c.name}) phải kẹt lại trong làng, thực tế ${c.st}`);
+    while (d.modalOpen) d.nextModal();
+    // có Cò đứng cạnh: ngã xuống thì được kéo vào rừng, không bị bắt
+    delete S.capt; S.res = null; S.co = 'village'; S.ended = false;
+    d.startClimax(); const M2 = d.MG; M2.hp = 0; d.step(DT);
+    if ((S.res || {}).reason !== 'down') errs.push(`có Cò đứng cạnh mà hết máu vẫn không ra kiểu ngã xuống (${(S.res || {}).reason})`);
+    if (S.capt) errs.push('có người đỡ mà vẫn ghi bị bắt');
+    while (d.modalOpen) d.nextModal();
+    return {errs};
+  }
+
+  /* Ba hồi đêm 1285: hồi 1 giặc chỉ đứng ở bờ bắc; hồi 2 nhà cháy, lửa chặn lối nhưng luôn còn đường vào rừng;
+     hồi 3 có tên đầu toán, cu Tí. Đưa hết mọi người vào rừng sớm thì hắn tới với cu Tí làm con tin; hạ hắn thì
+     cứu được. Đổi mình lấy con tin thì bị bắt, con tin an toàn. */
+  function acts() {
+    const d = D(), errs = [], Z = d.ZONE, zc = [(Z.x0 + Z.x1) / 2 + .5, (Z.y0 + Z.y1) / 2 + .5];
+    const fresh = () => { d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, path: 'vo', vo: 60, co: 'army', cha: true, thao: 'wife', child: true, quests: {trau: 'done'}}));
+      d.S.ev.thao = 1; d.S.flags.tolich = 'done'; d.startClimax(); return d.MG; };
+    let M = fresh(), S = d.S;
+    S.x = zc[0]; S.y = zc[1];
+    for (let i = 0; i < 20 * 60; i++) d.step(DT);
+    if (M.act !== 1) errs.push(`giây 20 mà đã sang hồi ${M.act}`);
+    const south = M.en.filter(e => e.y > d.tolichY(e.x) + 1).length;
+    if (south) errs.push(`hồi 1 đã có ${south} tên giặc sang bờ nam`);
+    if (!M.en.length) errs.push('hồi 1 không có giặc tụ ở bờ bắc');
+    for (let i = 0; i < 60 * 60 && d.MG === M; i++) d.step(DT);
+    if (M.act !== 2) errs.push(`giây 80 mà không ở hồi 2 (hồi ${M.act})`);
+    if (M.burn.length < 3) errs.push(`giây 80 mới có ${M.burn.length} nhà cháy`);
+    if (!M.fire.size) errs.push('nhà cháy mà không có lửa chặn lối');
+    // lửa không được cắt đường vào rừng của bất kỳ ai còn ngoài làng
+    const seen = new Set([`${Z.x0 + 3},${Z.y0 + 5}`]), q = [[Z.x0 + 3, Z.y0 + 5]], now = M.T - M.t;
+    const fire = (x, y) => { const e = M.fire.get(y * 96 + x); return e != null && e > now; };
+    while (q.length) { const [x, y] = q.pop(); for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const k = `${x + a},${y + b}`; if (!seen.has(k) && d.walkable(x + a, y + b) && !fire(x + a, y + b)) { seen.add(k); q.push([x + a, y + b]); } } }
+    const near = (o) => { for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (seen.has(`${Math.floor(o.x) + dx},${Math.floor(o.y) + dy}`)) return true; return false; };
+    for (const p of M.v) if (['wait', 'follow', 'self'].includes(p.st) && !near(p)) errs.push(`lửa cắt đường vào rừng của ${p.name}`);
+    d.setMG(null); document.body.classList.remove('mg');
+    // đưa hết vào rừng sớm: sang hồi 3, tên đầu toán tới cùng cu Tí làm con tin
+    M = fresh(); S = d.S; M.spawnT = 1e9;
+    for (const p of M.v) { p.st = 'safe'; p.x = Z.x0 + 2; p.y = Z.y0 + 3; p.spot = [p.x, p.y]; }
+    for (const s of M.sk) { s.st = 'safe'; }
+    S.x = zc[0]; S.y = zc[1]; d.step(DT);
+    if (M.act !== 2) errs.push(`mọi người đã vào rừng từ hồi 1 mà chưa sang hồi 2 (hồi ${M.act})`);
+    for (let i = 0; i < 13 * 60 && d.MG === M && M.act < 3; i++) d.step(DT);
+    if (M.act !== 3 || !M.boss) errs.push(`mọi người đã vào rừng mà 13 giây sau chưa sang hồi 3 (hồi ${M.act})`);
+    else if (!M.boss.cap || M.boss.cap.id !== 'ti') errs.push('hồi 3 sớm: tên đầu toán không giữ cu Tí làm con tin');
+    if (!d.MG) errs.push('đêm kết thúc trước khi gặp tên đầu toán');
+    for (let i = 0; i < 40 * 60 && d.MG === M && M.boss && M.boss.st !== 'hold'; i++) d.step(DT);
+    if (M.boss && M.boss.st !== 'hold') errs.push(`tên đầu toán không về tới sân đình (st=${M.boss.st}, ở ${M.boss.x.toFixed(1)},${M.boss.y.toFixed(1)})`);
+    // đánh hạ hắn
+    for (let i = 0; i < 400 && d.MG === M && M.boss && !M.boss.dead; i++) { M.hp = M.maxhp; S.x = M.boss.x + .7; S.y = M.boss.y; M.cd = 0; M.key(' '); d.step(.05); }
+    const ti = M.v.find(p => p.id === 'ti');
+    if (!M.boss || !M.boss.dead) errs.push('không đánh hạ được tên đầu toán');
+    else if (!ti || ti.st !== 'wait') errs.push(`hạ tên đầu toán mà cu Tí chưa được thả (${ti && ti.st})`);
+    if (d.MG === M) { d.setMG(null); document.body.classList.remove('mg'); }
+    // đổi mình lấy con tin
+    M = fresh(); S = d.S; M.spawnT = 1e9;
+    const me = M.v.find(p => p.id === 'me');
+    M.t = 45.01; d.step(DT);
+    if (M.act !== 3) errs.push('M.t 45 mà chưa sang hồi 3');
+    for (let i = 0; i < 60 * 60 && d.MG === M && !(M.boss && M.boss.cap); i++) d.step(DT);
+    if (!M.boss || !M.boss.cap) errs.push('hồi 3: tên đầu toán không bắt được ai làm con tin');
+    else {
+      const h = M.boss.cap; S.x = M.boss.x + 1; S.y = M.boss.y;
+      const tg = M.findTarget();
+      if (!tg || !/^Đổi mình/.test(tg.label)) errs.push(`đứng cạnh tên đầu toán mà không có lựa chọn đổi mình (${tg && tg.label})`);
+      else { tg.act(); d.mpick(0);
+        const r = S.res || {};
+        if (r.reason !== 'surrender') errs.push(`đổi mình mà kết thúc là ${r.reason}`);
+        if (!r.saved || !r.saved.includes(h.name)) errs.push(`đổi mình mà ${h.name} không được thả vào rừng`);
+        if (!S.capt || S.capt.for !== h.name) errs.push('đổi mình mà chưa ghi S.capt.for');
+        // cảnh trại giặc rồi biên niên
+        d.mpick(0); d.mpick(0); d.mpick(1); d.mpick(0);
+        const txt = document.querySelector('#modal').innerText;
+        if (!/Hết chương một/.test(txt)) errs.push('sau cảnh trại giặc không tới màn hết chương');
+        if (!/đổi mình lấy/.test(txt)) errs.push('biên niên thiếu dòng đổi mình');
+        if (!/trại giặc/.test(txt)) errs.push('mở đầu chương hai không nhắc trại giặc');
+        while (d.modalOpen) d.nextModal(); }
+    }
+    if (d.MG) { d.setMG(null); document.body.classList.remove('mg'); }
     return {errs};
   }
 
@@ -511,5 +591,5 @@
     return {errs, out};
   }
 
-  window.__checks = {combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  window.__checks = {acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();

@@ -65,7 +65,7 @@ Mỗi file mở đầu bằng comment `/* ===== tên ===== */`. Các module impo
 | `explore.js` | Khám phá: `SPOTS` gồm 9 chỗ hay rải khắp bản đồ (gốc tre có hũ tiền, bụi lá thuốc, hang dế, bia đá ở chùa, kiếm gỉ, thuyền nan bãi sông Hồng, tổ chim, sỏi trắng, ông lái đò kể chuyện Đông Bộ Đầu). Lấp lánh khi lại gần (`exploreDraw`), bấm E (`exploreTarget`). Đồ nhặt được dùng ở chỗ khác: lá thuốc (trâu ốm, cha ốm), dế chọi (tặng Cò), kiếm gỉ (thợ rèn rèn lại 3 quan), sỏi trắng (tặng Thảo). `S.found[id]`. Thêm chỗ mới: chạy `npm test`, bài BFS kiểm tra tới được. |
 | `stats.js` | Mốc chỉ số và tác dụng: `traiFromDuc`, `followFast`, `voHp`, `voDmg`, `voFast`, `DUC_FF_CAP`; bảng chỉ số `showStats()` (phím C). Đổi mốc thì sửa ở đây, đêm 1285 và bảng chỉ số cùng đọc. |
 | `prep.js` | Lo trước ngày giặc đến (thu 1282 → hết 1284, hư cấu): `PREP` gồm dựng lán (cụ lý, 12 quan), rèn giáo cho trai làng (thợ rèn, 10), cất bớt thóc vào rừng (cha hoặc mẹ, 6). `prepChoice`, `prepClimax`, `prepChronicle`. |
-| `climax.js` | Đêm tháng giêng 1285: `startClimax`, `clUpdate`, `finishClimax`, `endChapter` (biên niên). Động tác chém: bạn, người cùng đánh, giặc có `swing` đếm ngược (0,24 giây; giặc 0,3 khi đánh trúng), vẽ khung vung lên `'a0'` rồi chém `'a1'`, kèm vệt sáng `slashFx`. |
+| `climax.js` | Đêm tháng giêng 1285, chia **ba hồi** (`ACT2`, `ACT3`, xem mục dưới): `startClimax`, `clUpdate`, lửa (`ignite`, `BURN`, `fireAt`, `MG.blockAt` cho `input.js`), tên đầu toán (`startAct3`, `bossUpdate`, `trick`, `surrender`), lời nói trên đầu nhân vật (`say`, `leadLine`, `allyLine`, vẽ trong `bubbles`), băng chữ tên hồi, rung màn hình (`MG.shake`, `render.js`), bản đồ nhỏ (`clMini` qua `MG.mini`), `finishClimax`, cảnh trại giặc khi bị bắt (`campScene`), `endChapter` (biên niên). Động tác chém: bạn, người cùng đánh, giặc có `swing` đếm ngược (0,24 giây; giặc 0,3 khi đánh trúng), vẽ khung vung lên `'a0'` rồi chém `'a1'`, kèm vệt sáng `slashFx`. |
 | `intro.js` | Màn tiêu đề, đặt tên, lễ thôi nôi, `startPlay(fromSave)`. |
 | `input.js` | Bàn phím, va chạm (`solidAt`, `canStand`), `update(dt)`, `findTarget()` tìm thứ để tương tác bằng E. |
 | `render.js` | `render()` vẽ nền → vết chân trâu → danh sách sprite sắp theo y → nhãn → hiệu ứng mùa → HUD minigame → bản đồ nhỏ. |
@@ -125,19 +125,25 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 | 1282 Thu/Đông | Toa Đô (mở việc "Lo trước ngày giặc đến"); Bình Than, quả cam; Cò muốn theo Quốc Toản | Toàn thư + hư cấu |
 | 1283 Đông | Quốc công tiết chế (đường võ chơi tập trận) | Toàn thư |
 | 1284 | Vét sông Tô Lịch; duyệt binh Đông Bộ Đầu; Diên Hồng | Toàn thư |
-| 1285 Xuân | Cao trào: đêm giặc đến làng → kết chương | Toàn thư + hư cấu |
+| 1285 Xuân | Cao trào ba hồi: đêm giặc đến làng, tên đầu toán, có thể bị bắt (cảnh trại giặc, Đỗ Khắc Chung) → kết chương | Toàn thư + hư cấu |
 | mọi năm | Chuyện đời thường xen giữa (`life.js`), quãng trống dài nhất 6 mùa | Hư cấu |
 
 ### Hậu quả nối vào màn cao trào
 
-- Đồng minh: Cò (nếu còn ở làng); trai làng theo Đức (20/40/60 → 1/2/3 người), thêm một nếu giữ được đê 1270, một nếu đường nông, bớt một nếu nói "hòa" ở Diên Hồng, tối đa 4; quân Phạm Ngũ Lão đến khi còn 45 giây (nếu đã gặp anh Ngũ). Đức 60 thì dân làng đi theo nhanh hơn.
+- **Ba hồi** (đồng hồ 150 giây đếm ngược, hằng số đầu `src/climax.js`):
+  - *Hồi 1 · Trống làng* (150 → 125): giặc tụ dần ở bờ bắc sông Tô Lịch quanh đống lửa (tối đa 4, `st:'stage'`), chưa sang sông; bạn sang tận nơi thì chúng xông ra. HUD ghi "giặc tụ N", bản đồ nhỏ chấm đỏ. Đưa hết mọi người vào rừng sớm thì sang hồi 2 ngay.
+  - *Hồi 2 · Làng cháy* (125 → 45): tù và rúc, toán đứng chờ lần lượt ào qua cầu (`e.wake`), giặc tiếp tục kéo đến. Cứ 13 giây một nóc nhà bốc cháy (`BURN`: nha2, nha1, batu, home, truong, vo); ô đất trước cửa nhà cháy thành lửa chặn lối 30 giây. Lửa chỉ đặt vào ô nào **không cắt đường vào rừng** của bạn, người còn ngoài làng, bao thóc (`stillReachable`), không đặt sát chỗ ai đang đứng. Test `acts` canh việc này.
+  - *Hồi 3 · Tên đầu toán* (từ 45, hoặc 12 giây sau khi đã đưa hết mọi người vào rừng): bạn hồi 1 máu; tù và gọi toán cướp rút (giặc đang có đều chạy về, không thêm giặc mới); cu Tí nhà bên kẹt trong xóm. Tên đầu toán (8 máu, hình `giac_dau`) bắt người gần nhất còn ngoài rừng làm con tin; không còn ai thì hắn lôi sẵn cu Tí. Hắn giải con tin ra sân đình (`DINH`), kèm 1 lính canh (đường võ 2). Hạ hắn thì con tin được thả; bấm E cạnh hắn thì hỏi **đổi mình lấy con tin** (bị bắt, con tin vào rừng) hoặc, đường văn một lần, **lừa hắn** là quân Trần đã vây làng (`trickChance`: 35% + Văn/100 + 10% nếu đỗ, tối đa 90%; hỏng thì hắn chém nhanh hơn). Trời sáng mà con tin còn trong tay hắn thì người ấy bị bắt đi. Kết thúc sớm ('done') chỉ khi hắn đã chết hoặc không giữ con tin.
+- Đồng minh: Cò (nếu còn ở làng); trai làng theo Đức (20/40/60 → 1/2/3 người), thêm một nếu giữ được đê 1270, một nếu đường nông, bớt một nếu nói "hòa" ở Diên Hồng, tối đa 4. Đã gặp anh Ngũ: còn 80 giây thì nghe tù và quân ta (hy vọng), còn 30 giây thì quân Phạm Ngũ Lão tới **đánh** giặc (không làm giặc bỏ chạy ngay), để tên đầu toán cho bạn. Chưa gặp: không ai đến, có người nói "Chỉ còn chúng ta thôi". Đức 60 thì dân làng đi theo nhanh hơn.
+- **Lời nói trên đầu nhân vật** nhắc lại đời bạn: Cò nhắc chuyện thả diều hoặc chuyện bị bỏ đứng ngoài ngõ lúc ăn mừng đỗ đạt; trai làng nhắc năm giữ đê; cụ lý nhắc câu "hòa" ở Diên Hồng; cha nhắc năm đậu mùa. Thêm câu mới thì sửa `leadLine`, `allyLine`.
 - Bạn vào rừng thì giặc thôi đuổi bạn; không còn ai ngoài rừng thì giặc đi lục lọi các chỗ trong làng (`LOOT` trong `climax.js`), không đứng chờ ở bìa rừng.
 - Giặc và người cùng đánh đi theo đường thật (`src/pathfind.js`). Đã vét sông Tô Lịch thì giặc chỉ qua được bằng cầu; không vét thì giặc lội qua sông (chậm một nửa) và có thêm chỗ xuất hiện ở bờ bắc. Giữ thóc thì thêm một bao phải cứu.
 - Võ cho mọi đường: 25 thêm 1 máu, 50 đánh mạnh hơn, 75 thêm 1 máu và ra đòn nhanh hơn. Đường võ thêm 2 máu và sát thương; tập trận xuất sắc thêm máu. Đường nông vác thóc nhanh, thêm một trai làng.
 - **Đường văn** (người có chữ, mưu trí, không giỏi đánh): bấm E với dân làng là **chỉ đường**, người ấy tự tìm lối vào rừng (chậm hơn khi được dẫn, giặc gặp trên đường vẫn bắt được). **Đuốc nghi binh** (Q): 2 cây, cứ 25 Văn thêm một cây (tối đa 5), đỗ Thái học sinh thêm một cây, mỗi cây cháy 10 giây. Hằng số `SELF_SPEED`, `TORCH_T`, hàm `torches()` ở đầu `src/climax.js`.
-- **Ngã xuống** (hết máu): người đang đi theo bạn bị bắt nếu không có đồng minh đỡ; người chưa dẫn hoặc đang tự đi thì kẹt lại trong làng (thoát nạn, nhà bị đốt), không bị bắt.
+- **Ngã xuống** (hết máu): còn người cùng đánh đứng được thì bạn được kéo vào rừng ('down'). Không còn ai thì **bạn bị bắt** ('captured'), người đang đi theo bạn bị bắt cùng; người chưa dẫn hoặc đang tự đi thì kẹt lại trong làng (thoát nạn, nhà bị đốt).
+- **Bị bắt** ('captured' hoặc 'surrender'): ghi `S.capt = {how, for, seen?, map?}` cho chương hai. Sau đêm là cảnh trại giặc bên bến Đông Bộ Đầu (`campScene`, hư cấu): giặc thấy chữ "Sát Thát" thì nổi giận; gần sáng Đỗ Khắc Chung vào trại Ô Mã Nhi (lời đối đáp theo Toàn thư, viết lại bằng lời thường, có dòng `src`). Lựa chọn: gọi tên mình cho sứ giả nghe (`seen`) hoặc im lặng ghi nhớ trại giặc (`map`, +3 Văn). Biên niên và câu mở đầu chương hai đổi theo.
 - Lo trước (`prep.js`): dựng lán thì bà Tư, bé Sen ở sẵn trong rừng; rèn giáo thì trai làng thêm 1 máu, đánh mạnh gấp đôi, cầm giáo; cất thóc thì một bao thóc giấu sẵn.
-- Người bị giặc bắt đi được nhắc ở phần mở đầu chương hai.
+- Người bị giặc bắt đi được nhắc ở phần mở đầu chương hai. `S.res` có thêm `boss` ('killed' | 'tricked' | 'surrender' | 'took' | 'alive'), `hostage`, `ti`, `captured`.
 
 ## Kiểm tra
 
@@ -175,6 +181,7 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 - Dân đang đi theo bạn từng bị giặc đang đánh bạn tiện tay bắt mất khi chạm vào (14 lần trong 6 lượt bot). Nay người đi theo chỉ bị bắt bởi tên đang nhắm vào chính người đó (`e.tgt`), giặc vừa bị chém thì choáng 0,8 giây (`e.stun`), dân đi theo thấy giặc gần thì dừng và lùi ra. Test `combat` đếm số lần này.
 - Nhân vật nhìn nghiêng từng như bị gù (thân dày, lưng phình sau gáy, đầu chìa ra trước): `slim()` trong `tools/ve_nguoi.py` làm thân nghiêng mỏng lại phía lưng. Ria mép từng dính vào mắt thành mặt nạ: ria đặt ở hàng miệng, chừa một hàng da dưới mắt.
 - Cánh hoa, lá rơi từng dính vào camera khi đi lại và rơi theo tốc độ khung hình; nay gắn với cảnh, tính theo giây.
+- Ba hồi đêm 1285: `BURN[M.burnI++]` đặt trong callback `find` từng làm chỉ số nhảy cóc, chỉ một nhà cháy; tên đầu toán từng đứng cách sân đình nửa ô mà không bao giờ "tới nơi" (ngưỡng tới nơi phải lớn hơn ngưỡng dừng bước); lựa chọn đổi mình từng đọc con tin lúc bấm phím (có thể đã được thả, lỗi null), nay giữ con tin lúc hiện lựa chọn. Đứng cạnh tên đầu toán mà bấm E dẫn người từng có thể lỡ tay đầu hàng: nay đổi mình phải xác nhận trong hộp hỏi.
 - Đường văn từng gần như luôn ngã xuống ở đêm 1285 (chỉ có 2–3 cây đuốc 7 giây, điểm Văn vô dụng), và ngã xuống khi không có đồng minh từng làm mất hết người chưa cứu. Bảng độ khó trong `npm test` canh lại việc này.
 
 ## Hướng phát triển tiếp
