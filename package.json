@@ -1,0 +1,17 @@
+{
+  "name": "dai-viet-mot-doi",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Game pixel art thế giới mở: một đời người dưới triều Trần",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:test": "vite build --mode test --outDir dist-test",
+    "preview": "vite preview",
+    "test": "npm run build:test && python3 tests/playtest.py"
+  },
+  "devDependencies": {
+    "vite": "^8.3.4"
+  }
+}

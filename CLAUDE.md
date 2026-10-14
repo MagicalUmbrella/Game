@@ -8,7 +8,8 @@ Game pixel art thế giới mở chạy trên trình duyệt máy tính. Ngườ
 
 - **Chủ dự án:** sinh viên Việt Nam, giao tiếp bằng **tiếng Việt**. Mọi chữ trong game và mọi trả lời đều bằng tiếng Việt có dấu đầy đủ.
 - **Trạng thái:** chương một hoàn chỉnh và chơi được. Chương hai (kháng chiến 1285 → trận Bạch Đằng 1288) chưa làm.
-- **Chơi:** mở `index.html` bằng trình duyệt, hoặc qua GitHub Pages `https://magicalumbrella.github.io/Game/`.
+- **Chơi:** `npm install` rồi `npm run dev` (http://localhost:5173), hoặc qua GitHub Pages `https://magicalumbrella.github.io/Game/` (workflow tự build và đưa lên khi push vào `main`).
+- **Quy mô:** chủ dự án muốn đây là dự án lớn, phát triển lâu dài. Tổ chức code cho dễ mở rộng.
 
 ## Nguyên tắc bắt buộc
 
@@ -17,30 +18,43 @@ Game pixel art thế giới mở chạy trên trình duyệt máy tính. Ngườ
 3. **Mọi lựa chọn phải có hậu quả** về sau, ít nhất hiện trong phần "Biên niên đời bạn" ở màn kết (`endChapter`). Đây là yêu cầu cốt lõi của chủ dự án.
 4. **Phong cách pixel art vẽ bằng code.** Không dùng file ảnh. Tile 16×16 px, phóng to ×3 (`Z=3`). Sprite có viền đậm, tạo bằng hàm `outline()`.
 5. **Nhân vật chỉ đi 4 hướng, không đi chéo.** Giữ hai phím thì theo phím bấm sau cùng (`lastAxis`).
-6. **Một file duy nhất** `index.html`, JavaScript thuần, không build, không thư viện. Font từ Google Fonts (Alegreya SC, Be Vietnam Pro), có font dự phòng.
+6. **JavaScript thuần chia module trong `src/`, đóng gói bằng Vite.** Mỗi mảng lớn một file; phần mới (ví dụ chương hai, minigame mới) thì tạo file mới, đừng nhồi vào file có sẵn. Thêm thư viện npm chỉ khi thật cần và nói rõ lý do. Font từ Google Fonts (Alegreya SC, Be Vietnam Pro), có font dự phòng.
 7. Khi sửa xong, chạy kiểm tra (xem dưới), rồi commit với trailer theo cấu hình phiên.
 
-## Cấu trúc `index.html`
+## Cấu trúc mã nguồn
 
-Toàn bộ code nằm trong một IIFE. Các phần đánh dấu bằng comment `/* ===== tên ===== */`, theo thứ tự:
+```
+index.html            khung HTML (canvas, HUD, hội thoại, modal), nạp src/main.js
+src/main.js           khởi động: vòng lặp vẽ, màn tiêu đề, hook test (chỉ có ở --mode test)
+src/style.css         giao diện HUD
+src/*.js              mỗi file một phần, xem bảng dưới
+src/minigames/*.js    lụt 1270, kỳ thi 1275, tập trận 1283
+tests/playtest.py     test Playwright
+.claude/agents/       agent game-tester
+.github/workflows/    build, test, triển khai GitHub Pages
+```
 
-| Phần | Nội dung |
+Mỗi file mở đầu bằng comment `/* ===== tên ===== */`. Các module import lẫn nhau (có vòng tròn). Hàm khai báo bằng `function` dùng được trong vòng tròn; còn `const`/`let` thì **đừng đọc giá trị của module khác ngay lúc nạp file** (ngoài hàm), có thể gặp lỗi TDZ.
+
+`S` và `MG` khai báo trong `state.js`. Module khác chỉ đọc được, muốn gán thì gọi `setS(v)`, `setMG(v)` (quy tắc của ES module: không gán được biến import). Tương tự, biến `let` nào cần gán từ module khác thì thêm hàm `setX`.
+
+| File | Nội dung |
 |---|---|
-| CSS | Giao diện HUD kiểu sơn mài viền đồng, cạnh vuông, bóng cứng. Chỉ một giao diện tối, có chủ đích. |
-| constants | `TS=16`, `Z=3`, `T=48`, bản đồ `W=96 × H=72` ô. Mã ô: `G` cỏ, `WA` sông Tô Lịch (xanh), `WR` sông Hồng (nâu phù sa), `FI` ruộng, `PA` đường đất, `TR` cây, `MO` núi, `WL` tường thành, `SA` cát, `BR` cầu, `ST` đá lát, `GA` cổng thành. Hàm `canchi(năm)` tính can chi. |
-| pixel helpers | `mk`, `shade`, `Hs` (hash cố định theo tọa độ), `outline`, `disc`, `flip`. |
-| map | `buildMap()` sinh bản đồ bằng RNG có seed 1258, nên bản đồ luôn giống nhau. Có `BUILDINGS`, `DECOR`, `SIGNS`, `TREES`. `bsolid` đánh dấu ô bị chặn bởi nhà, decor, biển. |
-| ground bake | `ground(mùa)` vẽ sẵn toàn bộ nền ra một canvas cho mỗi mùa (cache). |
-| sprites | `personSprite(look, hướng, khung)`, trâu, cây, cây đa, giếng, thuyền, biển, nhà (`buildingSprite`, `roofPx` mái đầu đao). Mọi sprite được cache. |
-| state | `S` là trạng thái game (lưu vào `localStorage` key `dvmd-save`). `MG` là minigame đang chạy hoặc `null`. `NPCS` có `show()` và `at()` cho vị trí động. `npcOn(n)` quyết định NPC có hiện không. |
-| UI | `say()` mở hội thoại, `showModal()` xếp hàng modal (`modalQueue`), `toast()`, `floatAt()`, `renderHUD()`, `setKeys()` đổi dòng hướng dẫn phím. |
-| dialogs | `talkX()` cho từng NPC, `doorAction()`, `chooseFocus()` + `fastForward()` để thời gian trôi nhanh, câu cá, làm đồng, toàn bộ cơ chế con trâu. |
-| time & events | `advanceOne()` sang mùa; `EVENTS` là danh sách sự kiện `{id, y: năm, s: mùa 0–3, mg?, run}`; `eventCuoi`, `choosePath`, `setPath`. |
-| minigame | Lụt 1270 (`startFlood`), kỳ thi 1275 (`QBANK`, `startExam`), tập trận 1283 (`startTraining`). |
-| cao trào | Đêm tháng giêng 1285: `startClimax`, `clUpdate`, `finishClimax`, `endChapter` (biên niên). |
-| intro | Màn tiêu đề, đặt tên, lễ thôi nôi, `startPlay(fromSave)`. |
-| input & physics | Bàn phím, va chạm (`solidAt`, `canStand`), `update(dt)`, `findTarget()` tìm thứ để tương tác bằng E. |
-| render | `render()` vẽ nền → vết chân trâu → danh sách sprite sắp theo y → nhãn → hiệu ứng mùa → HUD minigame → bản đồ nhỏ. |
+| `style.css` | Giao diện HUD kiểu sơn mài viền đồng, cạnh vuông, bóng cứng. Chỉ một giao diện tối, có chủ đích. |
+| `constants.js` | `TS=16`, `Z=3`, `T=48`, bản đồ `W=96 × H=72` ô. Mã ô: `G` cỏ, `WA` sông Tô Lịch (xanh), `WR` sông Hồng (nâu phù sa), `FI` ruộng, `PA` đường đất, `TR` cây, `MO` núi, `WL` tường thành, `SA` cát, `BR` cầu, `ST` đá lát, `GA` cổng thành. Hàm `canchi(năm)` tính can chi. |
+| `pixel.js` | `mk`, `shade`, `Hs` (hash cố định theo tọa độ), `outline`, `disc`, `flip`. |
+| `map.js` | `buildMap()` sinh bản đồ bằng RNG có seed 1258, nên bản đồ luôn giống nhau. Có `BUILDINGS`, `DECOR`, `SIGNS`, `TREES`. `bsolid` đánh dấu ô bị chặn bởi nhà, decor, biển. |
+| `ground.js` | `ground(mùa)` vẽ sẵn toàn bộ nền ra một canvas cho mỗi mùa (cache). |
+| `sprites.js` | `personSprite(look, hướng, khung)`, trâu, cây, cây đa, giếng, thuyền, biển, nhà (`buildingSprite`, `roofPx` mái đầu đao). Mọi sprite được cache. |
+| `state.js` | `S` là trạng thái game (lưu vào `localStorage` key `dvmd-save`). `MG` là minigame đang chạy hoặc `null`. `NPCS` có `show()` và `at()` cho vị trí động. `npcOn(n)` quyết định NPC có hiện không. |
+| `ui.js` | `say()` mở hội thoại, `showModal()` xếp hàng modal (`modalQueue`), `toast()`, `floatAt()`, `renderHUD()`, `setKeys()` đổi dòng hướng dẫn phím. |
+| `dialogs.js` | `talkX()` cho từng NPC, `doorAction()`, `chooseFocus()` + `fastForward()` để thời gian trôi nhanh, câu cá, làm đồng, toàn bộ cơ chế con trâu. |
+| `events.js` | `advanceOne()` sang mùa; `EVENTS` là danh sách sự kiện `{id, y: năm, s: mùa 0–3, mg?, run}`; `eventCuoi`, `choosePath`, `setPath`. |
+| `minigames/` | Lụt 1270 (`startFlood`), kỳ thi 1275 (`QBANK`, `startExam`), tập trận 1283 (`startTraining`). |
+| `climax.js` | Đêm tháng giêng 1285: `startClimax`, `clUpdate`, `finishClimax`, `endChapter` (biên niên). |
+| `intro.js` | Màn tiêu đề, đặt tên, lễ thôi nôi, `startPlay(fromSave)`. |
+| `input.js` | Bàn phím, va chạm (`solidAt`, `canStand`), `update(dt)`, `findTarget()` tìm thứ để tương tác bằng E. |
+| `render.js` | `render()` vẽ nền → vết chân trâu → danh sách sprite sắp theo y → nhãn → hiệu ứng mùa → HUD minigame → bản đồ nhỏ. |
 
 ### Giao diện minigame (`MG`)
 
@@ -55,7 +69,7 @@ Minigame là một object gắn vào `MG`, có thể có các hàm:
 - `speedMul()`: hệ số tốc độ người chơi.
 - `hideNPC`: ẩn NPC thường.
 
-Khi bắt đầu, thêm class `mg` vào `body` (đẩy toast xuống). Khi kết thúc: `MG=null; setKeys(); body.classList.remove('mg'); S.pending=null`.
+Khi bắt đầu, thêm class `mg` vào `body` (đẩy toast xuống). Khi kết thúc: `setMG(null); setKeys(); body.classList.remove('mg'); S.pending=null` (trong `state.js` thì gán `MG=null` trực tiếp).
 
 Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại trang giữa chừng, `resumePending()` chạy lại sự kiện đó.
 
@@ -105,18 +119,18 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 
 ## Kiểm tra
 
-Có sẵn Playwright (Python) + Chromium. Cách làm đã dùng:
+**Gọi agent `game-tester` (`.claude/agents/game-tester.md`) sau mỗi lần sửa game.** Hoặc tự chạy:
 
-1. Tạo bản sao để test, thay dòng `titleScreen();` cuối file bằng `titleScreen();window.__dv={get S(){return S},get MG(){return MG},advance,startFlood,startClimax,startExam,startTraining,...};` để điều khiển trạng thái từ ngoài. **Không commit hook này vào `index.html`.**
-2. Bắt `pageerror`, chụp màn hình và tự xem lại ảnh.
-3. Các bài test đã viết: chạy hết game với lựa chọn ngẫu nhiên (3 lượt, không lỗi); BFS kiểm tra mọi NPC, cửa nhà, biển, chỗ đê vỡ, nơi trú ẩn, chỗ giấu trâu đều đi tới được; kiểm tra không đi chéo; kiểm tra trâu giật mình chạy.
-4. Kiểm tra cú pháp nhanh: tách phần `<script>` ra file rồi `node --check`.
-5. **Script có sẵn:** `python3 tests/playtest.py --runs 3` (tự tạo bản sao có hook, kiểm tra cân bằng điểm, chơi ngẫu nhiên hết chương). **Agent `game-tester`** (`.claude/agents/game-tester.md`) chạy toàn bộ việc kiểm tra và báo cáo. Gọi nó sau mỗi lần sửa game.
+1. `npm run build`: bắt lỗi cú pháp và lỗi import.
+2. `npm test`: build bản test (`vite build --mode test` → `dist-test/`, có hook `window.__dv` khai báo cuối `src/main.js`) rồi chạy `tests/playtest.py`: kiểm tra cân bằng điểm, đi lại bằng phím, chạy thật lụt 1270 và đêm 1285, chơi ngẫu nhiên hết chương 3 lượt, bắt `pageerror`. Cần `pip install playwright`. Chromium có sẵn trong `/opt/pw-browsers`, script tự tìm, đừng chạy `playwright install`.
+3. Xem lại ảnh chụp (`--shots DIR`).
+4. Cần điều khiển thêm hàm nào từ test thì thêm vào `window.__dv` trong `src/main.js`. Hook chỉ có trong bản test, bản phát hành tự loại bỏ.
+5. Các bài test cũ từng viết tay (chưa đưa vào `playtest.py`): BFS kiểm tra mọi NPC, cửa nhà, biển, chỗ đê vỡ, nơi trú ẩn, chỗ giấu trâu đều đi tới được; không đi chéo; trâu giật mình chạy.
 
 ### Cân bằng điểm
 
 - Đến lớp thầy đồ: +2 Văn mỗi Sức (+1 nếu đã biếu Tứ thư). Võ sư: +2 Võ (+3 đường võ, +1 có kiếm). Quốc học viện +3, Giảng võ đường +4. Một mùa dùng hết Sức được 8 điểm trở lên.
-- "Chọn việc chính" ở nhà là tự học, tự luyện: +1 mỗi mùa (+2 nếu đúng đường), **có trần** 25 (45 nếu đúng đường), mùa đang dở chỉ tính theo Sức còn lại. Muốn Văn 55 (loại 2 đáp án khi thi) hay Võ cao thì phải đến lớp. Đổi `FF_RATE`, `FF_CAP` thì chạy lại `tests/playtest.py`.
+- "Chọn việc chính" ở nhà là tự học, tự luyện: +1 mỗi mùa (+2 nếu đúng đường), **có trần** 25 (45 nếu đúng đường), mùa đang dở chỉ tính theo Sức còn lại. Muốn Văn 55 (loại 2 đáp án khi thi) hay Võ cao thì phải đến lớp. `FF_RATE`, `FF_CAP` ở `src/dialogs.js`; đổi thì chạy lại `npm test`.
 
 ## Lỗi đã sửa (đừng để tái phát)
 
@@ -129,4 +143,5 @@ Có sẵn Playwright (Python) + Chromium. Cách làm đã dùng:
 
 - **Chương hai (1285–1288):** cứu người bị bắt; Chương Dương, Hàm Tử, giải phóng Thăng Long (1285); cuộc kháng chiến lần ba; **trận Bạch Đằng 1288** với cơ chế canh thủy triều, cắm cọc (ý tưởng gốc của chủ dự án). Đối chiếu Toàn thư năm Ất Dậu 1285 đến Mậu Tý 1288 trước khi viết.
 - Cân bằng độ khó (tốc độ nước lũ, lượng giặc) cần người chơi thật thử.
-- Có thể tách file khi game lớn hơn (ví dụ `src/` + script ghép), nhưng hiện tại giữ một file để GitHub Pages chạy thẳng.
+- Đưa các bài test BFS, đi chéo, trâu vào `tests/playtest.py`.
+- Chương hai nên nằm trong thư mục riêng (ví dụ `src/chapter2/`), tách dữ liệu sự kiện khỏi logic.

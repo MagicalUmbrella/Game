@@ -1,31 +1,33 @@
 """Chạy thử Đại Việt Một Đời bằng Playwright + Chromium.
 
-Cách dùng:  python3 tests/playtest.py [--runs 3] [--seed 1] [--shots DIR]
+Cách dùng:  npm test
+       hoặc  npm run build:test && python3 tests/playtest.py [--runs 3] [--seed 1] [--shots DIR]
 
-Script tạo một bản sao index.html có gắn hook window.__dv (không sửa file gốc),
-rồi chạy:
+Script phục vụ bản build `dist-test/` (build với `--mode test`, có hook window.__dv
+khai báo trong src/main.js) qua một HTTP server cục bộ, rồi chạy:
   1. Kiểm tra cân bằng: đến lớp (thầy đồ, võ sư) phải cho nhiều điểm hơn hẳn
      tự học, tự luyện ở nhà (Chọn việc chính). Tự học không vượt trần.
   2. Chơi hết chương một với lựa chọn ngẫu nhiên, bắt mọi lỗi pageerror.
 Thoát với mã 1 nếu có lỗi hoặc kiểm tra không đạt.
 """
-import argparse, os, random, sys, tempfile
+import argparse, functools, http.server, os, random, subprocess, sys, tempfile, threading
 from playwright.sync_api import sync_playwright
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-HOOK = ("titleScreen();window.__dv={get S(){return S},get MG(){return MG},"
-        "advance,advanceOne,fastForward,chooseFocus,talkThay,talkVo,pick,mpick,"
-        "endFlood,finishClimax,tmHit,newState,startPlay,"
-        "get modalOpen(){return modalOpen},get dialogOpen(){return dialogOpen},"
-        "setS(v){S=v}};")
+DIST = os.path.join(ROOT, 'dist-test')
 
 
-def make_copy(out_dir):
-    src = open(os.path.join(ROOT, 'index.html'), encoding='utf-8').read()
-    assert src.count('titleScreen();\n})();') == 1, 'không tìm thấy dòng titleScreen(); cuối file'
-    path = os.path.join(out_dir, 'test.html')
-    open(path, 'w', encoding='utf-8').write(src.replace('titleScreen();\n})();', HOOK + '\n})();'))
-    return 'file://' + path
+def serve(build=False):
+    """Phục vụ dist-test/ trên một cổng trống, trả về URL."""
+    if build or not os.path.exists(os.path.join(DIST, 'index.html')):
+        subprocess.run(['npm', 'run', 'build:test'], cwd=ROOT, check=True, stdout=subprocess.DEVNULL)
+    class Quiet(http.server.SimpleHTTPRequestHandler):
+        def log_message(self, *a):
+            pass
+    handler = functools.partial(Quiet, directory=DIST)
+    srv = http.server.ThreadingHTTPServer(('127.0.0.1', 0), handler)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    return f'http://127.0.0.1:{srv.server_port}/'
 
 
 # Bấm hết modal đang mở bằng lựa chọn đầu tiên còn bấm được.
@@ -87,7 +89,6 @@ def balance(page, fails):
             fresh(page, path)
             page.evaluate("() => {__dv.S.year=1267; __dv.S.ev=new Proxy({}, {get:()=>1})}")
             home = page.evaluate(f"""() => {{const D=__dv, v0=D.S.{k}; let n=0;
-              const real=D.advanceOne; // fastForward chạy tối đa 60 mùa, đếm qua S.year
               const y0=D.S.year*4+D.S.season; D.fastForward('{k}');
               n=D.S.year*4+D.S.season-y0; return [(D.S.{k}-v0)/n, D.S.{k}, n] }}""")
             name = f"{path or 'chưa chọn đường'} · {k}"
@@ -98,6 +99,30 @@ def balance(page, fails):
             if home[1] > cap:
                 fails.append(f'cân bằng {name}: tự học vượt trần {cap} ({home[1]})')
     return out
+
+
+def smoke(page, shots, fails):
+    """Chạy thật vài giây: đi bằng phím, lụt 1270, đêm 1285. Phần vẽ minigame không được
+    lượt chơi ngẫu nhiên đụng tới (nó kết thúc minigame ngay)."""
+    fresh(page)
+    x0 = page.evaluate('() => __dv.S.x')
+    page.keyboard.down('d'); page.wait_for_timeout(600); page.keyboard.up('d')
+    if page.evaluate('() => __dv.S.x') <= x0:
+        fails.append('bấm D nhưng nhân vật không đi sang phải')
+    page.screenshot(path=os.path.join(shots, 'smoke-walk.png'))
+    for name, setup, start in (('flood', '__dv.S.year=1270;__dv.S.season=2', '__dv.startFlood()'),
+                               ('climax', '__dv.S.year=1285;__dv.S.season=0;__dv.S.path="vo"', '__dv.startClimax()')):
+        fresh(page)
+        page.evaluate(f'() => {{{setup}; {start}}}')
+        page.evaluate(CLEAR_MODALS)
+        if not page.evaluate('() => !!__dv.MG'):
+            fails.append(f'{name}: minigame không bắt đầu')
+            continue
+        for k in 'wasd':
+            page.keyboard.down(k); page.wait_for_timeout(500); page.keyboard.up(k)
+        page.wait_for_timeout(1500)
+        page.screenshot(path=os.path.join(shots, f'smoke-{name}.png'))
+    print('  xong, ảnh smoke-*.png')
 
 
 def playthrough(page, rng):
@@ -121,10 +146,10 @@ def main():
     ap.add_argument('--runs', type=int, default=3)
     ap.add_argument('--seed', type=int, default=1)
     ap.add_argument('--shots', default=None, help='thư mục lưu ảnh chụp màn hình')
+    ap.add_argument('--build', action='store_true', help='build lại dist-test/ trước khi chạy')
     a = ap.parse_args()
-    tmp = tempfile.mkdtemp(prefix='dvmd-')
-    url = make_copy(tmp)
-    shots = a.shots or tmp
+    url = serve(a.build)
+    shots = a.shots or tempfile.mkdtemp(prefix='dvmd-')
     os.makedirs(shots, exist_ok=True)
     fails, errors = [], []
     with sync_playwright() as p:
@@ -140,6 +165,8 @@ def main():
         print('== Cân bằng (điểm mỗi mùa: đến lớp | tự học ở nhà | giá trị sau khi tự học) ==')
         for k, (c, h, v) in balance(page, fails).items():
             print(f'  {k:28s} {c:5.2f} | {h:5.2f} | {v}')
+        print('== Chạy thật: đi lại, lụt, đêm giặc ==')
+        smoke(page, shots, fails)
         page.close()
         print('== Chơi ngẫu nhiên hết chương một ==')
         for i in range(a.runs):

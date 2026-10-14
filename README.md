@@ -6,9 +6,16 @@ Sự kiện lịch sử trong game được đối chiếu với **Đại Việt
 
 ## Chơi thử
 
-Mở `index.html` bằng trình duyệt trên máy tính. Không cần cài đặt gì.
+Chơi qua GitHub Pages: `https://magicalumbrella.github.io/Game/`.
 
-Hoặc bật GitHub Pages cho repo này (xem bên dưới) để chơi qua đường link.
+Chạy trên máy (cần [Node.js](https://nodejs.org) 20 trở lên):
+
+```bash
+npm install
+npm run dev      # mở http://localhost:5173, sửa code là trang tự tải lại
+```
+
+Mở thẳng `index.html` bằng cách bấm đúp không chạy được nữa, vì game đã tách thành nhiều module.
 
 ## Điều khiển
 
@@ -53,16 +60,24 @@ Làng An Phú, gia đình nhân vật, Cò, Thảo, thầy đồ Chu, bà Tư v�
 
 ## Bật GitHub Pages
 
+Workflow `.github/workflows/deploy.yml` tự build, chạy test rồi đưa game lên Pages mỗi lần push vào `main`. Chỉ cần bật một lần:
+
 1. Vào **Settings → Pages** của repo.
-2. Ở mục **Build and deployment**, chọn **Source: Deploy from a branch**.
-3. Chọn nhánh `main`, thư mục `/ (root)`, bấm **Save**.
-4. Đợi khoảng một phút, game sẽ có ở `https://magicalumbrella.github.io/Game/`.
+2. Ở mục **Build and deployment**, chọn **Source: GitHub Actions**.
+3. Push vào `main` (hoặc chạy lại workflow trong tab **Actions**). Game sẽ có ở `https://magicalumbrella.github.io/Game/`.
 
 ## Kỹ thuật
 
-- Một file HTML duy nhất, JavaScript thuần, vẽ bằng Canvas.
+- JavaScript thuần chia thành ES module trong `src/`, đóng gói bằng [Vite](https://vite.dev). Vẽ bằng Canvas.
 - Toàn bộ hình ảnh pixel art được vẽ bằng code, không dùng file ảnh.
 - Tiến trình lưu trong `localStorage` của trình duyệt.
+
+| Lệnh | Tác dụng |
+|---|---|
+| `npm run dev` | Chạy thử trên máy, tự tải lại khi sửa code |
+| `npm run build` | Build bản phát hành vào `dist/` |
+| `npm run preview` | Xem bản đã build |
+| `npm test` | Build bản test rồi chạy `tests/playtest.py` (cần `pip install playwright`) |
 
 ## Kế hoạch
 
