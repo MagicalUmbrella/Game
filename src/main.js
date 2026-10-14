@@ -18,13 +18,15 @@ import {dailyFlush} from './minigames/daily.js';
 import {startClimax,finishClimax,ZONE} from './climax.js';
 import {startEscort} from './camp.js';
 import {W,H} from './constants.js';
+import * as world from './world.js';
+import * as trai from './trai.js';
 import {personSprite} from './sprites.js';
 import {loadPeople} from './person.js';
-import {ground} from './ground.js';
+import {groundChunk,overview,prewarm} from './ground.js';
 
 // chờ nạp ảnh nhân vật (src/assets/nguoi.png) rồi mới vẽ
 loadPeople().catch(e=>console.error('Không nạp được ảnh nhân vật',e)).then(()=>{requestAnimationFrame(loop);titleScreen();
-  [0,1,2,3].forEach((s,i)=>setTimeout(()=>ground(s),400+i*250));   // vẽ sẵn nền 4 mùa lúc ở màn tiêu đề
+  for(const s of [0,1,2,3])prewarm(s,44,40);   // vẽ sẵn nền quanh làng, 4 mùa, lúc ở màn tiêu đề
   if(import.meta.env.MODE==='test')window.__dv=hook});
 
 /* Hook cho tests/playtest.py và tests/bots.js. Chỉ có trong bản build `--mode test`, bản phát hành tự loại bỏ.
@@ -34,4 +36,4 @@ const hook=import.meta.env.MODE==='test'&&{
   get modalOpen(){return ui.modalOpen},renderHUD:ui.renderHUD,get dialogOpen(){return ui.dialogOpen},pick:ui.pick,closeDialog:ui.closeDialog,mpick:ui.mpick,nextModal:ui.nextModal,startQuest:ui.startQuest,
   advance,advanceOne,EVENTS,LIFE,SPOTS,runLife,lifeChronicle,fastForward,chooseFocus,talkThay,talkVo,talkLy,talkRen,talkCha,talkMe,talkSach,talkTong,talkCo,talkThao,startPlay,fieldAction,fishAction,
   startFlood,endFlood,startExam,startTraining,tmHit,startClimax,finishClimax,startEscort,W,H,
-  dailyFlush,step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY,personSprite,ground};
+  dailyFlush,step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY,personSprite,groundChunk,overview,world,trai};

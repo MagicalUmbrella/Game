@@ -46,6 +46,13 @@ export function treeSprite(s,v){const key=s+'_'+v;if(sc[key])return sc[key];let 
         for(let k=-ww;k<=ww;k++){const tear=Hs(Math.round(t*40),ex+k,3)<.12&&Math.abs(k)>ww*.6;if(!tear)b.set(x,y+k,k<-ww*.3?P[2]:k>ww*.4?P[0]:P[1])}
         b.set(x,y,P[3])}}
     c=b.done();outline(c,'#1d2a1b');c.ax=17;c.ay=36}
+  else if(v===4){ // sú vẹt ven sông Bạch Đằng, bờ biển: tán thấp xòe rộng, rễ chống hình vòm cắm xuống bùn
+    const b=buf(40,34),P=s===3?['#3a4e3a','#4e6248','#66785a','#8a9a78']:s===2?['#3e5a2a','#56742e','#74903c','#a0b05a']:['#1f4a2a','#2f6636','#468446','#7ab062'];
+    for(let i=0;i<7;i++){const x0=8+i*4,top=20+(i%2),spread=(i-3)*1.6;   // rễ chống
+      for(let t=0;t<=1;t+=.05){const x=x0+spread*t,y=top+t*12-Math.sin(t*Math.PI)*2;b.set(x,y,i%2?'#5a4a36':'#6e5c42')}}
+    for(let y=14;y<23;y++){b.set(19,y,'#5a4a36');b.set(20,y,'#6e5c42')}
+    for(const [cx,cy,r] of [[10,12,7],[30,12,7],[20,8,8],[15,15,6],[25,15,6]])leafBall(b,cx,cy,r,P,cx*11+cy+s,.75);
+    c=b.done();outline(c,'#1d2a1b');c.ax=20;c.ay=32}
   else{ // cây tán
     const b=buf(34,42),P=LEAF[s];
     for(let y=26;y<40;y++){b.set(15,y,'#7a5634');b.set(16,y,'#6b4a2c');b.set(17,y,'#5a3c22');b.set(18,y,'#4c331f')}

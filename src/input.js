@@ -1,8 +1,11 @@
 /* ================= input & physics ================= */
 import {$,FI,GA,MO,TR,W,WL} from './constants.js';
+import {FERRIES,REGIONS,locked,regionId,regionOpen} from './world.js';
+import {campSolid} from './trai.js';
+import {toggleWorldMap,worldMapOpen} from './render.js';
 import {BUILDINGS,SIGNS,bsolid,get,isW} from './map.js';
 import {MG,NPCS,P,S,age,npcOn} from './state.js';
-import {closeDialog,dialogOpen,floats,modalOpen,mpick,pick,say,toast,toggleQuests} from './ui.js';
+import {closeDialog,dialogOpen,floats,modalOpen,mpick,pick,renderHUD,say,toast,toggleQuests} from './ui.js';
 import {buffaloLabel,buffaloUpdate,doorAction,fieldAction,fishAction,talkBuffalo} from './dialogs.js';
 import {dirOf} from './climax.js';
 import {playing} from './intro.js';
@@ -19,6 +22,8 @@ addEventListener('keydown',e=>{
   if(MG&&MG.modalKey&&modalOpen&&MG.modalKey(k))return;
   if(modalOpen){if(/^[1-9]$/.test(k))mpick(+k-1);return}
   if(dialogOpen){if(/^[1-9]$/.test(k))pick(+k-1);else if(k==='escape')closeDialog();return}
+  if((k==='m'||(k==='escape'&&worldMapOpen))&&playing){toggleWorldMap();return}   // bản đồ thế giới
+  if(worldMapOpen)return;
   if(MG&&MG.key&&playing&&MG.key(k))return;
   if(k==='c'&&playing&&!MG){showStats();return}
   if(k==='j'&&playing){toggleQuests();return}
@@ -27,11 +32,14 @@ addEventListener('keydown',e=>{
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
 /* Đêm 1285: lửa chặn ô (MG.blockAt). Đang đứng sẵn trong ô ấy thì vẫn bước ra được. */
-export function solidAt(px,py){const tx=Math.floor(px),ty=Math.floor(py),t=get(tx,ty);if(MG&&MG.blockAt&&MG.blockAt(tx,ty)&&!(Math.floor(S.x)===tx&&Math.floor(S.y)===ty))return true;if(isW(t)||t===MO||t===TR||t===WL)return true;if(t===GA&&age()<12)return true;return bsolid[ty*W+tx]===1}
+export function solidAt(px,py){const tx=Math.floor(px),ty=Math.floor(py),t=get(tx,ty);if(MG&&MG.blockAt&&MG.blockAt(tx,ty)&&!(Math.floor(S.x)===tx&&Math.floor(S.y)===ty))return true;if(isW(t)||t===MO||t===TR||t===WL)return true;if(!(MG&&MG.roam)&&locked(S,tx,ty))return true;   // vùng chưa tới lúc (world.js)
+  if(campSolid(tx,ty))return true;   // rào, lều trong doanh trại giặc (trai.js)
+  if(t===GA&&age()<12)return true;return bsolid[ty*W+tx]===1}
+const solidTerrain=(tx,ty)=>{const t=get(tx,ty);return isW(t)||t===MO||t===TR||t===WL||bsolid[ty*W+tx]===1};
 export function canStand(x,y){const r=.28;return!solidAt(x-r,y-.12)&&!solidAt(x+r,y-.12)&&!solidAt(x-r,y+.12)&&!solidAt(x+r,y+.12)}
-let target=null,gateWarn=0;
+let target=null,gateWarn=0,lockWarn=-1e9,lastRegion='anphu';
 export function update(dt){
-  if(!playing||modalOpen||dialogOpen){P.moving=false;return}
+  if(!playing||modalOpen||dialogOpen||worldMapOpen){P.moving=false;return}
   let dx=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),dy=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);
   if(dx&&dy){if(lastAxis==='x')dy=0;else dx=0}
   P.moving=!!(dx||dy);
@@ -39,8 +47,10 @@ export function update(dt){
     if(Math.abs(dx)>Math.abs(dy))P.dir=dx>0?'right':'left';else P.dir=dy>0?'down':'up';
     const nx=S.x+dx*sp,ny=S.y+dy*sp;if(canStand(nx,S.y))S.x=nx;if(canStand(S.x,ny))S.y=ny;
     P.walk+=dt*(keys.shift?14:9);
+    if(!(MG&&MG.roam)&&performance.now()-lockWarn>5000){const lx=Math.floor(S.x+dx*.6),ly=Math.floor(S.y+dy*.6);if(locked(S,lx,ly)&&!solidTerrain(lx,ly)){lockWarn=performance.now();const r=REGIONS[regionId(lx,ly)];toast(r.name+': chưa tới lúc đi xa thế. '+(r.hint||'')+' (Mở ở chương '+(r.ch===2?'hai':'ba')+'.)')}}
     if(age()<12&&get(Math.floor(S.x+dx*.6),Math.floor(S.y+dy*.6))===GA&&performance.now()-gateWarn>4000){gateWarn=performance.now();toast('Lính gác: Trẻ con không được một mình vào kinh. Đợi mười hai tuổi đã.')}
   }
+  {const r=regionId(Math.floor(S.x),Math.floor(S.y));if(r!==lastRegion){lastRegion=r;renderHUD()}}   // tên vùng trên bảng trạng thái
   buffaloUpdate(dt);
   for(const n of NPCS)if(n.wander){n.t=(n.t||0)-dt;if(n.t<=0){n.t=2+Math.random()*3;n.tx=n.home[0]+(Math.random()*4-2);n.ty=n.home[1]+(Math.random()*2-1)}
     const d=Math.hypot(n.tx-n.x,n.ty-n.y);if(d>.05){const [mx,my]=step4(n,n.tx,n.ty,1.2*dt),nx=n.x+mx,ny=n.y+my;n.face=dirOf(mx,my);if(!solidAt(nx,ny)){n.x=nx;n.y=ny;n.moving=true}else{n.tx=n.x;n.ty=n.y}}else n.moving=false}
@@ -57,6 +67,7 @@ function findTarget(){
   for(const sg of SIGNS){const d=Math.hypot(sg.x+.5-S.x,sg.y+1.2-S.y);if(d<best){best=d;target={label:'Đọc biển: '+sg.name,act:()=>say(sg.name,sg.text)}}}
   {const ex=exploreTarget(best);if(ex){best=ex.d;target=ex}}
   if(S.buffalo.st==='lost'&&S.quests.trau==='active'&&Math.hypot(b.x-S.x,b.y-S.y)<1.5)target={label:buffaloLabel(),act:talkBuffalo};   // đang tìm trâu thì trâu được ưu tiên hơn chỗ khám phá cạnh đó
+  if(!target)for(const f of FERRIES)for(const [a,b] of [[f.a,f.b],[f.b,f.a]]){if(target)break;if(Math.hypot(a[0]-S.x,a[1]-S.y)<1.4&&regionOpen(S,regionId(Math.floor(a[0]),Math.floor(a[1])))&&regionOpen(S,regionId(Math.floor(b[0]),Math.floor(b[1]))))target={label:'Đi đò: '+f.name,act:()=>{S.x=b[0];S.y=b[1];toast('Đò đưa bạn sang bờ bên kia.')}}}
   if(!target)for(const bd of BUILDINGS){if(!['home','cung','chua','dinh','truong','thap'].includes(bd.id))continue;const dx=bd.x+Math.floor(bd.w/2)+.5,dy=bd.y+bd.h+.3;if(Math.hypot(dx-S.x,dy-S.y)<1.3){target={label:bd.id==='home'?'Vào nhà':'Xem '+bd.name,act:()=>doorAction(bd)};break}}
   if(!target&&get(Math.floor(S.x),Math.floor(S.y))===FI&&age()>=8)target={label:'Làm đồng  (−1 Sức)',act:fieldAction};
   if(!target){const v={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[P.dir];if(isW(get(Math.floor(S.x+v[0]*.9),Math.floor(S.y+v[1]*.9))))target={label:'Câu cá  (−1 Sức)',act:fishAction}}

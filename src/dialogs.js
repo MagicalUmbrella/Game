@@ -1,5 +1,6 @@
 /* ================= dialogs ================= */
-import {H,MO,PA,SEASONS,TR,TS,W,WA,WL,WR,Z,canchi,ctx} from './constants.js';
+import {BI,H,MO,PA,SEASONS,TR,TS,W,WA,WL,WR,Z,canchi,ctx} from './constants.js';
+import {locked} from './world.js';
 import {bsolid,get,map} from './map.js';
 import {P,S,age,has,save} from './state.js';
 import {doneQuest,floatAt,floatText,gain,modalOpen,renderHUD,say,spend,startQuest,toast} from './ui.js';
@@ -115,8 +116,8 @@ export function talkNgu(){
 }
 export const PEN={x:44.5,y:58.6};
 let reachOK=null,hintT=0;
-export function walkable(x,y){return x>=0&&y>=0&&x<W&&y<H&&![WA,WR,MO,TR,WL].includes(map[y*W+x])&&!bsolid[y*W+x]}
-export function bfs(sx,sy){const prev=new Int32Array(W*H).fill(-2),s=sy*W+sx;prev[s]=-1;const q=[s];let h=0;while(h<q.length){const i=q[h++],x=i%W,y=(i/W)|0;for(const[a,c]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+a,ny=y+c,j=ny*W+nx;if(walkable(nx,ny)&&prev[j]===-2){prev[j]=i;q.push(j)}}}return prev}
+export function walkable(x,y){return x>=0&&y>=0&&x<W&&y<H&&![WA,WR,BI,MO,TR,WL].includes(map[y*W+x])&&!bsolid[y*W+x]}
+export function bfs(sx,sy){const prev=new Int32Array(W*H).fill(-2),s=sy*W+sx;prev[s]=-1;const q=[s];let h=0;while(h<q.length){const i=q[h++],x=i%W,y=(i/W)|0;for(const[a,c]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+a,ny=y+c,j=ny*W+nx;if(prev[j]===-2&&walkable(nx,ny)&&!locked(S,nx,ny)){prev[j]=i;q.push(j)}}}return prev}   // chỉ trong các vùng đã mở
 export function hideSpots(){if(!reachOK)reachOK=bfs(43,50);const c=[];
   for(let y=32;y<70;y++)for(let x=6;x<23;x++){if(reachOK[y*W+x]===-2||get(x,y)===PA)continue;let tr=0,road=false;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const t=get(x+dx,y+dy);if(t===TR)tr++;else if(t===PA)road=true}if(tr>=11&&!road)c.push([x,y])}
   if(c.length<3)for(let y=32;y<70;y++)for(let x=6;x<23;x++)if(reachOK[y*W+x]!==-2&&get(x,y)!==PA)c.push([x,y]);return c}

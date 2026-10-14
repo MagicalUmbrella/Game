@@ -4,18 +4,20 @@
    đổi ô hoặc sau một quãng ngắn. */
 import {H,W} from './constants.js';
 
-const prev=new Int32Array(W*H),queue=new Int32Array(W*H);
+const prev=new Int32Array(W*H),seen=new Int32Array(W*H),queue=new Int32Array(W*H);let stamp=0;
+const PAD=28;   // chỉ tìm trong khung bao quanh điểm đầu và đích, thêm PAD ô mỗi bên (bản đồ thế giới rất lớn)
 
 /* Đường từ ô (sx,sy) tới ô (gx,gy) theo các ô ok(x,y). Ô xuất phát luôn được tính là đi được
    (người bị đánh bật vào bụi cây vẫn tìm được lối ra). Đích không tới được thì đi tới ô tới được
    gần đích nhất. Trả về danh sách tâm ô, không gồm ô xuất phát. */
 export function gridPath(sx,sy,gx,gy,ok){
-  prev.fill(-2);const s=sy*W+sx;prev[s]=-1;queue[0]=s;let h=0,t=1,best=s,bd=Math.abs(sx-gx)+Math.abs(sy-gy);
+  stamp++;const s=sy*W+sx;seen[s]=stamp;prev[s]=-1;queue[0]=s;let h=0,t=1,best=s,bd=Math.abs(sx-gx)+Math.abs(sy-gy);
+  const bx0=Math.max(0,Math.min(sx,gx)-PAD),bx1=Math.min(W-1,Math.max(sx,gx)+PAD),by0=Math.max(0,Math.min(sy,gy)-PAD),by1=Math.min(H-1,Math.max(sy,gy)+PAD);
   while(h<t){const i=queue[h++],x=i%W,y=(i/W)|0;
     if(x===gx&&y===gy){best=i;bd=0;break}
     const d=Math.abs(x-gx)+Math.abs(y-gy);if(d<bd){bd=d;best=i}
     for(let k=0;k<4;k++){const nx=x+(k===0)-(k===1),ny=y+(k===2)-(k===3);
-      if(nx<0||ny<0||nx>=W||ny>=H)continue;const j=ny*W+nx;if(prev[j]!==-2||!ok(nx,ny))continue;prev[j]=i;queue[t++]=j}}
+      if(nx<bx0||ny<by0||nx>bx1||ny>by1)continue;const j=ny*W+nx;if(seen[j]===stamp||!ok(nx,ny))continue;seen[j]=stamp;prev[j]=i;queue[t++]=j}}
   const out=[];for(let i=best;i!==s&&i>=0;i=prev[i])out.push([i%W+.5,((i/W)|0)+.5]);return out.reverse()}
 
 /* Điểm kế tiếp mà o nên đi tới để đến (tx,ty), hoặc null nếu không có đường (đứng chờ).
