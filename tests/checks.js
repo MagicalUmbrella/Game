@@ -329,5 +329,53 @@
     return {errs};
   }
 
-  window.__checks = {reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers};
+  /* Chuyện đời thường: mọi chuyện, mọi lựa chọn chạy không lỗi, ghi kết quả, có dòng biên niên. */
+  function lifeAll() {
+    const d = D(), errs = [];
+    let n = 0;
+    for (const e of d.LIFE) for (let ci = 0; ci < e.ch.length; ci++) {
+      d.setS(Object.assign(d.newState('Thử'), {year: 1258 + e.age[0], season: e.s ?? 1, tien: 50, van: 40, vo: 40, duc: 30,
+        items: ['Lá thuốc'], quests: {hoc: 'done', trau: 'done'}, cha: true, thay: true}));
+      d.S.life = e.id === 'travay' ? {chovay: 'cho'} : {}; d.S.vayYear = d.S.year - 1;
+      d.startPlay(false); while (d.modalOpen) d.nextModal();
+      d.runLife(e);
+      const visible = e.ch.filter(c => !c.show || c.show());
+      const c = e.ch[ci]; if (!visible.includes(c)) continue;
+      const b = document.getElementById('mopt' + visible.indexOf(c));
+      if (!b || b.disabled) { errs.push(`${e.id}/${c.k}: nút bị khóa dù đủ điều kiện`); while (d.modalOpen) d.nextModal(); continue; }
+      b.click(); n++;
+      const k = d.S.life[e.id];
+      if (k == null) errs.push(`${e.id}/${c.k}: chọn xong mà không ghi kết quả`);
+      else if (!(k in e.chron)) errs.push(`${e.id}/${c.k}: kết quả "${k}" không có dòng biên niên`);
+      while (d.modalOpen) d.nextModal();
+    }
+    return {errs, nch: n};
+  }
+
+  /* Nhịp: sống từ 1264 tới hết 1284, mỗi mùa ngủ một giấc, chọn ngẫu nhiên khi có chuyện. Sự kiện lịch sử
+     tính theo lịch (không chạy thật). Đo số chuyện đời thường và quãng dài nhất không có chuyện gì. */
+  function lifePacing() {
+    const d = D(), errs = [];
+    d.setS(Object.assign(d.newState('Thử'), {quests: {hoc: 'done', trau: 'done'}, tien: 20, van: 30, vo: 30, duc: 20}));
+    d.S.ev = new Proxy({}, {get: () => 1});
+    d.startPlay(false); while (d.modalOpen) d.nextModal();
+    const main = new Set(d.EVENTS.map(e => e.y * 4 + e.s)), happened = [];
+    let count = 0;
+    while (d.S.year < 1285) {
+      d.advanceOne();
+      const t = d.S.year * 4 + d.S.season;
+      if (d.modalOpen) { count++; happened.push(t);
+        const bs = [...document.querySelectorAll('#modal .opt')].filter(b => !b.disabled);
+        bs[Math.floor(Math.random() * bs.length)].click(); while (d.modalOpen) d.nextModal(); }
+      else if (main.has(t)) happened.push(t);
+    }
+    const all = [...new Set(happened.concat([...main].filter(t => t < 1285 * 4)))].sort((a, b) => a - b);
+    let gap = 0, at = 1264 * 4;
+    for (const t of all) { if (t - at - 1 > gap) gap = t - at - 1; at = t; }
+    if (count < 14) errs.push(`chỉ có ${count} chuyện đời thường cả đời (mong ít nhất 14)`);
+    if (gap > 6) errs.push(`có quãng ${gap} mùa liền không có chuyện gì (mong tối đa 6)`);
+    return {errs, count, gap};
+  }
+
+  window.__checks = {reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();

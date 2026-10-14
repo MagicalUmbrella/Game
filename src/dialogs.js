@@ -8,6 +8,7 @@ import {prepChoice} from './prep.js';
 import {keys,solidAt} from './input.js';
 import {camX,camY} from './render.js';
 import {DUC_FF_CAP} from './stats.js';
+import {trauYeu} from './life.js';
 
 export const pickR=a=>a[Math.floor(Math.random()*a.length)];
 function vanLesson(){const v=S.van;return v<10?'Thầy dạy chữ trên khay cát, từng nét một.':v<25?'Thầy giảng sách dạy đạo làm người.':v<45?'Bạn đọc Luận ngữ, tập viết văn sách.':v<70?'Bạn học Kinh Thi, Kinh Thư, bình luận chuyện xưa.':'Bạn đọc Đại Việt sử ký, bàn về phép trị nước.'}
@@ -165,5 +166,5 @@ export function fastForward(k){let n=0;
 export function fishAction(){if(!spend())return;
   if(Math.random()<.62){if(S.quests.ca==='active'&&!has('Cá')){S.items.push('Cá');renderHUD();toast('Bạn câu được một con cá rô. Mang cho bà Tư thôi!')}else{gain('tien',1);toast('Câu được mấy con cá, đem bán được một quan.')}}
   else toast('Cá không cắn câu. Lần sau may hơn.')}
-export function fieldAction(){if(!spend())return;const n=S.path==='nong'?3:2;gain('tien',n);if(S.path==='nong')gain('duc',1);
+export function fieldAction(){if(!spend())return;const n=Math.max(1,(S.path==='nong'?3:2)-(trauYeu()?1:0));gain('tien',n);if(S.path==='nong')gain('duc',1);
   toast(['Bạn cùng cha cấy lúa, lưng mỏi nhừ.','Bạn làm cỏ, tát nước vào ruộng.','Mùa gặt! Lúa vàng trĩu bông.','Bạn cày ải, phơi đất cho vụ sau.'][S.season])}

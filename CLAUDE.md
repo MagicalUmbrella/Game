@@ -53,6 +53,7 @@ Mỗi file mở đầu bằng comment `/* ===== tên ===== */`. Các module impo
 | `events.js` | `advanceOne()` sang mùa; `EVENTS` là danh sách sự kiện `{id, y: năm, s: mùa 0–3, mg?, run}`; `eventCuoi`, `choosePath`, `setPath`. |
 | `minigames/` | Lụt 1270 (`startFlood`), kỳ thi 1275 (`QBANK`, `startExam`), tập trận 1283 (`startTraining`). |
 | `pathfind.js` | `gridPath`, `nextStep`: tìm đường BFS cho người do máy điều khiển (giặc, người cùng đánh) để không đi xuyên sông, cây, nhà. |
+| `life.js` | Chuyện đời thường (hư cấu): `LIFE` gồm 23 chuyện nhỏ theo tuổi, mùa (bắt dế, cháy xóm, năm hạn, cho vay…). `maybeLife()` sau mỗi lần sang mùa không có sự kiện lịch sử, cứ khoảng 1–2 mùa một chuyện. Lựa chọn ghi `S.life[id]`, có hậu quả và dòng trong mục "Những chuyện nhỏ" ở màn kết (`lifeChronicle`). Thêm chuyện mới: mỗi khóa kết quả phải có dòng `chron`. |
 | `stats.js` | Mốc chỉ số và tác dụng: `traiFromDuc`, `followFast`, `voHp`, `voDmg`, `voFast`, `DUC_FF_CAP`; bảng chỉ số `showStats()` (phím C). Đổi mốc thì sửa ở đây, đêm 1285 và bảng chỉ số cùng đọc. |
 | `prep.js` | Lo trước ngày giặc đến (thu 1282 → hết 1284, hư cấu): `PREP` gồm dựng lán (cụ lý, 12 quan), rèn giáo cho trai làng (thợ rèn, 10), cất bớt thóc vào rừng (cha hoặc mẹ, 6). `prepChoice`, `prepClimax`, `prepChronicle`. |
 | `climax.js` | Đêm tháng giêng 1285: `startClimax`, `clUpdate`, `finishClimax`, `endChapter` (biên niên). |
@@ -89,6 +90,7 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 - `buffalo`: `{x, y, st: 'pen'|'lost'|'run'|'follow', tracks, bolts, stop}`.
 - `ev`: sự kiện đã xảy ra. `quests`: `hoc`, `trau`, `ca`, `sach`, `lua`.
 - `toi`: món bốc lúc thôi nôi. `res`: kết quả màn cao trào.
+- `life`: kết quả chuyện đời thường; `lifeWait`: số mùa nghỉ trước chuyện kế; `trauYeu`: trâu yếu đến hết năm này (làm đồng bớt 1 quan); `vayYear`: năm cho hàng xóm vay.
 
 `loadSave()` bù các trường thiếu cho bản lưu cũ. **Khi thêm trường mới vào `newState`, nhớ xử lý bản lưu cũ.**
 
@@ -114,6 +116,7 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 | 1283 Đông | Quốc công tiết chế (đường võ chơi tập trận) | Toàn thư |
 | 1284 | Vét sông Tô Lịch; duyệt binh Đông Bộ Đầu; Diên Hồng | Toàn thư |
 | 1285 Xuân | Cao trào: đêm giặc đến làng → kết chương | Toàn thư + hư cấu |
+| mọi năm | Chuyện đời thường xen giữa (`life.js`), quãng trống dài nhất 6 mùa | Hư cấu |
 
 ### Hậu quả nối vào màn cao trào
 

@@ -131,11 +131,13 @@ def mechanics(page, fails):
                      ('đường văn: dân tự vào rừng', 'selfWalk'), ('ngã xuống: ai bị bắt, ai kẹt lại', 'downRule'),
                      ('giặc không đứng dàn hàng ở bìa rừng', 'noCamping'),
                      ('giấy bút, thuốc bổ mỗi mùa một lần', 'shopLimit'), ('lo trước ngày giặc đến', 'prep'),
-                     ('mốc chỉ số, phím C', 'statTiers')):
+                     ('mốc chỉ số, phím C', 'statTiers'), ('chuyện đời thường: mọi lựa chọn', 'lifeAll'),
+                     ('chuyện đời thường: nhịp', 'lifePacing')):
         fresh(page)
         r = page.evaluate(f'() => __checks.{fn}()')
         extra = (f" ({r['n']} điểm)" if 'n' in r else f" ({r['safe']}/{r['total']} vào tới rừng)" if 'safe' in r
-                 else f" (sát bìa rừng {100 * r['near']:.0f}% thời gian, tốc độ TB {r['speed']:.1f} ô/giây)" if 'near' in r else '')
+                 else f" (sát bìa rừng {100 * r['near']:.0f}% thời gian, tốc độ TB {r['speed']:.1f} ô/giây)" if 'near' in r
+                 else f" ({r['nch']} lựa chọn)" if 'nch' in r else f" ({r['count']} chuyện, quãng trống dài nhất {r['gap']} mùa)" if 'gap' in r else '')
         print(f"  {name}{extra}: {'đạt' if not r['errs'] else 'LỖI'}")
         fails.extend(f'{name}: {e}' for e in r['errs'])
     for dredged in (True, False):

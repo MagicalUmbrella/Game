@@ -6,6 +6,7 @@ import {startFlood} from './minigames/flood.js';
 import {startExam} from './minigames/exam.js';
 import {startTraining} from './minigames/training.js';
 import {startClimax,torches} from './climax.js';
+import {maybeLife} from './life.js';
 
 export function advanceOne(){S.season++;if(S.season>3){S.season=0;S.year++}S.suc=4;S.ate=false;S.thaoHelped=false;S.coPlayed=false;S.paper=false;S.tonic=false;if(S.season===0&&S.year>1264)S.tien+=2;if(S.quests.trau==='active'&&S.buffalo.st!=='follow'){S.tien=Math.max(0,S.tien-1);S._trauNote=true}checkEvents()}
 export function advance(n){S._trauNote=false;
@@ -14,7 +15,7 @@ export function advance(n){S._trauNote=false;
 }
 const src=t=>`<p class="src">Toàn thư chép: ${t}</p>`;
 export const K=(s,y)=>`${SEASONS[s]} · ${canchi(y)} ${y}`;
-const EVENTS=[
+export const EVENTS=[
  {id:'dieu',y:1266,s:1,run:()=>showModal({kicker:K(1,1266),title:'Cánh diều trên bãi sông',body:`<p>Cò ghé sát tai bạn: "Chiều nay trốn học ra bãi sông thả diều sáo đi! Thầy không biết đâu."</p>`,choices:[
    {label:'Trốn học đi thả diều',note:'Cò thân hơn · mất bài học',fn:()=>{S.flags.dieu='di';S.rel.co+=2;S.van=Math.max(0,S.van-1);showModal({kicker:'Tối hôm ấy',title:'Bị mẹ phạt',body:'<p>Diều bay cao vút, hai đứa cười như nắc nẻ. Tối về, mẹ biết chuyện, bắt bạn quỳ trước bàn thờ. Cò lén mang cho bạn củ khoai nướng.</p><p class="note">Cò nhớ mãi buổi chiều ấy.</p>'})}},
    {label:'Ở lại học',note:'+2 Văn · Cò giận',fn:()=>{S.flags.dieu='hoc';S.rel.co=Math.max(0,S.rel.co-1);gain('van',2)}}]})},
@@ -79,7 +80,8 @@ function eventCuoi(){
   S.thao=S.co==='village'?'co':'gone';
   showModal({kicker:K(0,1279),title:S.thao==='co'?'Thảo nhận lời Cò':'Thảo đi lấy chồng',body:S.thao==='co'?`<p>Cò nhờ người sang nhà bà Tư dạm hỏi, và Thảo nhận lời.${S.flags.rival?' Bạn đã nói lời thương, nhưng chưa đủ để giữ được Thảo.':''}</p>`:'<p>Thảo nhận lời một người làng bên rồi theo chồng đi xa. Bà Tư ở lại một mình.</p>'});
 }
-function checkEvents(){for(const e of EVENTS)if(!S.ev[e.id]&&S.year===e.y&&S.season===e.s){S.ev[e.id]=1;if(e.mg)S.pending=e.id;e.run()}}
+function checkEvents(){for(const e of EVENTS)if(!S.ev[e.id]&&S.year===e.y&&S.season===e.s){S.ev[e.id]=1;if(e.mg)S.pending=e.id;e.run()}
+  if(!modalOpen&&!S.ended&&!S.pending)maybeLife()}
 export function resumePending(){if(!S.pending)return;const e=EVENTS.find(x=>x.id===S.pending);if(e)e.run()}
 function choosePath(){
   const voOk=S.vo>=20||(has('Binh thư')&&S.vo>=12);

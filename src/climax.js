@@ -12,6 +12,7 @@ import {nextStep} from './pathfind.js';
 import {prepChronicle,prepClimax} from './prep.js';
 import {VH,VW,camX,camY,clock,drawSprite,shadow} from './render.js';
 import {followFast,traiFromDuc,voDmg,voFast,voHp} from './stats.js';
+import {lifeChronicle,lifeClimax} from './life.js';
 
 export const ZONE={x0:23,y0:54,x1:29,y1:66};
 const inZone=(x,y)=>x>=ZONE.x0&&x<=ZONE.x1+1&&y>=ZONE.y0&&y<=ZONE.y1+1;
@@ -53,6 +54,7 @@ export function startClimax(){
   setMG({type:'climax',T:150,t:150,hp:maxhp,maxhp,v,sk:sk.map(([x,y])=>({x,y,st:'wait'})),carry:null,en:[],al,spawnT:3,decoy:null,decoys:torches(),cd:0,inv:0,slash:0,kills:0,ngu:false,nLang:Math.max(0,nLang),
     hideNPC:true,update:clUpdate,findTarget:clTarget,draw:clDraw,hud:clHud,post:nightPost,key:clKey,speedMul:()=>MG.carry?(S.path==='nong'?.92:.74):1});
   // những gì đã lo trước (src/prep.js): người, thóc đã ở sẵn trong rừng; trai làng có giáo
+  lifeClimax(MG.al);
   prepClimax(MG.v,MG.sk,MG.al,o=>{o.st='safe';o.x=ZONE.x0+1.2+Math.random()*4;o.y=ZONE.y0+1.5+Math.random()*10;if(o.look)o.spot=[o.x,o.y]});
   S.x=43.5;S.y=50.6;P.dir='down';document.body.classList.add('mg');
   setKeys(`<span><kbd>Space</kbd> đánh</span><span><kbd>E</kbd> ${S.path==='van'?'chỉ đường':'dẫn người'} · vác thóc</span>${MG.decoys?'<span><kbd>Q</kbd> đuốc nghi binh</span>':''}<span><kbd>Shift</kbd> chạy</span>`);
@@ -194,7 +196,7 @@ function endChapter(res){
     nong:'Bạn dẫn dân làng vào rừng dựng lán, cất giấu lương thực. Giặc đến chỉ thấy làng không.'}[S.path||'nong'];
   const hook=res.lost.length?`Chương hai: ${res.lost.join(', ')} đang trong tay giặc. Bạn phải tìm cách cứu họ, trong khi cuộc kháng chiến dẫn tới trận Bạch Đằng năm 1288.`:'Chương hai: cuộc kháng chiến, dẫn tới trận Bạch Đằng năm 1288.';
   showModal({kicker:'Xuân · Ất Dậu 1285',title:'Hết chương một',
-    body:`<p>${path}</p><p class="kicker" style="margin-top:6px">Biên niên đời bạn</p><ul style="margin:0;padding-left:18px;display:grid;gap:4px;line-height:1.5">${L.filter(Boolean).map(x=>`<li>${x}</li>`).join('')}</ul>
+    body:`<p>${path}</p><p class="kicker" style="margin-top:6px">Biên niên đời bạn</p><ul style="margin:0;padding-left:18px;display:grid;gap:4px;line-height:1.5">${L.filter(Boolean).map(x=>`<li>${x}</li>`).join('')}</ul>${(()=>{const t=lifeChronicle();return t.length?`<p class="kicker" style="margin-top:6px">Những chuyện nhỏ</p><p class="note" style="line-height:1.6">${t.map(x=>x[0].toUpperCase()+x.slice(1)).join('. ')}.</p>`:''})()}
      <div class="endstats"><div><b>${S.van}</b><span>Văn</span></div><div><b>${S.vo}</b><span>Võ</span></div><div><b>${S.duc}</b><span>Đức</span></div><div><b>${S.tien}</b><span>quan</span></div></div>
      <p class="note">${S.name}, 27 tuổi.</p><p><span class="seal">Hết chương một</span>&nbsp; ${hook}</p>`,
     choices:[{label:'Bắt đầu một cuộc đời mới',fn:()=>{try{localStorage.removeItem('dvmd-save')}catch(e){}location.reload();return false}}]});
