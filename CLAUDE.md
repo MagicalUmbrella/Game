@@ -111,6 +111,12 @@ Có sẵn Playwright (Python) + Chromium. Cách làm đã dùng:
 2. Bắt `pageerror`, chụp màn hình và tự xem lại ảnh.
 3. Các bài test đã viết: chạy hết game với lựa chọn ngẫu nhiên (3 lượt, không lỗi); BFS kiểm tra mọi NPC, cửa nhà, biển, chỗ đê vỡ, nơi trú ẩn, chỗ giấu trâu đều đi tới được; kiểm tra không đi chéo; kiểm tra trâu giật mình chạy.
 4. Kiểm tra cú pháp nhanh: tách phần `<script>` ra file rồi `node --check`.
+5. **Script có sẵn:** `python3 tests/playtest.py --runs 3` (tự tạo bản sao có hook, kiểm tra cân bằng điểm, chơi ngẫu nhiên hết chương). **Agent `game-tester`** (`.claude/agents/game-tester.md`) chạy toàn bộ việc kiểm tra và báo cáo. Gọi nó sau mỗi lần sửa game.
+
+### Cân bằng điểm
+
+- Đến lớp thầy đồ: +2 Văn mỗi Sức (+1 nếu đã biếu Tứ thư). Võ sư: +2 Võ (+3 đường võ, +1 có kiếm). Quốc học viện +3, Giảng võ đường +4. Một mùa dùng hết Sức được 8 điểm trở lên.
+- "Chọn việc chính" ở nhà là tự học, tự luyện: +1 mỗi mùa (+2 nếu đúng đường), **có trần** 25 (45 nếu đúng đường), mùa đang dở chỉ tính theo Sức còn lại. Muốn Văn 55 (loại 2 đáp án khi thi) hay Võ cao thì phải đến lớp. Đổi `FF_RATE`, `FF_CAP` thì chạy lại `tests/playtest.py`.
 
 ## Lỗi đã sửa (đừng để tái phát)
 

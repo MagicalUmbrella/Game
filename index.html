@@ -567,14 +567,20 @@ function doorAction(b){
   if(b.id==='dinh')return say('Đình làng','Đình làng thờ Thành hoàng, là nơi dân làng họp bàn việc chung.');
   if(b.id==='truong')return say('Trường làng','Lớp học có mấy chiếc chiếu, khay cát để tập viết. Thầy đồ đang đứng trước cửa.');
 }
-function chooseFocus(){const a=age();say('Những năm tới','Bạn dồn sức vào việc gì? Thời gian sẽ trôi cho đến khi có chuyện quan trọng xảy ra. Bạn sẽ bỏ lỡ những lần gặp gỡ bạn bè trong thời gian ấy.',[
-  {label:'Học hành',note:`+${S.path==='van'?4:3} Văn mỗi mùa`,fn:()=>fastForward('van')},
-  {label:'Luyện võ',note:a<8?'cần 8 tuổi':`+${S.path==='vo'?4:3} Võ mỗi mùa`,disabled:a<8,fn:()=>fastForward('vo')},
+/* Tự học ở nhà chậm và có trần: muốn giỏi phải đến lớp, đến sân võ (mỗi mùa ở đó được 8 điểm trở lên). */
+const FF_RATE={van:()=>S.path==='van'?2:1,vo:()=>S.path==='vo'?2:1},FF_CAP={van:()=>S.path==='van'?45:25,vo:()=>S.path==='vo'?45:25};
+function ffNote(k){const lab=k==='van'?'Văn':'Võ',c=FF_CAP[k]();return S[k]>=c?`tự ${k==='van'?'học':'luyện'} chỉ đến ${c} ${lab}`:`+${FF_RATE[k]()} ${lab} mỗi mùa, tối đa ${c}`}
+function chooseFocus(){const a=age();say('Những năm tới','Bạn dồn sức vào việc gì? Thời gian sẽ trôi cho đến khi có chuyện quan trọng xảy ra. Bạn sẽ bỏ lỡ những lần gặp gỡ bạn bè trong thời gian ấy. Tự học, tự luyện ở nhà tiến bộ chậm; đến lớp thầy đồ hay sân võ thì nhanh hơn nhiều.',[
+  {label:'Tự học ở nhà',note:ffNote('van'),fn:()=>fastForward('van')},
+  {label:'Tự luyện võ',note:a<8?'cần 8 tuổi':ffNote('vo'),disabled:a<8,fn:()=>fastForward('vo')},
   {label:'Làm ruộng',note:a<8?'cần 8 tuổi':`+${S.path==='nong'?3:2} quan mỗi mùa`,disabled:a<8,fn:()=>fastForward('tien')},
   {label:'Lo việc làng',note:a<10?'cần 10 tuổi':'+1 Đức mỗi mùa, làng quý hơn',disabled:a<10,fn:()=>fastForward('lang')}])}
 function fastForward(k){let n=0;
   for(let i=0;i<60;i++){
-    if(k==='van')S.van=Math.min(100,S.van+(S.path==='van'?4:3));else if(k==='vo')S.vo=Math.min(100,S.vo+(S.path==='vo'?4:3));else if(k==='tien')S.tien+=(S.path==='nong'?3:2);else{S.duc=Math.min(100,S.duc+1);if(i%2)S.flags.lang++}
+    /* mùa đang dở chỉ tính phần Sức còn lại, tránh vừa học ở lớp vừa được cộng thêm */
+    const part=i?1:S.suc/4;
+    if(k==='van'||k==='vo'){const c=FF_CAP[k]();if(S[k]<c&&Math.random()<part)S[k]=Math.min(c,S[k]+FF_RATE[k]())}
+    else if(k==='tien')S.tien+=Math.round((S.path==='nong'?3:2)*part);else{if(Math.random()<part)S.duc=Math.min(100,S.duc+1);if(i%2)S.flags.lang++}
     n++;advanceOne();if(modalOpen||S.ended)break}
   toast(`${n} mùa trôi qua. Bây giờ là ${SEASONS[S.season].toLowerCase()} năm ${canchi(S.year)} (${S.year}), bạn ${age()} tuổi.`,4600);save();renderHUD()}
 function fishAction(){if(!spend())return;
