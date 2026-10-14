@@ -25,6 +25,7 @@ Mở thẳng `index.html` bằng cách bấm đúp không chạy được nữa,
 | `Shift` | Chạy |
 | `E` | Nói chuyện, tương tác |
 | `1`–`9` | Chọn đáp án trong hội thoại |
+| `C` | Bảng chỉ số: mỗi chỉ số đang ở mốc nào, mốc tiếp theo có tác dụng gì |
 | `Esc` | Đóng hội thoại |
 | `Space` | Đánh (màn cao trào) |
 | `Q` | Cắm đuốc nghi binh (màn cao trào, đường văn) |
@@ -69,7 +70,7 @@ Workflow `.github/workflows/deploy.yml` tự build, chạy test rồi đưa game
 ## Kỹ thuật
 
 - JavaScript thuần chia thành ES module trong `src/`, đóng gói bằng [Vite](https://vite.dev). Vẽ bằng Canvas.
-- Toàn bộ hình ảnh pixel art được vẽ bằng code, không dùng file ảnh.
+- Hình ảnh pixel art vẽ bằng code; riêng nhân vật vẽ bằng script `tools/ve_nguoi.py` ra ảnh `src/assets/nguoi.png`.
 - Tiến trình lưu trong `localStorage` của trình duyệt.
 
 | Lệnh | Tác dụng |

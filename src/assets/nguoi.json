@@ -1,0 +1,223 @@
+{
+ "cw": 32,
+ "ch": 40,
+ "ax": 16,
+ "ay": 37,
+ "frames": [
+  "down0",
+  "down1",
+  "down2",
+  "left0",
+  "left1",
+  "left2",
+  "up0",
+  "up1",
+  "up2",
+  "downa0",
+  "downa1",
+  "lefta0",
+  "lefta1",
+  "upa0",
+  "upa1"
+ ],
+ "people": {
+  "ban_be": {
+   "row": 0,
+   "name": "Bạn lúc nhỏ",
+   "kid": true,
+   "fight": false
+  },
+  "ban_nong": {
+   "row": 1,
+   "name": "Bạn · nông",
+   "kid": false,
+   "fight": true
+  },
+  "ban_van": {
+   "row": 2,
+   "name": "Bạn · văn",
+   "kid": false,
+   "fight": true
+  },
+  "ban_vo": {
+   "row": 3,
+   "name": "Bạn · võ",
+   "kid": false,
+   "fight": true
+  },
+  "co_be": {
+   "row": 4,
+   "name": "Cò lúc nhỏ",
+   "kid": true,
+   "fight": false
+  },
+  "co": {
+   "row": 5,
+   "name": "Cò",
+   "kid": false,
+   "fight": true
+  },
+  "co_do": {
+   "row": 6,
+   "name": "Cò (theo quân)",
+   "kid": false,
+   "fight": true
+  },
+  "thao": {
+   "row": 7,
+   "name": "Thảo",
+   "kid": false,
+   "fight": false
+  },
+  "me": {
+   "row": 8,
+   "name": "Mẹ",
+   "kid": false,
+   "fight": false
+  },
+  "me_gia": {
+   "row": 9,
+   "name": "Mẹ (già)",
+   "kid": false,
+   "fight": false
+  },
+  "cha": {
+   "row": 10,
+   "name": "Cha",
+   "kid": false,
+   "fight": false
+  },
+  "cha_gia": {
+   "row": 11,
+   "name": "Cha (già)",
+   "kid": false,
+   "fight": false
+  },
+  "batu": {
+   "row": 12,
+   "name": "Bà Tư",
+   "kid": false,
+   "fight": false
+  },
+  "sen": {
+   "row": 13,
+   "name": "Bé Sen",
+   "kid": true,
+   "fight": false
+  },
+  "thay": {
+   "row": 14,
+   "name": "Thầy đồ Chu",
+   "kid": false,
+   "fight": false
+  },
+  "vosu": {
+   "row": 15,
+   "name": "Lão võ sư Hoàng",
+   "kid": false,
+   "fight": false
+  },
+  "su": {
+   "row": 16,
+   "name": "Sư cụ",
+   "kid": false,
+   "fight": false
+  },
+  "ly": {
+   "row": 17,
+   "name": "Cụ lý trưởng",
+   "kid": false,
+   "fight": false
+  },
+  "hsach": {
+   "row": 18,
+   "name": "Chủ hàng sách",
+   "kid": false,
+   "fight": false
+  },
+  "hren": {
+   "row": 19,
+   "name": "Bác thợ rèn",
+   "kid": false,
+   "fight": false
+  },
+  "tong": {
+   "row": 20,
+   "name": "Lái buôn người Tống",
+   "kid": false,
+   "fight": false
+  },
+  "dan1": {
+   "row": 21,
+   "name": "Người bán hàng",
+   "kid": false,
+   "fight": false
+  },
+  "gom": {
+   "row": 22,
+   "name": "Bà hàng gốm",
+   "kid": false,
+   "fight": false
+  },
+  "linh": {
+   "row": 23,
+   "name": "Lính gác",
+   "kid": false,
+   "fight": true
+  },
+  "quan": {
+   "row": 24,
+   "name": "Quân Trần",
+   "kid": false,
+   "fight": true
+  },
+  "hocquan": {
+   "row": 25,
+   "name": "Học quan",
+   "kid": false,
+   "fight": false
+  },
+  "voquan": {
+   "row": 26,
+   "name": "Võ quan",
+   "kid": false,
+   "fight": false
+  },
+  "ngu": {
+   "row": 27,
+   "name": "Chàng trai đọc sách",
+   "kid": false,
+   "fight": false
+  },
+  "ngu_tuong": {
+   "row": 28,
+   "name": "Phạm Ngũ Lão",
+   "kid": false,
+   "fight": true
+  },
+  "trai": {
+   "row": 29,
+   "name": "Trai làng",
+   "kid": false,
+   "fight": true
+  },
+  "trai_giao": {
+   "row": 30,
+   "name": "Trai làng (giáo)",
+   "kid": false,
+   "fight": true
+  },
+  "giac": {
+   "row": 31,
+   "name": "Giặc",
+   "kid": false,
+   "fight": true
+  },
+  "giac_ky": {
+   "row": 32,
+   "name": "Giặc kỵ",
+   "kid": false,
+   "fight": true
+  }
+ }
+}

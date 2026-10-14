@@ -1,5 +1,5 @@
 /* ================= map ================= */
-import {BR,FI,G,GA,H,MO,PA,SA,ST,TR,W,WA,WL,WR} from './constants.js';
+import {BR,DK,FI,G,GA,H,MO,PA,SA,ST,TR,W,WA,WL,WR} from './constants.js';
 import {Hs} from './pixel.js';
 
 export const map=new Uint8Array(W*H),bsolid=new Uint8Array(W*H);
@@ -9,6 +9,8 @@ const set=(x,y,v)=>{if(x>=0&&y>=0&&x<W&&y<H)map[y*W+x]=v};
 export const get=(x,y)=>(x<0||y<0||x>=W||y>=H)?MO:map[y*W+x];
 const fill=(x0,y0,x1,y1,v)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)set(x,y,v)};
 export const isW=t=>t===WA||t===WR;
+/* cống qua đê: ô cầu (BR) nằm trên đê, chỗ sông Tô Lịch chảy ra sông Hồng */
+export const CULVERT=new Set();
 export const tolichY=x=>24+2*Math.sin(x/7),hongX=y=>84+3*Math.sin(y/9);
 
 export const BUILDINGS=[
@@ -47,6 +49,12 @@ function buildMap(){
   fill(19,7,27,16,G);fill(12,56,16,60,G);
   for(let x=6;x<84;x++){const c=tolichY(x);for(let y=18;y<31;y++){const d=Math.abs(y+.5-c);if(d<=1.4)set(x,y,WA);else if(d<=2.3&&get(x,y)!==WA)set(x,y,SA)}}
   for(let y=0;y<H;y++){const c=hongX(y);for(let x=74;x<W;x++){const d=Math.abs(x+.5-c);if(d<=2.6)set(x,y,WR);else if(d<=3.7&&get(x,y)!==WA)set(x,y,SA)}}
+  // đê sông Hồng: dải đất đắp chạy dọc bờ tây, cách mép bãi một ô; chỗ sông Tô Lịch chảy qua là cống (đi lại như cầu)
+  let px=null;
+  for(let y=0;y<H;y++){const x=Math.ceil(hongX(y)-5.2);
+    for(let xx=(px===null?x:Math.min(px,x))-1;xx<=(px===null?x:Math.max(px,x));xx++){const t=get(xx,y);   // đê rộng 2 ô
+      if(t===WA){set(xx,y,BR);CULVERT.add(y*W+xx)}else if(t===G||t===TR||t===SA||t===PA)set(xx,y,DK)}
+    px=x}
   fill(28,30,58,52,G);fill(48,20,58,21,G);fill(70,29,78,30,G);fill(71,9,82,12,G);
   fill(46,35,53,41,SA);fill(23,53,29,67,G);fill(16,57,23,59,G);
   for(let x=28;x<=60;x++)for(let y=Math.floor(tolichY(x)+2.4);y<30;y++)if(get(x,y)===TR)set(x,y,G);
@@ -62,4 +70,6 @@ function buildMap(){
   for(const s of SIGNS)bsolid[s.y*W+s.x]=1;
 }
 buildMap();
-export const TREES=[];for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(map[y*W+x]===TR)TREES.push({x,y,v:Hs(x,y,5)<.5?0:1});
+export const TREES=[];for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(map[y*W+x]===TR){
+  // loại cây: rừng phía tây chủ yếu cây tán, lẫn tre; quanh làng, ven sông có tre, cau, chuối
+  const h=Hs(x,y,5),forest=x<26&&y>26;TREES.push({x,y,v:forest?(h<.8?0:1):h<.4?0:h<.68?1:h<.84?2:3})}

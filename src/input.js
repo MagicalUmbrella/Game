@@ -6,6 +6,8 @@ import {closeDialog,dialogOpen,floats,modalOpen,mpick,pick,say,toast} from './ui
 import {buffaloLabel,buffaloUpdate,doorAction,fieldAction,fishAction,talkBuffalo} from './dialogs.js';
 import {dirOf} from './climax.js';
 import {playing} from './intro.js';
+import {showStats} from './stats.js';
+import {exploreTarget} from './explore.js';
 
 export const keys={};let lastAxis='y';
 addEventListener('keydown',e=>{
@@ -17,6 +19,7 @@ addEventListener('keydown',e=>{
   if(modalOpen){if(/^[1-9]$/.test(k))mpick(+k-1);return}
   if(dialogOpen){if(/^[1-9]$/.test(k))pick(+k-1);else if(k==='escape')closeDialog();return}
   if(MG&&MG.key&&playing&&MG.key(k))return;
+  if(k==='c'&&playing&&!MG){showStats();return}
   if(k==='e'&&playing&&target)target.act();
 });
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
@@ -49,6 +52,7 @@ function findTarget(){
   for(const n of NPCS){if(!npcOn(n))continue;const d=Math.hypot(n.x-S.x,n.y-S.y);if(d<best){best=d;target={label:'Nói chuyện với '+n.name,act:()=>n.talk()}}}
   const b=S.buffalo;{const d=Math.hypot(b.x-S.x,b.y-S.y),lab=buffaloLabel();if(lab&&d<best){best=d;target={label:lab,act:talkBuffalo}}}
   for(const sg of SIGNS){const d=Math.hypot(sg.x+.5-S.x,sg.y+1.2-S.y);if(d<best){best=d;target={label:'Đọc biển: '+sg.name,act:()=>say(sg.name,sg.text)}}}
+  {const ex=exploreTarget(best);if(ex){best=ex.d;target=ex}}
   if(!target)for(const bd of BUILDINGS){if(!['home','cung','chua','dinh','truong','thap'].includes(bd.id))continue;const dx=bd.x+Math.floor(bd.w/2)+.5,dy=bd.y+bd.h+.3;if(Math.hypot(dx-S.x,dy-S.y)<1.3){target={label:bd.id==='home'?'Vào nhà':'Xem '+bd.name,act:()=>doorAction(bd)};break}}
   if(!target&&get(Math.floor(S.x),Math.floor(S.y))===FI&&age()>=8)target={label:'Làm đồng  (−1 Sức)',act:fieldAction};
   if(!target){const v={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[P.dir];if(isW(get(Math.floor(S.x+v[0]*.9),Math.floor(S.y+v[1]*.9))))target={label:'Câu cá  (−1 Sức)',act:fishAction}}
