@@ -1,0 +1,1045 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Đại Việt Một Đời</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: full-bleed pixel-art world at 3x; HUD as hard-edged lacquer panels with brass inlay, pinned to corners. Single dark look by choice. */
+:root{
+  --lacquer:#1d221f; --lacquer-2:#2a302b; --edge:#0b0d0c; --inlay:#6b5430;
+  --ink:#efe8d4; --muted:#aab2a2; --jade:#9fcaa9; --iron:#d08a54; --gold:#e2bf72; --warn:#e07f6b;
+  --display:"Alegreya SC", Georgia, "Times New Roman", serif;
+  --body:"Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+[hidden]{display:none!important}
+body{background:#0f1311;color:var(--ink);font-family:var(--body);overflow:hidden;font-size:14px}
+#cv{position:fixed;inset:0;display:block;image-rendering:pixelated}
+#hud{position:fixed;inset:0;pointer-events:none;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:max(14px,env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-bottom,0px))}
+.panel{background:var(--lacquer);border:3px solid var(--edge);box-shadow:inset 0 0 0 2px var(--inlay),5px 5px 0 rgba(0,0,0,.45)}
+#status{position:absolute;top:max(14px,env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));width:240px;padding:12px 14px;display:grid;gap:8px}
+#status .name{font-family:var(--display);font-size:20px;line-height:1.1;text-wrap:balance}
+#status .sub{color:var(--muted);font-size:12.5px;display:flex;justify-content:space-between;gap:8px}
+#status .date{font-family:var(--display);color:var(--gold);font-size:15px;letter-spacing:.02em}
+.suc{display:flex;gap:5px;align-items:center;font-size:12px;color:var(--muted)}
+.suc i{width:11px;height:11px;border:2px solid var(--jade);display:inline-block}
+.suc i.on{background:var(--jade)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-variant-numeric:tabular-nums}
+.stat{display:flex;justify-content:space-between;font-size:13px;border-bottom:2px dotted #3b443d;padding-bottom:2px}
+.stat b{font-weight:700;color:var(--ink)} .stat span{color:var(--muted)}
+.path{font-size:12px;color:var(--iron);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+#quests{position:absolute;top:max(14px,env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));width:264px;padding:12px 14px;display:grid;gap:8px}
+#quests h3,.kicker{font-family:var(--display);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--jade);margin:0;font-weight:500}
+.q{display:grid;gap:2px}.q b{font-weight:600;font-size:13.5px}.q span{font-size:12px;color:var(--muted);line-height:1.4}
+.q.done b{color:var(--muted);text-decoration:line-through}
+#mini{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:max(14px,env(safe-area-inset-bottom,0px));border:3px solid var(--edge);box-shadow:inset 0 0 0 2px var(--inlay),5px 5px 0 rgba(0,0,0,.45);background:#111;image-rendering:pixelated}
+#keys{position:absolute;left:max(16px,env(safe-area-inset-left,0px));bottom:max(14px,env(safe-area-inset-bottom,0px));padding:8px 12px;font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;max-width:calc(100% - 270px)}
+kbd{font-family:var(--body);font-size:11px;font-weight:600;border:2px solid var(--edge);border-bottom-width:3px;padding:0 5px;color:var(--ink);background:var(--lacquer-2)}
+#prompt{position:absolute;left:50%;transform:translateX(-50%);bottom:112px;padding:7px 14px;font-weight:600;white-space:nowrap}
+#toast{position:absolute;left:50%;transform:translateX(-50%);top:max(18px,env(safe-area-inset-top,0px));max-width:min(520px,calc(100% - 580px));min-width:240px;padding:10px 16px;text-align:center;line-height:1.45;transition:opacity .3s}
+#dialog{position:fixed;left:50%;transform:translateX(-50%);bottom:max(20px,env(safe-area-inset-bottom,0px));width:min(660px,calc(100% - 32px));padding:16px 20px 14px;display:grid;gap:10px;z-index:5}
+#dialog .who{font-family:var(--display);font-size:18px;color:var(--gold)}
+#dialog .txt{line-height:1.6;font-size:14.5px;max-width:65ch}
+.opts{display:grid;gap:6px}
+.opt{pointer-events:auto;font:inherit;text-align:left;color:var(--ink);background:var(--lacquer-2);border:2px solid var(--edge);box-shadow:inset 0 0 0 1px #3d463f;padding:8px 12px;cursor:pointer;display:flex;gap:10px;align-items:baseline}
+.opt:hover:not(:disabled),.opt:focus-visible{box-shadow:inset 0 0 0 2px var(--jade);outline:none;background:#323a34}
+.opt:disabled{opacity:.45;cursor:not-allowed}
+.opt .k{font-size:11px;color:var(--jade);font-variant-numeric:tabular-nums;min-width:12px;font-weight:700}
+.opt small{color:var(--muted);margin-left:auto;font-size:12px}
+#modal{position:fixed;inset:0;display:grid;place-items:center;background:rgba(10,13,11,.58);z-index:10;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px;overflow:auto}
+#modal .card{width:min(600px,100%);padding:26px 28px 22px;display:grid;gap:14px}
+#modal h2{font-family:var(--display);font-weight:700;font-size:30px;line-height:1.1;margin:0;text-wrap:balance}
+#modal h1{font-family:var(--display);font-weight:700;font-size:clamp(40px,7vw,64px);line-height:1;margin:0;text-wrap:balance}
+#modal .body{line-height:1.65;font-size:15px;color:#ddd7c6;display:grid;gap:10px}
+#modal .body p{margin:0;max-width:62ch}
+#modal input{font:inherit;font-size:16px;padding:9px 12px;background:var(--lacquer-2);color:var(--ink);border:2px solid var(--edge);box-shadow:inset 0 0 0 1px #3d463f;width:100%}
+#modal input:focus{outline:2px solid var(--jade);outline-offset:1px}
+.src{font-size:12.5px;color:var(--muted);border-left:3px solid var(--inlay);padding-left:10px}
+.seal{display:inline-block;border:2px solid var(--warn);color:var(--warn);font-family:var(--display);padding:2px 8px;letter-spacing:.1em;font-size:13px}
+.endstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-variant-numeric:tabular-nums}
+.endstats div{border:2px solid var(--edge);box-shadow:inset 0 0 0 1px #3d463f;padding:8px;text-align:center}
+.endstats b{display:block;font-size:22px;font-family:var(--display);color:var(--gold)}
+.endstats span{font-size:12px;color:var(--muted)}
+.note{font-size:12.5px;color:var(--muted)}
+body.mg #toast{top:104px}
+@media (max-width:960px){#quests{display:none}#toast{max-width:calc(100% - 300px)}}
+@media (max-width:640px){#toast{max-width:calc(100% - 32px);top:auto;bottom:160px}#keys{display:none}}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+</style>
+<style>body{margin:0}img{max-width:100%}</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="hud" hidden>
+  <div id="status" class="panel"></div>
+  <div id="quests" class="panel"></div>
+  <div id="prompt" class="panel" hidden></div>
+  <div id="toast" class="panel" hidden></div>
+  <canvas id="mini" width="192" height="144"></canvas>
+  <div id="keys" class="panel"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> đi lại</span><span><kbd>Shift</kbd> chạy</span><span><kbd>E</kbd> tương tác</span><span><kbd>1</kbd>–<kbd>4</kbd> chọn</span><span><kbd>Esc</kbd> đóng</span></div>
+</div>
+<div id="dialog" class="panel" hidden><div class="who"></div><div class="txt"></div><div class="opts"></div></div>
+<div id="modal" hidden><div class="card panel"></div></div>
+
+<script>
+(()=>{
+/* ================= constants ================= */
+const TS=16, Z=3, T=TS*Z, W=96, H=72;
+const G=0,WA=1,FI=2,PA=3,TR=4,MO=5,WL=6,SA=8,BR=9,ST=10,GA=11,WR=12;
+const SEASONS=['Xuân','Hạ','Thu','Đông'];
+const CAN=['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý'];
+const CHI=['Tý','Sửu','Dần','Mão','Thìn','Tỵ','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi'];
+const canchi=y=>CAN[(y+6)%10]+' '+CHI[(y+8)%12];
+const $=id=>document.getElementById(id);
+const cv=$('cv'),ctx=cv.getContext('2d');
+
+/* ================= pixel helpers ================= */
+function mk(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return[c,c.getContext('2d',{willReadFrequently:true})]}
+function shade(hex,a){const n=parseInt(hex.slice(1),16);const r=n>>16,g=n>>8&255,b=n&255;const f=v=>Math.max(0,Math.min(255,Math.round(a>0?v+(255-v)*a:v*(1+a))));return'#'+((1<<24)+(f(r)<<16)+(f(g)<<8)+f(b)).toString(16).slice(1)}
+function Hs(x,y,k=0){let h=(x*374761393+y*668265263+k*2246822519)|0;h=Math.imul(h^(h>>>13),1274126177);return((h^(h>>>16))>>>0)/4294967296}
+function outline(c,col='#221913'){const g=c.getContext('2d'),w=c.width,h=c.height,d=g.getImageData(0,0,w,h).data,o=[];
+  const A=(x,y)=>x>=0&&y>=0&&x<w&&y<h&&d[(y*w+x)*4+3]>0;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(!A(x,y)&&(A(x-1,y)||A(x+1,y)||A(x,y-1)||A(x,y+1)))o.push(x,y);
+  g.fillStyle=col;for(let i=0;i<o.length;i+=2)g.fillRect(o[i],o[i+1],1,1);return c}
+function disc(g,cx,cy,r,col){g.fillStyle=col;for(let y=-r;y<=r;y++){const w=Math.floor(Math.sqrt(r*r+r*.8-y*y));g.fillRect(cx-w,cy+y,w*2+1,1)}}
+function flip(c){const[f,g]=mk(c.width,c.height);g.translate(c.width,0);g.scale(-1,1);g.drawImage(c,0,0);f.ax=c.width-c.ax;f.ay=c.ay;return f}
+
+/* ================= map ================= */
+const map=new Uint8Array(W*H),bsolid=new Uint8Array(W*H);
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const R=rng(1258);
+const set=(x,y,v)=>{if(x>=0&&y>=0&&x<W&&y<H)map[y*W+x]=v};
+const get=(x,y)=>(x<0||y<0||x>=W||y>=H)?MO:map[y*W+x];
+const fill=(x0,y0,x1,y1,v)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)set(x,y,v)};
+const isW=t=>t===WA||t===WR;
+const tolichY=x=>24+2*Math.sin(x/7),hongX=y=>84+3*Math.sin(y/9);
+
+const BUILDINGS=[
+ {id:'home',name:'Nhà mình',x:41,y:46,w:5,h:3,kind:'house'},
+ {id:'batu',name:'Nhà bà Tư',x:48,y:46,w:4,h:3,kind:'house'},
+ {id:'nha1',name:'',x:33,y:46,w:4,h:3,kind:'house'},
+ {id:'nha2',name:'',x:34,y:50,w:4,h:2,kind:'house'},
+ {id:'truong',name:'Trường làng',x:30,y:39,w:5,h:3,kind:'school'},
+ {id:'dinh',name:'Đình làng',x:31,y:33,w:7,h:3,kind:'dinh'},
+ {id:'vo',name:'Sân võ',x:51,y:35,w:3,h:2,kind:'shed'},
+ {id:'chua',name:'Chùa làng',x:20,y:9,w:6,h:4,kind:'pagoda'},
+ {id:'cung',name:'Hoàng thành',x:46,y:5,w:15,h:5,kind:'palace'},
+ {id:'hocvien',name:'Quốc học viện',x:38,y:5,w:6,h:3,kind:'school'},
+ {id:'giangvo',name:'Giảng võ đường',x:62,y:9,w:6,h:3,kind:'dinh'},
+ {id:'thap',name:'Tháp Báo Thiên',x:67,y:5,w:2,h:2,kind:'tower'},
+ {id:'sach',name:'Hàng sách',x:38,y:13,w:3,h:2,kind:'stall'},
+ {id:'ren',name:'Lò rèn',x:43,y:13,w:3,h:2,kind:'stall'},
+ {id:'nhaituan',name:'Phường Nhai Tuân',x:58,y:13,w:3,h:2,kind:'stall'},
+ {id:'gom',name:'Hàng gốm',x:62,y:16,w:3,h:2,kind:'stall'},
+];
+const DECOR=[{kind:'banyan',x:37,y:42,solid:1},{kind:'well',x:44,y:42,solid:1},{kind:'boat',x:85,y:9},{kind:'boat',x:86,y:14},{kind:'boat',x:82,y:40}];
+const SIGNS=[
+ {x:41,y:30,name:'Làng An Phú',text:'Làng An Phú, ven sông Tô Lịch. Phía bắc là kinh thành Thăng Long.'},
+ {x:81,y:10,name:'Bến Đông Bộ Đầu',text:'Bến Đông Bộ Đầu bên sông Hồng. Đầu năm 1258, vua Trần Thái Tông và Thái tử ngự lâu thuyền đến đây đón đánh, phá tan quân giặc.'},
+ {x:77,y:30,name:'Đường đi Phù Ủng',text:'Đường men theo sông Hồng xuống phía đông nam là làng Phù Ủng, huyện Đường Hào.'},
+];
+
+function road(x0,y0,x1,y1){for(let y=Math.min(y0,y1);y<=Math.max(y0,y1);y++)for(let x=Math.min(x0,x1);x<=Math.max(x0,x1);x++){const t=get(x,y);if(isW(t))set(x,y,BR);else if(t!==ST&&t!==GA&&t!==BR&&t!==WL)set(x,y,PA)}}
+function buildMap(){
+  map.fill(G);
+  for(let i=0;i<260;i++)set(Math.floor(R()*W),Math.floor(R()*H),TR);
+  for(let y=0;y<H;y++){const m=4+Math.round(2*Math.sin(y/5)+R()*2);for(let x=0;x<m;x++)set(x,y,MO)}
+  for(let x=0;x<34;x++){const m=2+Math.round(R()*2);for(let y=0;y<m;y++)set(x,y,MO)}
+  for(let y=28;y<H;y++)for(let x=5;x<24;x++)if(R()<0.62-(x-5)*0.014)set(x,y,TR);
+  for(let y=4;y<18;y++)for(let x=14;x<31;x++)if(R()<0.4)set(x,y,TR);
+  fill(19,7,27,16,G);fill(12,56,16,60,G);
+  for(let x=6;x<84;x++){const c=tolichY(x);for(let y=18;y<31;y++){const d=Math.abs(y+.5-c);if(d<=1.4)set(x,y,WA);else if(d<=2.3&&get(x,y)!==WA)set(x,y,SA)}}
+  for(let y=0;y<H;y++){const c=hongX(y);for(let x=74;x<W;x++){const d=Math.abs(x+.5-c);if(d<=2.6)set(x,y,WR);else if(d<=3.7&&get(x,y)!==WA)set(x,y,SA)}}
+  fill(28,30,58,52,G);fill(48,20,58,21,G);fill(70,29,78,30,G);fill(71,9,82,12,G);
+  fill(46,35,53,41,SA);fill(23,53,29,67,G);fill(16,57,23,59,G);
+  for(let x=28;x<=60;x++)for(let y=Math.floor(tolichY(x)+2.4);y<30;y++)if(get(x,y)===TR)set(x,y,G);
+  fill(36,3,70,19,ST);
+  for(let x=36;x<=70;x++){set(x,3,WL);set(x,19,WL)}for(let y=3;y<=19;y++){set(36,y,WL);set(70,y,WL)}
+  fill(52,19,54,19,GA);fill(70,11,70,12,GA);
+  fill(30,53,58,66,FI);
+  for(const y of[57,61,65])road(30,y,58,y);
+  road(53,20,53,31);road(24,31,79,31);road(24,15,24,31);road(40,31,40,66);road(50,53,50,66);road(30,44,52,44);road(52,20,54,20);road(71,11,82,12);road(24,61,30,61);
+  road(8,44,29,44);road(14,44,14,58);road(14,58,29,58);road(8,36,8,44);road(8,36,23,36);road(23,31,23,36);
+  for(const b of BUILDINGS)for(let y=b.y;y<b.y+b.h;y++)for(let x=b.x;x<b.x+b.w;x++)bsolid[y*W+x]=1;
+  for(const d of DECOR)if(d.solid)bsolid[d.y*W+d.x]=1;
+  for(const s of SIGNS)bsolid[s.y*W+s.x]=1;
+}
+buildMap();
+const TREES=[];for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(map[y*W+x]===TR)TREES.push({x,y,v:Hs(x,y,5)<.5?0:1});
+
+/* ================= ground bake ================= */
+const grassC=s=>['#7cb24f','#5d9a3e','#9ea84c','#8e9c6c'][s];
+const tlC=s=>['#4f95aa','#4089a6','#5389a0','#5a8698'][s];
+const hgC=s=>['#b07655','#b8714c','#a97b5d','#9b7764'][s];
+const groundCache={};
+function ground(s){if(groundCache[s])return groundCache[s];
+  const[c,g]=mk(W*TS,H*TS);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++)tilePx(g,map[y*W+x],x,y,s);
+  return groundCache[s]=c}
+function tilePx(g,t,x,y,s){
+  const ox=x*TS,oy=y*TS,p=(dx,dy,w,h,col)=>{g.fillStyle=col;g.fillRect(ox+dx,oy+dy,w,h)};
+  const grass=()=>{const b=grassC(s);p(0,0,16,16,b);
+    for(let i=0;i<9;i++){const hx=Math.floor(Hs(x,y,i)*16),hy=Math.floor(Hs(x,y,i+30)*15);p(hx,hy,1,2,shade(b,i%3?-.18:.16))}
+    if(s<3&&Hs(x,y,99)<.1){const fx=2+Math.floor(Hs(x,y,98)*11),fy=2+Math.floor(Hs(x,y,97)*11),fc=[['#f4a9bc','#fff4e2'],['#f4d84c','#fff4e2'],['#e3893a','#f4c04a']][s];p(fx,fy-1,1,1,fc[0]);p(fx-1,fy,3,1,fc[0]);p(fx,fy+1,1,1,fc[0]);p(fx,fy,1,1,fc[1])}};
+  const edgeGrass=col=>{for(const[nx,ny,ex,ey,w]of[[0,-1,0,0,16],[0,1,0,15,16],[-1,0,0,0,1],[1,0,15,0,1]]){const n=get(x+nx,y+ny);if(n===G||n===TR){for(let k=0;k<16;k++)if(Hs(x*3+nx,y*3+ny,k)<.55){if(w>1)p(ex+k,ey,1,1,col);else p(ex,ey+k,1,1,col)}}}};
+  switch(t){
+   case G:case TR:grass();if(t===TR){g.fillStyle='rgba(20,40,20,.22)';g.fillRect(ox+3,oy+12,10,3)}break;
+   case PA:{p(0,0,16,16,'#b99c68');for(let i=0;i<7;i++)p(Math.floor(Hs(x,y,i)*15),Math.floor(Hs(x,y,i+9)*15),i%2?2:1,1,i%3?'#9d8152':'#d0b886');edgeGrass(grassC(s));break}
+   case SA:{p(0,0,16,16,'#d7c590');for(let i=0;i<6;i++)p(Math.floor(Hs(x,y,i)*16),Math.floor(Hs(x,y,i+9)*16),1,1,i%2?'#bba872':'#e8d9a8');break}
+   case WA:case WR:case BR:{
+     const hong=t===WR||(t===BR&&(get(x-1,y)===WR||get(x+1,y)===WR||get(x,y-1)===WR||get(x,y+1)===WR));
+     const b=hong?hgC(s):tlC(s);p(0,0,16,16,b);
+     if(t!==BR){const lt=shade(b,.28),wet=n=>isW(n)||n===BR;
+       if(!wet(get(x,y-1)))p(0,0,16,2,lt);if(!wet(get(x,y+1)))p(0,15,16,1,shade(b,-.25));if(!wet(get(x-1,y)))p(0,0,1,16,lt);if(!wet(get(x+1,y)))p(15,0,1,16,lt);
+       p(2+Math.floor(Hs(x,y,1)*8),4+Math.floor(Hs(x,y,2)*4),4,1,shade(b,.18));p(6+Math.floor(Hs(x,y,3)*6),10+Math.floor(Hs(x,y,4)*3),3,1,shade(b,.18))}
+     else{p(2,0,12,16,'#90693e');for(let j=0;j<16;j+=3)p(2,j,12,1,'#6c4e2b');p(1,0,1,16,'#5a3f25');p(14,0,1,16,'#5a3f25');p(1,2,2,2,'#4a331e');p(13,2,2,2,'#4a331e');p(1,10,2,2,'#4a331e');p(13,10,2,2,'#4a331e')}
+     break}
+   case FI:{p(0,0,16,16,['#6e968c','#6a8d5c','#8b7c4b','#7a5f3f'][s]);
+     if(s===0)for(let i=0;i<3;i++)p(Math.floor(Hs(x,y,i)*14),Math.floor(Hs(x,y,i+5)*15),3,1,'#8db4ab');
+     for(let r=0;r<4;r++)for(let c2=0;c2<4;c2++){const ax=1+c2*4,ay=1+r*4;
+       if(s===0){p(ax+1,ay+1,1,2,'#a6d86e');p(ax,ay+1,1,1,'#7fbf55')}
+       else if(s===1){p(ax,ay,2,3,'#4b9638');p(ax,ay,1,1,'#7cc458')}
+       else if(s===2){p(ax,ay,2,3,'#e1bd48');p(ax+2,ay,1,1,'#c99a30');p(ax,ay+3,2,1,'#9c8a40')}
+       else p(ax+1,ay+2,1,1,'#a08a5a')}
+     break}
+   case MO:{p(0,0,16,16,'#6c7462');for(const[a,b2,w,h]of[[1,1,7,6],[8,3,7,6],[3,8,8,6]]){p(a,b2,w,h,'#7c846f');p(a,b2,w,1,'#949c86');p(a,b2,1,h,'#949c86');p(a,b2+h-1,w,1,'#545b4b');p(a+w-1,b2,1,h,'#545b4b')}
+     if(get(x,y+1)!==MO){p(0,11,16,5,'#4d5345');p(3,12,1,4,'#3c4136');p(9,11,1,5,'#3c4136');p(0,11,16,1,'#5e6555')}break}
+   case WL:{p(0,0,16,16,'#8f5a3a');for(let j=0;j<16;j+=4){p(0,j,16,1,'#6c4029');const o=(j/4)%2?4:0;for(let i=o;i<16;i+=8)p(i,j,1,4,'#6c4029')}
+     if(get(x,y-1)!==WL){p(0,0,16,3,'#a87150');p(2,0,3,1,'#6c4029');p(10,0,3,1,'#6c4029')}if(get(x,y+1)!==WL)p(0,14,16,2,'#5a3523');break}
+   case ST:case GA:{p(0,0,16,16,'#a49d8e');for(let j=0;j<16;j+=8){p(0,j,16,1,'#888272');const o=(j/8)%2?4:0;for(let i=o;i<16;i+=8){p(i,j,1,8,'#888272');p(i+1,j+1,6,1,'#b8b1a1')}}
+     if(t===GA){p(0,0,2,16,'#6c4029');p(14,0,2,16,'#6c4029');p(0,0,16,2,'#6c4029')}break}
+  }
+}
+
+/* ================= sprites ================= */
+const spriteCache={};
+const SKIN='#e9b98f',SKIND='#c58f66';
+function personSprite(o,dir,f){
+  const key=JSON.stringify(o)+dir+f;if(spriteCache[key])return spriteCache[key];
+  if(dir==='right')return spriteCache[key]=flip(personSprite(o,'left',f));
+  const top=o.spear?12:6,[c,g]=mk(22,top+26),X=3,Y=top;
+  const s=(x,y,w,h,col)=>{g.fillStyle=col;g.fillRect(X+x,Y+y,w,h)};
+  const kid=o.kid,side=dir==='left',back=dir==='up';
+  const sh=o.shirt,shD=shade(sh,-.22),shL=shade(sh,.14);
+  const hairC={kid:'#1e1813',man:'#1e1813',old:'#ddd6c6',woman:'#1e1813',oldwoman:'#c9c2b3',monk:null}[o.hair];
+  const legL=f===1?-1:0,legR=f===2?-1:0,armL=f===1?1:f===2?-1:0;
+  const hy=kid?6:3,hh=8,by=kid?14:11,bh=kid?5:8,ly=19,lh=kid?3:4;
+  const robe=o.hair==='woman'||o.hair==='oldwoman'||o.hair==='monk',long=o.long||robe;
+  // legs / feet
+  if(!long){s(5,ly+legL,2,lh-legL+(kid?1:0)-(kid?1:0),o.pants||'#3b3027');if(kid)s(5,20+legL,2,3-legL,o.pants||'#3b3027');s(9,ly+legR,2,lh-legR,o.pants||'#3b3027');if(kid)s(9,20+legR,2,3-legR,o.pants||'#3b3027');s(5,23+legL,2,1,SKIND);s(9,23+legR,2,1,SKIND)}
+  else{s(4,by+bh,8,23-(by+bh),o.hair==='monk'?shD:'#2d2621');s(5,23,2,1,SKIND);s(9,23,2,1,SKIND)}
+  if(o.spear){s(14,-10,1,33,'#6a4e2e');s(13,-12,3,2,'#d3d7da');s(14,-13,1,1,'#eef0f2');s(13,-8,3,1,'#b8322a')}
+  // torso
+  const bodyH=o.hair==='monk'?23-by:(long&&!robe?bh+4:bh);
+  s(4,by,8,bodyH,sh);s(side?4:11,by,1,bodyH,shD);s(side?11:4,by,1,bodyH,shL);
+  if(!back)s(7,by,2,2,shD);
+  if(!long)s(4,by+(kid?3:4),8,1,o.belt||'#7a2e22');else if(!robe)s(4,by+4,8,1,shade(sh,-.35));
+  if(o.hair==='monk'&&!back)for(let i=0;i<6;i++)s(5+i,by+1+i,1,1,'#7a4a20');
+  // arms
+  const al=kid?4:5;
+  if(side){s(7,by+1+armL,2,al,shD);s(7,by+1+al+armL,2,1,SKIN)}
+  else{s(3,by+1+armL,1,al,sh);s(3,by+1+al+armL,1,1,SKIN);s(12,by+1-armL,1,al,sh);s(12,by+1+al-armL,1,1,SKIN)}
+  // head
+  s(4,hy+1,8,hh-1,SKIN);s(5,hy,6,1,SKIN);g.clearRect(X+4,Y+hy+hh-1,1,1);g.clearRect(X+11,Y+hy+hh-1,1,1);
+  s(side?4:11,hy+2,1,hh-3,SKIND);
+  // hair
+  if(o.hair==='kid'){s(7,hy-2,2,2,'#1e1813');s(8,hy-3,1,1,'#1e1813');if(back)s(6,hy,4,2,'#3a2e24')}
+  else if(hairC){
+    s(4,hy,8,3,hairC);s(5,hy-1,6,1,hairC);
+    if(back)s(4,hy,8,hh-2,hairC);else if(side)s(8,hy,4,hh-3,hairC);else{s(4,hy+3,1,2,hairC);s(11,hy+3,1,2,hairC)}
+    if(o.hair==='woman'||o.hair==='oldwoman'){s(3,hy-1,10,2,'#6b3a28');s(4,hy-2,8,1,'#80482f')}
+    else{s(6,hy-4,4,3,hairC);s(7,hy-5,2,1,hairC)}
+  }
+  if(o.hair==='old'&&!back)s(side?4:6,hy+hh-2,side?3:4,3,'#e6e0d2');
+  if(o.band){s(4,hy+2,8,1,'#b8322a');if(side)s(11,hy+3,1,3,'#b8322a');else if(back)s(7,hy+3,2,3,'#b8322a')}
+  if(o.helm){s(4,hy-2,8,4,'#5d636c');s(5,hy-3,6,1,'#5d636c');s(7,hy-5,2,2,'#8a9099');s(3,hy+1,10,1,'#7a5a3a');if(back)s(4,hy+2,8,3,'#5d636c');if(o.plume)s(7,hy-8,2,3,'#b8322a')}
+  if(o.hat){s(7,hy-5,2,1,'#e0cb92');s(6,hy-4,4,1,'#e0cb92');s(4,hy-3,8,1,'#d9c288');s(2,hy-2,12,1,'#cdb57a');s(1,hy-1,14,1,'#b9a066');s(5,hy-3,1,1,'#b9a066');s(10,hy-3,1,1,'#b9a066')}
+  // face
+  if(!back){const ey=hy+4;if(side)s(5,ey,1,2,'#2a1e16');else{s(6,ey,1,2,'#2a1e16');s(9,ey,1,2,'#2a1e16')}
+    if(kid&&!side){s(5,ey+2,1,1,'#e79a8a');s(10,ey+2,1,1,'#e79a8a')}}
+  outline(c);c.ax=X+8;c.ay=Y+24;
+  return spriteCache[key]=c;
+}
+function buffaloSprite(dir){const key='buf'+dir;if(spriteCache[key])return spriteCache[key];
+  if(dir==='right')return spriteCache[key]=flip(buffaloSprite('left'));
+  const[c,g]=mk(30,22),s=(x,y,w,h,col)=>{g.fillStyle=col;g.fillRect(x,y,w,h)};
+  s(8,7,18,8,'#4b4845');s(9,6,15,1,'#5c5955');s(10,12,14,3,'#3a3836');s(9,8,4,1,'#625f5a');
+  for(const lx of[10,13,20,23]){s(lx,15,2,5,'#3a3836');s(lx,20,2,1,'#211e1c')}
+  s(25,8,2,6,'#3a3836');s(26,14,1,2,'#211e1c');
+  s(2,6,8,7,'#4b4845');s(1,9,3,4,'#5c5955');s(4,8,1,1,'#120f0e');s(1,11,1,1,'#120f0e');
+  s(0,3,3,1,'#dcd3bc');s(0,2,1,2,'#dcd3bc');s(8,3,3,1,'#dcd3bc');s(10,2,1,2,'#dcd3bc');s(3,4,5,2,'#4b4845');
+  outline(c);c.ax=15;c.ay=20;return spriteCache[key]=c}
+function shadeBlob(g,w,h,base,maxY,seed){const d=g.getImageData(0,0,w,h),A=(x,y)=>x>=0&&y>=0&&x<w&&y<h&&d.data[(y*w+x)*4+3]>0&&y<maxY;
+  const dark=shade(base,-.25),lite=shade(base,.2);
+  for(let y=1;y<maxY;y++)for(let x=1;x<w-1;x++){if(!A(x,y))continue;
+    if(!A(x+1,y+1)||(y>maxY*.6&&Hs(x,y,seed)<.3)){g.fillStyle=dark;g.fillRect(x,y,1,1)}
+    else if((!A(x-1,y-1)||Hs(x,y,seed+7)<.07)&&y<maxY*.55){g.fillStyle=lite;g.fillRect(x,y,1,1)}}return A}
+function treeSprite(s,v){const key='tr'+s+v;if(spriteCache[key])return spriteCache[key];
+  const[c,g]=mk(28,36),base=['#4f9a44','#3d8538','#a8963a','#5b7a56'][s];
+  if(v===0){disc(g,14,13,10,base);disc(g,8,17,6,base);disc(g,20,17,6,base)}else{disc(g,14,11,9,base);disc(g,14,18,8,base)}
+  const A=shadeBlob(g,28,36,base,25,s+v);
+  if(s===0&&v===1)for(let i=0;i<10;i++){const x=6+Math.floor(Hs(i,v,3)*16),y=4+Math.floor(Hs(i,v,4)*16);if(A(x,y)){g.fillStyle=i%2?'#f2a2b6':'#fbd3dc';g.fillRect(x,y,1,1)}}
+  if(s===2)for(let i=0;i<12;i++){const x=5+Math.floor(Hs(i,v,5)*18),y=4+Math.floor(Hs(i,v,6)*18);if(A(x,y)){g.fillStyle='#d87a2c';g.fillRect(x,y,1,1)}}
+  g.fillStyle='#6b4a2c';g.fillRect(12,23,4,10);g.fillStyle='#4c331f';g.fillRect(15,23,1,10);g.fillRect(11,32,6,1);
+  outline(c,'#1d2a1b');c.ax=14;c.ay=33;return spriteCache[key]=c}
+function banyanSprite(s){const key='ban'+s;if(spriteCache[key])return spriteCache[key];
+  const[c,g]=mk(60,56),base=['#4b9442','#367d34','#8f8e3a','#557552'][s];
+  for(const[cx,cy,r]of[[30,18,15],[15,24,11],[45,24,11],[22,12,9],[38,12,9]])disc(g,cx,cy,r,base);
+  shadeBlob(g,60,56,base,36,s+11);
+  g.fillStyle='#5e432a';g.fillRect(25,32,10,20);g.fillRect(20,48,20,4);g.fillStyle='#4a321f';g.fillRect(32,32,3,20);
+  for(const rx of[18,22,38,41])g.fillRect(rx,32,1,16);
+  outline(c,'#1d2a1b');c.ax=30;c.ay=52;return spriteCache[key]=c}
+function simple(key,w,h,draw,ax,ay){if(spriteCache[key])return spriteCache[key];const[c,g]=mk(w,h),s=(x,y,ww,hh,col)=>{g.fillStyle=col;g.fillRect(x,y,ww,hh)};draw(s);outline(c);c.ax=ax;c.ay=ay;return spriteCache[key]=c}
+const wellSprite=()=>simple('well',18,18,s=>{s(2,6,14,9,'#8a8476');s(2,6,14,2,'#a59f90');s(4,7,10,3,'#2f4b57');s(2,14,14,1,'#6a6559');for(let i=3;i<16;i+=4)s(i,10,1,4,'#6a6559')},9,15);
+const boatSprite=()=>simple('boat',34,16,s=>{s(3,9,28,4,'#6e4a2a');s(1,8,3,2,'#6e4a2a');s(30,8,3,2,'#6e4a2a');s(5,13,24,1,'#4a311b');s(4,9,26,1,'#8a6238');s(11,4,12,5,'#c9ab6c');s(10,5,14,1,'#a88b52');for(let i=12;i<23;i+=3)s(i,4,1,5,'#a88b52');s(25,2,1,8,'#5a3f25')},17,13);
+const signSprite=()=>simple('sign',18,20,s=>{s(8,8,2,11,'#5a3f25');s(2,2,14,8,'#a77a48');s(2,2,14,1,'#c29462');s(2,9,14,1,'#7a5530');for(let i=4;i<14;i+=3)s(i,5,2,1,'#5a3f25')},9,18);
+
+/* buildings */
+function roofPx(g,x0,yTop,w,yEave,col,o){
+  const rows=yEave-yTop,sl=o.slope||9,ridge=o.ridge||shade(col,-.35);
+  for(let r=0;r<=rows;r++){const k=rows?r/rows:1,inset=Math.round((1-k)*sl),xs=x0+inset,xe=x0+w-inset;
+    g.fillStyle=(r%3===2)?shade(col,-.16):col;g.fillRect(xs,yTop+r,xe-xs,1);
+    g.fillStyle=o.thatch?shade(col,.12):shade(col,-.1);
+    if(!o.thatch){for(let i=xs+(r%2?2:0);i<xe;i+=4)g.fillRect(i,yTop+r,1,1)}else for(let i=xs+(r*3)%5;i<xe;i+=5)g.fillRect(i,yTop+r,1,1)}
+  g.fillStyle=shade(col,-.3);g.fillRect(x0,yEave,w,1);g.fillStyle=shade(col,.18);g.fillRect(x0+sl,yTop+1,w-2*sl,1);
+  if(o.up){g.fillStyle=col;g.fillRect(x0-2,yEave-1,3,2);g.fillRect(x0-4,yEave-3,3,2);g.fillRect(x0-5,yEave-5,2,2);g.fillRect(x0+w-1,yEave-1,3,2);g.fillRect(x0+w+1,yEave-3,3,2);g.fillRect(x0+w+3,yEave-5,2,2)}
+  g.fillStyle=ridge;g.fillRect(x0+sl-1,yTop-2,w-2*sl+2,3);
+  if(o.curl){g.fillRect(x0+sl-3,yTop-4,2,3);g.fillRect(x0+sl-4,yTop-6,2,2);g.fillRect(x0+w-sl+1,yTop-4,2,3);g.fillRect(x0+w-sl+2,yTop-6,2,2);if(o.pearl){g.fillStyle=o.pearl;g.fillRect(x0+Math.floor(w/2)-2,yTop-5,4,3)}}
+}
+const bspr={};
+function buildingSprite(b){if(bspr[b.id])return bspr[b.id];
+  const wpx=b.w*TS,hpx=b.h*TS,ex=10,top={palace:44,pagoda:42,tower:84,dinh:26,school:22,stall:16,shed:18,house:20}[b.kind];
+  const[c,g]=mk(wpx+ex*2,hpx+top+2),ox=ex,oy=top,s=(x,y,w,h,col)=>{g.fillStyle=col;g.fillRect(ox+x,oy+y,w,h)};
+  const P={house:{wall:'#c6a676',post:'#7a5a36',roof:'#c4a35e',thatch:1},school:{wall:'#cdb088',post:'#6d4a2c',roof:'#8f5434',up:1,curl:1},dinh:{wall:'#b99a6a',post:'#5e3c22',roof:'#7d4329',up:1,curl:1,pearl:'#d9b14a'},
+    shed:{wall:'#a88c62',post:'#6b4f2e',roof:'#b99a58',thatch:1},pagoda:{wall:'#d4b88e',post:'#7a3c26',roof:'#7a3f2a',up:1,curl:1,pearl:'#d9b14a'},palace:{wall:'#a8402b',post:'#6e2418',roof:'#9c6a2c',up:1,curl:1,ridge:'#e2b94e',pearl:'#f0d27a'},
+    stall:{wall:'#b8946a',post:'#6b4f2e',roof:'#8a5a34',up:1},tower:{}}[b.kind];
+  if(b.kind==='tower'){
+    for(let i=0;i<7;i++){const w=wpx-4-i*3,x=Math.floor((wpx-w)/2),y=hpx-12-i*12;s(x,y,w,10,i%2?'#a8643c':'#b4704a');s(x,y,w,1,'#c98a60');s(x+Math.floor(w/2)-1,y+3,2,4,'#3a2618');
+      s(x-3,y-2,w+6,2,'#6b3826');s(x-4,y-3,2,1,'#6b3826');s(x+w+2,y-3,2,1,'#6b3826')}
+    s(Math.floor(wpx/2)-1,hpx-12-7*12-4,2,8,'#d9b14a');s(0,hpx-3,wpx,3,'#8a8476');
+  } else {
+    const wt=Math.round(hpx*.45);
+    s(2,wt,wpx-4,hpx-wt,P.wall);s(2,wt,wpx-4,2,shade(P.wall,-.25));
+    for(let x=2;x<wpx-2;x+=12)s(x,wt,2,hpx-wt-3,P.post);s(wpx-4,wt,2,hpx-wt-3,P.post);
+    s(1,hpx-3,wpx-2,3,'#8a8476');s(1,hpx-3,wpx-2,1,'#a49d8e');
+    if(b.kind==='stall'){s(4,hpx-12,wpx-8,8,'#3a2a1c');s(3,hpx-6,wpx-6,3,'#8a6238');const goods={sach:['#d9cba0','#b8a676','#e8dcb6'],ren:['#c0c4c8','#e0823a','#8a8e92'],nhaituan:['#b8322a','#e2bf72','#3f6f9a'],gom:['#9fbfa8','#7a5132','#d9d0b8']}[b.id]||['#d9cba0'];
+      for(let i=0;i<Math.floor((wpx-10)/5);i++)s(5+i*5,hpx-9,3,3,goods[i%goods.length])}
+    else{const dw=b.kind==='palace'?14:10,dx=Math.floor(wpx/2-dw/2);s(dx-1,hpx-15,dw+2,12,shade(P.post,-.2));s(dx,hpx-14,dw,11,'#2e2118');s(Math.floor(wpx/2),hpx-14,1,11,'#4a3424');
+      if(wpx>=64)for(const wx of[dx-14,dx+dw+6]){s(wx,hpx-13,8,6,'#3a2a1c');for(let i=1;i<8;i+=2)s(wx+i,hpx-13,1,6,'#a07a4a');s(wx,hpx-14,8,1,P.post)}}
+    if(b.kind==='palace'){for(let x=8;x<wpx-8;x+=16)s(x,wt,3,hpx-wt-3,'#e2b94e');s(Math.floor(wpx/2)-12,hpx-2,24,2,'#c9c2b0')}
+    const two=b.kind==='palace'||b.kind==='pagoda',rTop=two?oy-top+26:oy-top+8,eave=oy+wt+2;
+    roofPx(g,ox-4,rTop,wpx+8,eave,P.roof,{thatch:P.thatch,up:P.up,curl:P.curl,ridge:P.ridge,pearl:P.pearl,slope:P.thatch?6:10});
+    if(two){const iw=Math.round(wpx*.55),ix=ox+Math.floor((wpx-iw)/2);g.fillStyle=P.wall;g.fillRect(ix+4,rTop-8,iw-8,10);g.fillStyle=P.post;for(let x=ix+4;x<ix+iw-4;x+=8)g.fillRect(x,rTop-8,1,10);
+      roofPx(g,ix-2,8,iw+4,rTop-7,P.roof,{up:1,curl:1,ridge:P.ridge,pearl:P.pearl,slope:7})}
+  }
+  outline(c);c.ox=ox;c.oy=oy;return bspr[b.id]=c}
+
+/* ================= state ================= */
+let S=null,MG=null;
+const age=()=>S.year-1258;
+const has=it=>S.items.includes(it);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const QUESTS={
+  hoc:{title:'Đến trường làng',hint:'Gặp thầy đồ Chu trước cửa trường làng, phía nam đình làng.'},
+  trau:{title:'Con trâu lạc',hint:'Lần theo dấu chân trâu từ ruộng vào rừng phía tây. Nghe tiếng mõ trâu để biết gần hay xa. Lại gần thì đi chậm, đừng giữ Shift kẻo trâu giật mình chạy mất. Dắt về thì trâu hay dừng gặm cỏ, bấm E để kéo thừng.'},
+  ca:{title:'Bát canh cá',hint:'Đứng sát mép sông, quay mặt ra nước, bấm E để câu cá, rồi mang cho bà Tư.'},
+  sach:{title:'Bộ Tứ thư cho thầy',hint:'Lên kinh thành Thăng Long (phía bắc, qua cầu), mua ở Hàng sách. Biếu thầy thì kỳ thi sau này dễ hơn.'},
+  lua:{title:'Tấm lụa cho mẹ',hint:'Mua lụa của lái buôn người Tống ở phường Nhai Tuân, mang về biếu mẹ. (Cũng có thể tặng Thảo.)'},
+};
+function newState(name){return{name,year:1264,season:0,suc:4,van:0,vo:0,duc:0,tien:3,items:[],quests:{},path:null,ev:{},x:43.5,y:50.4,ate:false,
+  buffalo:{x:44.5,y:58.6,st:'pen',tracks:[],bolts:0},nguMet:false,thayBonus:false,dothi:false,ended:false,
+  rel:{co:2,thao:0},flags:{lang:0},cha:true,thay:true,co:'village',thao:'none',married:false,child:false,thaoHelped:false,coPlayed:false,toi:'',pending:null}}
+function save(){try{localStorage.setItem('dvmd-save',JSON.stringify(S))}catch(e){}}
+function loadSave(){try{const s=localStorage.getItem('dvmd-save');if(!s)return null;const o=JSON.parse(s),b=newState('');const r=Object.assign(b,o);r.rel=Object.assign(newState('').rel,o.rel||{});r.flags=Object.assign({lang:0},o.flags||{});if(!r.buffalo||!r.buffalo.st){r.buffalo={x:44.5,y:58.6,st:'pen',tracks:[],bolts:0};if(r.quests&&r.quests.trau==='active')r._reLose=true}return r}catch(e){return null}}
+
+const P={dir:'down',walk:0,moving:false};
+const LOOK_THAO={shirt:'#4f7a5a',hair:'woman'};
+const NPCS=[
+ {id:'me',name:'Mẹ',x:45.5,y:50.4,look:{shirt:'#7b4656',hair:'woman'},talk:talkMe},
+ {id:'cha',name:'Cha',x:42.5,y:56.4,look:{shirt:'#5b4a35',hair:'man',hat:true},talk:talkCha,show:()=>S.cha},
+ {id:'thay',name:'Thầy đồ Chu',x:33.8,y:42.7,look:{shirt:'#33505c',hair:'old',long:true},talk:talkThay,show:()=>S.thay},
+ {id:'vosu',name:'Lão võ sư Hoàng',x:48.5,y:38.5,look:{shirt:'#6e2f26',hair:'old',band:true},talk:talkVo},
+ {id:'su',name:'Sư cụ',x:24.6,y:14.4,look:{shirt:'#a8692d',hair:'monk'},talk:talkSu},
+ {id:'batu',name:'Bà Tư',x:52.4,y:49.9,look:{shirt:'#4f4a3c',hair:'oldwoman'},talk:talkBaTu},
+ {id:'thao',name:'Thảo',x:49.3,y:50.6,look:LOOK_THAO,talk:talkThao,show:()=>!!S.ev.thao&&S.thao!=='gone',at:()=>S.thao==='wife'?[47.4,50.7]:S.thao==='co'?[36.4,49.7]:[49.3,50.6]},
+ {id:'sen',name:'Bé Sen',x:46.6,y:51.7,look:{shirt:'#c9785a',hair:'kid',kid:true},talk:()=>say('Bé Sen',pickR(['Bố ơi, bế con!','Bố ơi, mẹ Thảo bảo tối nay có canh cua.','Con biết đếm đến mười rồi đấy!'])),show:()=>S.child},
+ {id:'ly',name:'Cụ lý trưởng',x:35.8,y:36.9,look:{shirt:'#2c3a45',hair:'old',long:true},talk:talkLy},
+ {id:'co',name:'Cò',x:38.5,y:45.2,wander:true,home:[38.5,45.2],talk:talkCo,show:()=>S.co==='village'},
+ {id:'hsach',name:'Chủ hàng sách',x:39.6,y:15.6,look:{shirt:'#3a4a3a',hair:'man'},talk:talkSach},
+ {id:'hren',name:'Bác thợ rèn',x:44.6,y:15.6,look:{shirt:'#4a3a30',hair:'man',band:true},talk:talkRen},
+ {id:'tong',name:'Lái buôn người Tống',x:59.6,y:15.6,look:{shirt:'#3f6f9a',hair:'man',long:true},talk:talkTong,show:()=>S.year>=1275},
+ {id:'dan1',name:'Người bán hàng',x:59.6,y:15.6,look:{shirt:'#6a5a7a',hair:'woman'},talk:()=>say('Người bán hàng','Gian hàng này sắp có người mới thuê đấy. Nghe đâu là người phương bắc.'),show:()=>S.year<1275},
+ {id:'gom',name:'Bà hàng gốm',x:63.6,y:18.5,look:{shirt:'#5a6a5a',hair:'oldwoman'},talk:()=>say('Bà hàng gốm','Bát đĩa men ngọc, gốm hoa nâu đây con. Mua về cho mẹ đựng cà muối.')},
+ {id:'linh1',name:'Lính gác',x:51.3,y:20.5,look:{shirt:'#7a2b22',hair:'man',band:true,spear:true},talk:talkLinh},
+ {id:'linh2',name:'Lính gác',x:55.7,y:20.5,look:{shirt:'#7a2b22',hair:'man',band:true,spear:true},talk:talkLinh},
+ {id:'hocquan',name:'Học quan',x:42.6,y:8.8,look:{shirt:'#24425a',hair:'old',long:true},talk:talkHocQuan},
+ {id:'voquan',name:'Võ quan',x:66.4,y:12.8,look:{shirt:'#7a2b22',hair:'man',band:true},talk:talkVoQuan},
+ {id:'ngu',name:'Chàng trai đọc sách',x:74.5,y:30.4,look:{shirt:'#5a5040',hair:'man'},talk:talkNgu,show:()=>S.year>=1272&&S.year<=1277},
+];
+const coLook=()=>age()<14?{shirt:'#7a6a3a',hair:'kid',kid:true}:{shirt:'#7a6a3a',hair:'man',band:S.year>=1284};
+function npcOn(n){if(MG&&MG.hideNPC)return false;if(n.show&&!n.show())return false;if(n.at){const p=n.at();n.x=p[0];n.y=p[1]}return true}
+
+/* ================= UI ================= */
+let dialogOpen=false,modalOpen=false,curOpts=[],modalQueue=[];
+const floats=[];
+const KEYS_DEFAULT=$('keys').innerHTML;
+function setKeys(html){$('keys').innerHTML=html||KEYS_DEFAULT}
+function toast(msg,ms=3600){const t=$('toast');t.textContent=msg;t.hidden=false;t.style.opacity=1;clearTimeout(toast._t);toast._t=setTimeout(()=>{t.style.opacity=0;setTimeout(()=>t.hidden=true,300)},ms)}
+function floatAt(txt,x,y,color){floats.push({txt,color:color||'#ece6d4',x,y,t:0})}
+function floatText(txt,color){floatAt(txt,S.x,S.y,color)}
+function gain(k,n){const lab={van:'Văn',vo:'Võ',duc:'Đức',tien:'quan'}[k];S[k]=Math.max(0,Math.min(k==='tien'?999:100,S[k]+n));floatText((n>0?'+':'')+n+' '+lab,{van:'#9cc7e0',vo:'#f0a27f',duc:'#e2bf72',tien:'#c9e0a0'}[k]);renderHUD()}
+function spend(n=1){if(S.suc<n){toast('Bạn đã mệt. Về nhà ngủ để sang mùa mới.');return false}S.suc-=n;renderHUD();return true}
+function startQuest(id){if(S.quests[id])return;S.quests[id]='active';toast('Việc mới: '+QUESTS[id].title);renderHUD()}
+function doneQuest(id){S.quests[id]='done';toast('Hoàn thành: '+QUESTS[id].title);renderHUD()}
+function say(who,text,choices){
+  dialogOpen=true;const d=$('dialog');d.hidden=false;
+  d.querySelector('.who').textContent=who;d.querySelector('.txt').textContent=text;
+  curOpts=choices&&choices.length?[...choices,{label:'Tạm biệt'}]:[{label:'Tạm biệt'}];
+  const o=d.querySelector('.opts');o.innerHTML='';
+  curOpts.forEach((c,i)=>{const b=document.createElement('button');b.className='opt';b.id='opt'+i;b.disabled=!!c.disabled;
+    b.innerHTML=`<span class="k">${i+1}</span><span></span>${c.note?'<small></small>':''}`;b.children[1].textContent=c.label;if(c.note)b.querySelector('small').textContent=c.note;b.onclick=()=>pick(i);o.appendChild(b)});
+}
+function closeDialog(){dialogOpen=false;$('dialog').hidden=true}
+function pick(i){const c=curOpts[i];if(!c||c.disabled)return;closeDialog();if(c.fn)c.fn()}
+function showModal(m){modalQueue.push(m);if(!modalOpen)nextModal()}
+function nextModal(){
+  const m=modalQueue.shift();if(!m){modalOpen=false;$('modal').hidden=true;return}
+  modalOpen=true;closeDialog();const box=$('modal');box.hidden=false;const c=box.querySelector('.card');
+  c.innerHTML=`${m.kicker?`<div class="kicker">${m.kicker}</div>`:''}${m.big?`<h1>${m.title}</h1>`:`<h2>${m.title}</h2>`}<div class="body">${m.body||''}</div><div class="opts"></div>`;
+  const ch=m.choices||[{label:'Tiếp tục'}];curOpts=ch;const o=c.querySelector('.opts');
+  ch.forEach((x,i)=>{const b=document.createElement('button');b.className='opt';b.id='mopt'+i;b.disabled=!!x.disabled;
+    b.innerHTML=`<span class="k">${i+1}</span><span></span>${x.note?'<small></small>':''}`;b.children[1].textContent=x.label;if(x.note)b.querySelector('small').textContent=x.note;b.onclick=()=>mpick(i);o.appendChild(b)});
+  setTimeout(()=>{const f=c.querySelector('input')||c.querySelector('.opt:not(:disabled)');f&&f.focus()},30);
+}
+function mpick(i){const x=curOpts[i];if(!x||x.disabled)return;if(x.fn&&x.fn()===false)return;nextModal()}
+function renderHUD(){
+  if(!S)return;const a=age();
+  const pathName={van:S.dothi?'Thái học sinh':'Sĩ tử · Quốc học viện',vo:'Hương binh',nong:'Nhà nông'}[S.path]||'';
+  const hearts=n=>'♥'.repeat(Math.max(0,Math.min(8,n)))||'–';
+  const rels=[S.co==='village'||S.co==='army'?`Cò ${hearts(S.rel.co)}`:'',S.ev.thao&&S.thao!=='gone'?`Thảo ${S.thao==='wife'?'(vợ)':S.thao==='co'?'(vợ Cò)':hearts(S.rel.thao)}`:''].filter(Boolean).join(' · ');
+  $('status').innerHTML=`<div><div class="name"></div><div class="sub"><span>${a} tuổi</span><span>Làng An Phú</span></div></div>
+   <div class="date">${SEASONS[S.season]} · ${canchi(S.year)} ${S.year}</div>
+   <div class="suc">Sức&nbsp;${[0,1,2,3].map(i=>`<i class="${i<S.suc?'on':''}"></i>`).join('')}</div>
+   <div class="stats"><div class="stat"><span>Văn</span><b>${S.van}</b></div><div class="stat"><span>Võ</span><b>${S.vo}</b></div><div class="stat"><span>Đức</span><b>${S.duc}</b></div><div class="stat"><span>Tiền</span><b>${S.tien} quan</b></div></div>
+   ${pathName?`<div class="path">${pathName}</div>`:''}${rels?`<div class="sub"><span>${rels}</span></div>`:''}${S.items.length?`<div class="sub"><span>Hành trang: ${S.items.join(', ')}</span></div>`:''}`;
+  $('status').querySelector('.name').textContent=S.name;
+  const qs=Object.entries(S.quests);
+  $('quests').innerHTML=`<h3>Việc cần làm</h3>`+(qs.length?qs.sort((x,y)=>(x[1]==='done')-(y[1]==='done')).map(([id,st])=>`<div class="q ${st}"><b>${QUESTS[id].title}</b>${st==='active'?`<span>${QUESTS[id].hint}</span>`:''}</div>`).join(''):`<div class="q"><span>Đi gặp mọi người trong làng để nhận việc.</span></div>`)+`<div class="q"><span>Về nhà để ngủ sang mùa mới, hoặc chọn việc chính và cho thời gian trôi nhanh.</span></div>`;
+}
+
+/* ================= dialogs ================= */
+const pickR=a=>a[Math.floor(Math.random()*a.length)];
+function vanLesson(){const v=S.van;return v<10?'Thầy dạy chữ trên khay cát, từng nét một.':v<25?'Thầy giảng sách dạy đạo làm người.':v<45?'Bạn đọc Luận ngữ, tập viết văn sách.':v<70?'Bạn học Kinh Thi, Kinh Thư, bình luận chuyện xưa.':'Bạn đọc Đại Việt sử ký, bàn về phép trị nước.'}
+function voLesson(){const v=S.vo;return v<10?'Đứng tấn đến run cả chân.':v<25?'Tập côn pháp, múa gậy quanh sân.':v<45?'Tập đao pháp đến mỏi tay.':v<70?'Tập cưỡi ngựa, bắn cung.':'Học bày trận, đọc binh thư.'}
+function talkMe(){
+  const a=age(),ch=[];
+  if(!S.quests.hoc){startQuest('hoc');return say('Mẹ','Con lên sáu rồi, phải đi học chữ thôi. Trường làng ở phía tây bắc, ngay dưới đình làng. Con đến chào thầy đồ Chu nhé.')}
+  if(!S.ate)ch.push({label:'Ăn cơm mẹ nấu',note:'+1 Sức',fn:()=>{S.ate=true;S.suc=Math.min(4,S.suc+1);renderHUD();floatText('+1 Sức','#9fcaa9');toast('Cơm gạo mới, canh rau, cà muối. Bạn thấy khỏe hẳn.')}});
+  if(S.year>=1275&&a>=17&&!S.quests.lua)startQuest('lua');
+  if(S.quests.lua==='active'&&has('Lụa'))ch.push({label:'Biếu mẹ tấm lụa',fn:()=>{S.items.splice(S.items.indexOf('Lụa'),1);doneQuest('lua');gain('duc',4);say('Mẹ','Lụa đẹp quá con ạ. Mẹ để dành may áo đi lễ chùa.')}});
+  let t;
+  if(!S.cha)t=S.year<1280?'Từ ngày cha con mất, nhà mình vắng hẳn. Mẹ chỉ còn mỗi con thôi.':'Mẹ già rồi. Mỗi lần thắp hương cho cha con, mẹ lại kể chuyện con cho ông ấy nghe.';
+  else if(S.thao==='wife')t=S.child?'Bé Sen giống con hồi nhỏ như đúc. Mẹ trông cháu, hai đứa cứ yên tâm làm ăn.':'Có Thảo về làm dâu, mẹ đỡ hẳn. Con bé chịu khó lắm.';
+  else if(S.flags.de==='lost'&&S.year<1272)t='Năm nay mất mùa, nhà mình ăn độn khoai. Con chịu khó nhé.';
+  else t=a<10?'Đi chơi thì đừng ra gần sông một mình nhé con.':a<16?'Con lớn nhanh quá. Cha con bảo ra đồng phụ được rồi đấy.':S.path==='vo'?'Mẹ may thêm cho con cái áo. Tập luyện thì giữ sức khỏe.':S.path==='van'?'Học hành trên kinh có vất vả không con? Nhớ về thăm nhà.':'Có con ở nhà, cha mẹ đỡ vất vả nhiều.';
+  say('Mẹ',t,ch);
+}
+function talkCha(){
+  const a=age(),b=S.buffalo;
+  if(S.quests.trau==='active'&&b.st==='follow'&&Math.hypot(b.x-S.x,b.y-S.y)<4){b.st='pen';b.stop=false;b.x=PEN.x;b.y=PEN.y;b.tracks=[];doneQuest('trau');gain('duc',3);gain('tien',3);return say('Cha',(b.bolts?'Nghe nói con làm nó giật mình chạy mấy bận mà vẫn tìm về được. ':'')+'Giỏi lắm! Không có trâu thì nhà mình không cày được. Cầm lấy mấy quan tiền mà tiêu.')}
+  if(a>=7&&!S.quests.trau){startQuest('trau');loseBuffalo();return say('Cha','Sáng nay con trâu đứt thừng, giẫm nát cả bờ ruộng rồi chạy vào rừng phía tây. Con lần theo dấu chân nó mà tìm. Nhớ là trâu nhát lắm, lại gần thì đi khẽ thôi.')}
+  if(a<8)return say('Cha','Ruộng nhà mình đây. Tám tuổi con ra phụ cha được rồi.');
+  if(S.flags.daumua&&S.year<1281)return say('Cha',S.flags.daumua==='cham'?'Năm dịch, con bỏ cả việc để ngồi bên giường cha. Cha nhớ mãi.':'Nhờ thuốc của người Tống mà cha qua khỏi. Con biết lo xa lắm.');
+  say('Cha',['Xuân thì cấy, hạ làm cỏ, thu gặt, đông cày ải. Đứng trên ruộng rồi bấm E mà làm.','Năm nào nước sông lên to là lo lắm. Phải giữ đê cho chắc.','Được mùa thì phải nhớ để dành thóc giống.'][S.season%3]);
+}
+function talkThay(){
+  const a=age(),ch=[];
+  if(S.quests.hoc==='active'){doneQuest('hoc');gain('van',2)}
+  ch.push({label:'Học chữ',note:'−1 Sức · +Văn',fn:()=>{if(!spend())return;gain('van',2+(S.thayBonus?1:0));toast(vanLesson())}});
+  if(a>=12&&!S.quests.sach)ch.push({label:'Thầy có cần con giúp gì không?',fn:()=>{startQuest('sach');say('Thầy đồ Chu','Bộ Tứ thư của thầy mối mọt hết rồi. Trong kinh thành có hàng sách bán bản mới, giá sáu quan. Con mua giúp thầy được không?')}});
+  if(S.quests.sach==='active'&&has('Tứ thư'))ch.push({label:'Biếu thầy bộ Tứ thư',fn:()=>{S.items=S.items.filter(i=>i!=='Tứ thư');doneQuest('sach');S.thayBonus=true;gain('van',5);gain('duc',2);say('Thầy đồ Chu','Quý hóa quá! Từ nay thầy kèm riêng cho con. Mỗi buổi học con được thêm một điểm Văn, và đi thi sẽ vững vàng hơn.')}});
+  say('Thầy đồ Chu',S.path==='van'?'Học trò của thầy đã vào Quốc học viện rồi. Thầy mừng lắm.':S.flags.dieu==='di'&&a<12?'Hôm trước trò trốn học đi thả diều phải không? Lần này thầy bỏ qua.':a<10?'Muốn biết chữ thì phải chăm. Mỗi lần đến, thầy dạy con một bài.':'Học để hiểu đạo lý, không phải chỉ để thi đỗ đâu con.',ch);
+}
+function talkVo(){
+  if(age()<8)return say('Lão võ sư Hoàng','Tay chân còn mềm lắm. Đợi tám tuổi hẵng đến đây, ta dạy cho.');
+  const n=(S.path==='vo'?3:2)+(has('Kiếm sắt')?1:0);
+  say('Lão võ sư Hoàng',S.path==='vo'?'Hương binh thì phải luyện mỗi ngày. Người phương bắc chưa bao giờ thôi dòm ngó nước ta.':'Võ không phải để bắt nạt người. Võ để giữ làng, giữ nước.',[{label:S.path==='vo'?'Tập trận':'Luyện võ',note:'−1 Sức · +Võ',fn:()=>{if(!spend())return;gain('vo',n);toast(voLesson())}}]);
+}
+function talkSu(){say('Sư cụ','A Di Đà Phật. Chùa nhỏ nhưng cửa luôn mở. Con có muốn ngồi nghe kinh một lát không?',[{label:'Thắp hương, nghe giảng',note:'−1 Sức · +Đức',fn:()=>{if(!spend())return;gain('duc',2);toast(pickR(['Sư cụ giảng về lòng từ bi.','Bạn quét sân chùa, lòng nhẹ nhõm.','Tiếng chuông chiều vang khắp xóm.']))}}])}
+function talkBaTu(){
+  if(!S.quests.ca){startQuest('ca');return say('Bà Tư','Cháu ngoan. Bà già rồi, không ra sông được, thèm bát canh cá quá. Cháu câu giúp bà một con nhé.')}
+  if(S.quests.ca==='active'&&has('Cá')){S.items.splice(S.items.indexOf('Cá'),1);doneQuest('ca');gain('duc',3);gain('tien',1);S.rel.thao++;return say('Bà Tư','Ôi con cá rô to quá! Bà nấu canh chua ngay. Cầm quan tiền này mua kẹo nhé.')}
+  say('Bà Tư',S.thao==='wife'?'Giao con Thảo cho cháu, bà yên lòng nhắm mắt được rồi.':age()<14?'Lớn nhanh quá, mới ngày nào còn để chỏm.':'Làng mình may có những đứa như cháu.');
+}
+function talkThao(){
+  if(S.thao==='wife')return say('Thảo',S.year>=1282?'Nghe tin giặc sắp sang, em lo lắm. Có chuyện gì, anh nhớ lo cho mẹ và con trước.':S.child?'Bé Sen hôm nay biết gọi bà nội rồi đấy anh.':'Em đã quen việc nhà mình rồi. Anh cứ yên tâm lo việc ngoài.');
+  if(S.thao==='co')return say('Thảo','Anh Cò nhà em hay nhắc anh lắm. Bạn bè lâu năm, đừng để mất nhau nhé.');
+  const ch=[],r=S.rel.thao;
+  if(!S.thaoHelped)ch.push({label:'Giúp Thảo gánh nước',note:'−1 Sức · thân thiết hơn',fn:()=>{if(!spend())return;S.thaoHelped=true;S.rel.thao++;renderHUD();toast('Hai người vừa gánh nước vừa chuyện trò. Thảo cười nhiều hơn.')}});
+  if(has('Lụa'))ch.push({label:'Tặng Thảo tấm lụa',note:'thân thiết hơn nhiều',fn:()=>{S.items.splice(S.items.indexOf('Lụa'),1);S.rel.thao+=3;renderHUD();say('Thảo','Lụa của người Tống ở phường Nhai Tuân phải không? Em... em cảm ơn anh.')}});
+  say('Thảo',r<2?'Em là Thảo, cháu bà Tư. Bố mẹ em mất sau năm nước to, em lên đây ở với bà.':r<5?'Hôm nay anh lại sang à? Bà em khen anh mãi.':'Anh mà đi xa, em... em sẽ nhớ anh đấy.',ch);
+}
+function talkLy(){
+  const ch=[];if(age()>=10)ch.push({label:'Giúp việc làng',note:'−1 Sức · +Đức · +1 quan · làng quý',fn:()=>{if(!spend())return;S.flags.lang++;gain('duc',2);gain('tien',1);toast(pickR(['Bạn cùng trai làng đắp lại đoạn đê.','Bạn giúp dọn sân đình chuẩn bị lễ hội.','Bạn đi báo tin cho các xóm.']))}});
+  const L=S.flags.lang;
+  say('Cụ lý trưởng',S.flags.dh==='hoa'?'Trước Diên Hồng, cháu lại bảo nên hòa. Ta không trách, nhưng trai làng nghe thế thì nản lòng.':S.year>=1282?'Tin từ kinh thành không lành. Người Nguyên đòi mượn đường sang đánh Chiêm Thành. Làng mình phải sẵn sàng.':L>=6?'Làng An Phú nhớ công cháu. Có việc gì, trai làng sẵn lòng theo cháu.':S.flags.de==='home'?'Năm nước to, nhà cháu lo dọn đồ, còn đê làng thì vỡ. Ta vẫn nhớ đấy.':'Làng An Phú ta ruộng tốt, người hiền. Ai có sức thì góp sức với làng.',ch);
+}
+function talkCo(){
+  const a=age(),ch=[];let t;
+  if(S.thao==='co')t='Thảo nhà tớ dạo này hay nhắc cậu đấy. Bạn bè mình chẳng bao giờ phai.';
+  else if(S.year>=1282)t=S.rel.co>=4?'Giặc mà sang thì tớ với cậu đứng cùng một hàng.':'Nghe nói con cháu nhà quan đang chiêu mộ người. Tớ muốn đi, ở làng chán lắm.';
+  else if(S.flags.rival&&S.thao==='none')t='Chuyện Thảo... thôi, để cô ấy chọn. Nhưng cậu đừng tưởng tớ chịu thua đâu.';
+  else if(S.flags.exam==='khoe')t='Ông Thái học sinh lại về làng à? Thôi, tôi đi làm ruộng đây.';
+  else t=a<10?'Ê! Chiều nay ra bờ sông bắt cá không? Đừng để mẹ cậu biết đấy.':a<16?'Tớ nghe nói trong kinh thành có chợ to lắm. Lần nào đi rủ tớ với.':'Làm trai phải có chí, cậu nhỉ. Tớ thì chỉ mong ruộng nhà được mùa.';
+  if(!S.coPlayed)ch.push({label:a<14?'Rủ Cò đi chơi':'Ngồi uống nước với Cò',note:'−1 Sức · thân thiết hơn',fn:()=>{if(!spend())return;S.coPlayed=true;S.rel.co++;renderHUD();toast(a<14?'Hai đứa lội ruộng bắt cua đến tối mịt.':'Hai người ngồi dưới gốc đa, nói đủ thứ chuyện trên trời dưới biển.')}});
+  say('Cò',t,ch);
+}
+function talkSach(){
+  const ch=[{label:'Mua Tứ thư',note:'6 quan',disabled:S.tien<6||has('Tứ thư'),fn:()=>{S.tien-=6;S.items.push('Tứ thư');renderHUD();toast('Bạn mua một bộ Tứ thư.')}},
+    {label:'Mua giấy bút',note:'3 quan · +2 Văn',disabled:S.tien<3,fn:()=>{S.tien-=3;gain('van',2)}}];
+  if(age()>=14)ch.push({label:'Mua binh thư chép tay',note:'8 quan · +3 Võ · mở đường võ',disabled:S.tien<8||has('Binh thư'),fn:()=>{S.tien-=8;S.items.push('Binh thư');gain('vo',3);gain('van',1);toast('Có binh thư, đến tuổi 16 bạn có thể theo đường võ dù Võ chỉ cần 12.')}});
+  say('Chủ hàng sách','Sách chép tay, sách in ván đủ cả. Mua đi cậu, chữ nghĩa không bao giờ thừa.',ch);
+}
+function talkRen(){if(age()<14)return say('Bác thợ rèn','Lò rèn nóng lắm, nhóc đứng xa ra! Lớn lên rồi hãy quay lại.');
+  say('Bác thợ rèn','Thanh kiếm này rèn từ sắt tốt, tôi đi tôi lại cả tháng trời.',[{label:'Mua kiếm sắt',note:'8 quan · đánh mạnh hơn',disabled:S.tien<8||has('Kiếm sắt'),fn:()=>{S.tien-=8;S.items.push('Kiếm sắt');renderHUD();toast('Mỗi lần luyện võ được thêm 1 Võ, và khi đánh nhau ra đòn mạnh hơn.')}}])}
+function talkTong(){
+  say('Lái buôn người Tống','Nhà tôi vượt biển sang đây, được vua cho ở phường Nhai Tuân này. Tôi bán vải lụa và thuốc bắc.',[
+    {label:'Mua thuốc bổ',note:'5 quan · +2 Sức',disabled:S.tien<5,fn:()=>{S.tien-=5;S.suc=Math.min(4,S.suc+2);renderHUD();floatText('+2 Sức','#9fcaa9')}},
+    {label:'Mua tấm lụa',note:'7 quan',disabled:S.tien<7||has('Lụa'),fn:()=>{S.tien-=7;S.items.push('Lụa');renderHUD();toast('Một tấm lụa mềm. Biếu mẹ hay tặng ai đó, tùy bạn.')}}]);
+}
+function talkLinh(){say('Lính gác',age()<12?'Đứng lại! Trẻ con không được một mình vào kinh. Đợi mười hai tuổi hẵng đến.':'Vào đi. Trong kinh thành phải giữ phép tắc, không được chạy nhảy ồn ào.')}
+function talkHocQuan(){
+  if(S.path==='van')return say('Học quan',S.dothi?'Thái học sinh mà vẫn chăm đến đây, tốt lắm.':'Sĩ tử của Quốc học viện phải đọc nhiều, viết nhiều.',[{label:'Học tại Quốc học viện',note:'−1 Sức · +3 Văn',fn:()=>{if(!spend())return;gain('van',3+(S.thayBonus?1:0));toast(vanLesson())}}]);
+  say('Học quan','Quốc học viện lập từ năm Quý Sửu (1253), thờ Khổng Tử, Chu Công, Mạnh Tử, giảng Tứ thư, Lục kinh. Muốn vào học phải giỏi chữ trước đã.');
+}
+function talkVoQuan(){
+  if(S.path==='vo')return say('Võ quan','Giảng võ đường lập cùng năm với Quốc học viện. Hương binh giỏi thì được luyện ở đây.',[{label:'Luyện tại Giảng võ đường',note:'−1 Sức · +4 Võ',fn:()=>{if(!spend())return;gain('vo',4+(has('Kiếm sắt')?1:0));toast(voLesson())}}]);
+  say('Võ quan','Giảng võ đường lập mùa thu năm Quý Sửu (1253). Chỉ người đã vào quân mới được luyện ở đây.');
+}
+function talkNgu(){
+  const first=!S.nguMet;S.nguMet=true;
+  say('Chàng trai đọc sách',first?'Một chàng trai to khỏe ngồi bên vệ đường đọc sách, thỉnh thoảng lại ngâm nga mấy câu thơ. Anh tên Ngũ, người làng Phù Ủng. Anh bảo làm trai mà chưa lập được công danh thì còn thẹn lắm.':'Anh Ngũ vẫn ngồi đọc sách, miệng ngâm: "Hoành sáo giang sơn cáp kỷ thu..."',
+    first?[{label:'Ngồi nghe anh bàn chuyện binh pháp',fn:()=>{gain('vo',2);gain('van',1);toast('Bạn thấy trong lòng sục sôi chí lớn. Anh Ngũ sẽ nhớ mặt bạn.')}}]:[]);
+}
+const PEN={x:44.5,y:58.6};
+let reachOK=null,hintT=0;
+function walkable(x,y){return x>=0&&y>=0&&x<W&&y<H&&![WA,WR,MO,TR,WL].includes(map[y*W+x])&&!bsolid[y*W+x]}
+function bfs(sx,sy){const prev=new Int32Array(W*H).fill(-2),s=sy*W+sx;prev[s]=-1;const q=[s];let h=0;while(h<q.length){const i=q[h++],x=i%W,y=(i/W)|0;for(const[a,c]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+a,ny=y+c,j=ny*W+nx;if(walkable(nx,ny)&&prev[j]===-2){prev[j]=i;q.push(j)}}}return prev}
+function hideSpots(){if(!reachOK)reachOK=bfs(43,50);const c=[];
+  for(let y=32;y<70;y++)for(let x=6;x<23;x++){if(reachOK[y*W+x]===-2||get(x,y)===PA)continue;let tr=0,road=false;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const t=get(x+dx,y+dy);if(t===TR)tr++;else if(t===PA)road=true}if(tr>=11&&!road)c.push([x,y])}
+  if(c.length<3)for(let y=32;y<70;y++)for(let x=6;x<23;x++)if(reachOK[y*W+x]!==-2&&get(x,y)!==PA)c.push([x,y]);return c}
+function pathTo(sx,sy,tx,ty){const prev=bfs(sx,sy),t=ty*W+tx;if(prev[t]===-2)return[];const out=[];for(let i=t;i!==-1;i=prev[i])out.push(i);return out.reverse()}
+function sendBuffalo(fx,fy,minD,maxD){const b=S.buffalo,sp=hideSpots();let pool=sp.filter(([x,y])=>{const d=Math.hypot(x-fx,y-fy);return d>=minD&&d<=maxD});if(!pool.length)pool=sp;
+  const[hx,hy]=pool[Math.floor(Math.random()*pool.length)],path=pathTo(Math.floor(fx),Math.floor(fy),hx,hy);
+  b.run=path;b.ri=0;b.st='run';b.tracks=(b.tracks||[]).concat(path.filter((_,i)=>i%2===1).map(i=>[i%W,(i/W)|0]))}
+function loseBuffalo(){const b=S.buffalo;b.tracks=[];b.bolts=0;b.stop=false;b.x=PEN.x;b.y=PEN.y;sendBuffalo(PEN.x,PEN.y,14,60);
+  const last=b.run[b.run.length-1];if(last!=null){b.x=last%W+.5;b.y=((last/W)|0)+.6}b.st='lost';b.run=null}
+function buffaloUpdate(dt){const b=S.buffalo,d=Math.hypot(S.x-b.x,S.y-b.y);
+  if(b.st==='run'&&b.run){const i=b.run[b.ri];if(i==null){b.st='lost';b.run=null;return}const tx=i%W+.5,ty=((i/W)|0)+.6,dx=tx-b.x,dy=ty-b.y,dd=Math.hypot(dx,dy);
+    if(dd<.15)b.ri++;else{const m=Math.min(dd,6*dt);b.x+=dx/dd*m;b.y+=dy/dd*m;if(Math.abs(dx)>.05)b.dir=dx>0?'right':'left'}return}
+  if(b.st==='lost'&&S.quests.trau==='active'){
+    if(d<3.6&&P.moving&&keys.shift&&(b.bolts||0)<2){b.bolts=(b.bolts||0)+1;sendBuffalo(b.x,b.y,6,14);toast('Con trâu giật mình, rống lên rồi chạy mất vào rừng sâu! Lại gần thì đi chậm thôi, đừng giữ Shift.',4600);return}
+    hintT-=dt;if(hintT<=0&&d<11){hintT=6;const dir=Math.abs(b.x-S.x)>Math.abs(b.y-S.y)?(b.x>S.x?'phía đông':'phía tây'):(b.y>S.y?'phía nam':'phía bắc');
+      toast(d<4?'Tiếng mõ trâu lốc cốc ngay sát đây!':d<7?`Bạn nghe tiếng mõ trâu khá gần, ở ${dir}.`:`Văng vẳng tiếng mõ trâu đâu đó ${dir}.`,3000)}
+    return}
+  if(b.st==='follow'){
+    if(!b.stop){b.gz=(b.gz??8)-dt;if(b.gz<=0){b.stop=true;toast('Con trâu dừng lại gặm cỏ, nhất định không đi. Lại gần bấm E để kéo thừng.',4000)}}
+    if(!b.stop&&d>1.4){const m=Math.min(d-1.3,4.2*dt*(keys.shift?1.6:1)),nx=b.x+(S.x-b.x)/d*m,ny=b.y+(S.y-b.y)/d*m;b.dir=S.x>b.x?'right':'left';if(!solidAt(nx,ny)){b.x=nx;b.y=ny}else if(d>6){b.x=S.x-.8;b.y=S.y}}
+    if(b.stop&&d>9){b.stop=false;b.st='lost';b.bolts=2;toast('Bạn bỏ con trâu lại quá xa, nó lại lang thang mất rồi. Quay lại tìm đi!',4200)}}}
+function buffaloLabel(){const b=S.buffalo;if(b.st==='lost')return S.quests.trau==='active'?'Nắm thừng dắt trâu':null;if(b.st==='follow')return b.stop?'Kéo thừng':null;if(b.st==='pen')return'Xem con trâu';return null}
+function talkBuffalo(){const b=S.buffalo;
+  if(b.st==='lost'){b.st='follow';b.stop=false;b.gz=6+Math.random()*5;b.tracks=[];toast('Bạn nắm được sợi thừng! Dắt trâu về chỗ cha ngoài ruộng. Trâu hay dừng lại gặm cỏ, nhớ kéo thừng.',4600);return}
+  if(b.st==='follow'&&b.stop){b.stop=false;b.gz=6+Math.random()*6;floatAt('Ọ ọ!',b.x,b.y,'#e2bf72');return}
+  say('Con trâu',age()<7?'Con trâu nhà mình đang thong thả gặm cỏ bên bờ ruộng. Nó to gấp mấy lần bạn.':'Con trâu nhà mình. Ọ ọ...')}
+function drawTracks(){if(!S)return;const b=S.buffalo;if(!b.tracks||!b.tracks.length||b.st==='pen'||b.st==='follow')return;
+  for(let k=0;k<b.tracks.length;k++){const[x,y]=b.tracks[k],d=Math.hypot(x+.5-S.x,y+.5-S.y);if(d>6)continue;ctx.fillStyle=`rgba(58,40,22,${(1-d/6)*.75})`;
+    const px=x*TS+8+(k%2?3:-3),py=y*TS+8;ctx.fillRect((px-2)*Z-camX,(py-2)*Z-camY,2*Z,2*Z);ctx.fillRect((px+1)*Z-camX,(py-2)*Z-camY,2*Z,2*Z);ctx.fillRect((px-1)*Z-camX,(py+3)*Z-camY,Z,Z);ctx.fillRect((px+1)*Z-camX,(py+3)*Z-camY,Z,Z)}}
+function doorAction(b){
+  if(b.id==='home')return say('Nhà mình','Gian nhà tranh ba gian, vách đất, có bàn thờ tổ tiên ở giữa.',[
+    {label:'Ngủ, sang mùa mới',fn:()=>advance(1)},{label:'Chọn việc chính, cho thời gian trôi',note:'đến chuyện quan trọng tiếp theo',fn:chooseFocus},{label:'Lưu game',fn:()=>{save();toast('Đã lưu. Lần sau mở game chọn "Tiếp tục".')}}]);
+  if(b.id==='cung')return say('Hoàng thành','Cổng Hoàng thành canh gác nghiêm ngặt. Bên trong là cung điện của vua Trần. Dân thường không được vào.');
+  if(b.id==='thap')return say('Tháp Báo Thiên','Ngọn tháp cao nhất kinh thành. Toàn thư chép: mùa thu tháng 8 năm Mậu Ngọ (1258), năm bạn ra đời, gió to làm đỉnh tháp rơi xuống.');
+  if(b.id==='chua')return talkSu();
+  if(b.id==='dinh')return say('Đình làng','Đình làng thờ Thành hoàng, là nơi dân làng họp bàn việc chung.');
+  if(b.id==='truong')return say('Trường làng','Lớp học có mấy chiếc chiếu, khay cát để tập viết. Thầy đồ đang đứng trước cửa.');
+}
+function chooseFocus(){const a=age();say('Những năm tới','Bạn dồn sức vào việc gì? Thời gian sẽ trôi cho đến khi có chuyện quan trọng xảy ra. Bạn sẽ bỏ lỡ những lần gặp gỡ bạn bè trong thời gian ấy.',[
+  {label:'Học hành',note:`+${S.path==='van'?4:3} Văn mỗi mùa`,fn:()=>fastForward('van')},
+  {label:'Luyện võ',note:a<8?'cần 8 tuổi':`+${S.path==='vo'?4:3} Võ mỗi mùa`,disabled:a<8,fn:()=>fastForward('vo')},
+  {label:'Làm ruộng',note:a<8?'cần 8 tuổi':`+${S.path==='nong'?3:2} quan mỗi mùa`,disabled:a<8,fn:()=>fastForward('tien')},
+  {label:'Lo việc làng',note:a<10?'cần 10 tuổi':'+1 Đức mỗi mùa, làng quý hơn',disabled:a<10,fn:()=>fastForward('lang')}])}
+function fastForward(k){let n=0;
+  for(let i=0;i<60;i++){
+    if(k==='van')S.van=Math.min(100,S.van+(S.path==='van'?4:3));else if(k==='vo')S.vo=Math.min(100,S.vo+(S.path==='vo'?4:3));else if(k==='tien')S.tien+=(S.path==='nong'?3:2);else{S.duc=Math.min(100,S.duc+1);if(i%2)S.flags.lang++}
+    n++;advanceOne();if(modalOpen||S.ended)break}
+  toast(`${n} mùa trôi qua. Bây giờ là ${SEASONS[S.season].toLowerCase()} năm ${canchi(S.year)} (${S.year}), bạn ${age()} tuổi.`,4600);save();renderHUD()}
+function fishAction(){if(!spend())return;
+  if(Math.random()<.62){if(S.quests.ca==='active'&&!has('Cá')){S.items.push('Cá');renderHUD();toast('Bạn câu được một con cá rô. Mang cho bà Tư thôi!')}else{gain('tien',1);toast('Câu được mấy con cá, đem bán được một quan.')}}
+  else toast('Cá không cắn câu. Lần sau may hơn.')}
+function fieldAction(){if(!spend())return;const n=S.path==='nong'?3:2;gain('tien',n);if(S.path==='nong')gain('duc',1);
+  toast(['Bạn cùng cha cấy lúa, lưng mỏi nhừ.','Bạn làm cỏ, tát nước vào ruộng.','Mùa gặt! Lúa vàng trĩu bông.','Bạn cày ải, phơi đất cho vụ sau.'][S.season])}
+
+/* ================= time & events (theo Đại Việt sử ký toàn thư) ================= */
+function advanceOne(){S.season++;if(S.season>3){S.season=0;S.year++}S.suc=4;S.ate=false;S.thaoHelped=false;S.coPlayed=false;if(S.season===0&&S.year>1264)S.tien+=2;if(S.quests.trau==='active'&&S.buffalo.st!=='follow'){S.tien=Math.max(0,S.tien-1);S._trauNote=true}checkEvents()}
+function advance(n){S._trauNote=false;
+  for(let i=0;i<n;i++){advanceOne();if(modalOpen||S.ended)break}
+  toast(`${SEASONS[S.season]} năm ${canchi(S.year)} (${S.year}). Bạn ${age()} tuổi.`+(S.season===0?' Tết đến, mẹ mừng tuổi 2 quan.':'')+(S._trauNote?' Trâu chưa tìm về, ruộng bỏ không (−1 quan).':''));save();renderHUD();
+}
+const src=t=>`<p class="src">Toàn thư chép: ${t}</p>`;
+const K=(s,y)=>`${SEASONS[s]} · ${canchi(y)} ${y}`;
+const EVENTS=[
+ {id:'dieu',y:1266,s:1,run:()=>showModal({kicker:K(1,1266),title:'Cánh diều trên bãi sông',body:`<p>Cò ghé sát tai bạn: "Chiều nay trốn học ra bãi sông thả diều sáo đi! Thầy không biết đâu."</p>`,choices:[
+   {label:'Trốn học đi thả diều',note:'Cò thân hơn · mất bài học',fn:()=>{S.flags.dieu='di';S.rel.co+=2;S.van=Math.max(0,S.van-1);showModal({kicker:'Tối hôm ấy',title:'Bị mẹ phạt',body:'<p>Diều bay cao vút, hai đứa cười như nắc nẻ. Tối về, mẹ biết chuyện, bắt bạn quỳ trước bàn thờ. Cò lén mang cho bạn củ khoai nướng.</p><p class="note">Cò nhớ mãi buổi chiều ấy.</p>'})}},
+   {label:'Ở lại học',note:'+2 Văn · Cò giận',fn:()=>{S.flags.dieu='hoc';S.rel.co=Math.max(0,S.rel.co-1);gain('van',2)}}]})},
+ {id:'kinh',y:1270,s:0,run:()=>showModal({kicker:K(0,1270),title:'Mười hai tuổi',body:`<p>Cha mẹ đồng ý cho bạn tự đi lên kinh thành Thăng Long. Đi theo đường cái lên phía bắc, qua cầu sông Tô Lịch là đến cửa nam.</p><p>Trong kinh có hàng sách, lò rèn, Quốc học viện, Giảng võ đường và tháp Báo Thiên. Ra cửa đông là bến Đông Bộ Đầu.</p>`})},
+ {id:'lut',y:1270,s:2,mg:true,run:()=>showModal({kicker:K(2,1270),title:'Nước to',body:`<p>Tháng bảy, mưa như trút. Ở kinh đô, phố phường phải đi lại bằng thuyền bè. Đêm ấy, đê sông Tô Lịch đầu làng An Phú vỡ năm chỗ. Trống làng gióng lên liên hồi.</p>${src('mùa thu, tháng 7 năm 1270, nước to, đường phố kinh đô phần nhiều phải đi lại bằng thuyền bè.')}`,choices:[
+   {label:'Chạy ra đê cùng trai làng',note:'vào màn chơi',fn:startFlood},
+   {label:'Ở nhà giúp cha mẹ dọn đồ lên cao',note:'nhà an toàn, làng thì không',fn:()=>{S.pending=null;S.flags.de='home';S.flags.lang-=1;S.rel.co=Math.max(0,S.rel.co-1);showModal({kicker:'Sáng hôm sau',title:'Đê vỡ',body:'<p>Đồ đạc nhà bạn còn nguyên, nhưng đê vỡ, ruộng cả làng ngập trắng. Cò ướt sũng từ ngoài đê về, nhìn bạn rồi quay đi. Cụ lý trưởng không nói gì.</p><p class="note">Làng sẽ nhớ chuyện này.</p>'})}}]})},
+ {id:'daiNguyen',y:1271,s:3,run:()=>showModal({kicker:K(3,1271),title:'Đại Nguyên',body:`<p>Người kinh thành bàn tán: Mông Cổ đã đặt quốc hiệu là Đại Nguyên, sai sứ sang đòi vua Trần sang chầu. Vua lấy cớ có bệnh, từ chối không đi.</p>${src('năm 1271, Mông Cổ đặt quốc hiệu Đại Nguyên, sai sứ dụ vua vào chầu; vua cáo bệnh không đi.')}`})},
+ {id:'su',y:1272,s:0,run:()=>showModal({kicker:K(0,1272),title:'Đại Việt sử ký',body:`<p>Thầy đồ Chu hào hứng kể: tháng giêng năm nay, Lê Văn Hưu vâng sắc chỉ soạn xong bộ <b>Đại Việt sử ký</b> gồm 30 quyển, chép từ Triệu Vũ Đế đến Lý Chiêu Hoàng, dâng lên vua. Vua xuống chiếu khen ngợi.</p><p class="note">Những chuyện như thế này có thể có trong đề thi sau này.</p>`,choices:[{label:'Xin thầy kể thêm',note:'+2 Văn',fn:()=>gain('van',2)}]})},
+ {id:'thao',y:1272,s:1,run:()=>showModal({kicker:K(1,1272),title:'Cô cháu gái bà Tư',body:`<p>Bà Tư đón cháu gái là Thảo từ làng bên về ở cùng. Bố mẹ Thảo mất sau năm nước to. Cô bé ít nói, sáng nào cũng ra giếng gánh nước từ sớm.</p><p class="note">Thảo ở nhà bà Tư. Gặp gỡ, giúp đỡ Thảo sẽ làm hai người thân thiết hơn.</p>`})},
+ {id:'chon',y:1274,s:0,run:choosePath},
+ {id:'tong',y:1274,s:3,run:()=>showModal({kicker:K(3,1274),title:'Người Tống vượt biển',body:`<p>Bị quân Nguyên lấn đánh, người Tống đem 30 chiếc thuyền biển chở của cải và vợ con sang quy phụ. Triều đình cho họ ở phường Nhai Tuân trong kinh thành. Họ bày hàng bán vải lụa, thuốc men.</p><p class="note">Từ năm sau, ghé phường Nhai Tuân để mua lụa và thuốc.</p>${src('tháng 10 năm 1274, người Tống sang quy phụ, được an trí ở phường Nhai Tuân, mở chợ bán vải lụa, dược phẩm.')}`})},
+ {id:'thi',y:1275,s:0,mg:true,run:()=>{
+   const body=`<p>Tháng hai, triều đình mở khoa thi chọn học trò.</p>${src('mùa xuân, tháng 2 năm 1275, mở khoa thi; Đào Tiêu đỗ trạng nguyên, Quách Nhẫn thám hoa, 27 người đỗ thái học sinh.')}`;
+   if(S.path==='van')showModal({kicker:K(0,1275),title:'Lều chõng đi thi',body:body+`<p>Bạn sẽ trả lời 5 câu hỏi. Cần đúng ${S.quests.sach==='done'?3:4} câu để đỗ${S.quests.sach==='done'?' (nhờ thầy Chu kèm riêng)':''}. Học càng rộng, càng loại được nhiều đáp án sai.</p>`,choices:[{label:'Vào trường thi',fn:startExam}]});
+   else{S.pending=null;showModal({kicker:K(0,1275),title:'Khoa thi tháng hai',body:body+'<p>Đào Tiêu đỗ Trạng nguyên, Quách Nhẫn đỗ Thám hoa, cùng 27 người đỗ Thái học sinh. Cả làng xôn xao bàn tán.</p>'})}}},
+ {id:'hoi',y:1276,s:0,run:()=>{if(!S.ev.thao||S.thao!=='none')return;showModal({kicker:K(0,1276),title:'Hội xuân làng An Phú',body:`<p>Sân đình rộn ràng tiếng trống. Người đánh đu, người đấu vật, trai gái hát đối đáp. Cò kéo bạn ra gốc đa, mặt đỏ bừng:</p><p>"Tớ thương Thảo lâu rồi. Cậu thân với cô ấy, nói giúp tớ một câu được không?"</p>`,choices:[
+   {label:'Nói giúp Cò',note:'Cò thân hơn nhiều · nhường Thảo',fn:()=>{S.thao='co';S.rel.co+=3;showModal({kicker:'Hội xuân',title:'Lời nói giúp',body:'<p>Bạn tìm Thảo, kể về tấm lòng của Cò. Thảo cúi đầu, rất lâu mới khẽ gật. Cò ôm chầm lấy bạn: "Đời này tớ nợ cậu."</p>'})}},
+   {label:'Nói thật: tớ cũng thương Thảo',note:'Cò giận · Thảo sẽ tự chọn',fn:()=>{S.flags.rival=true;S.rel.co=Math.max(0,S.rel.co-2);S.rel.thao++;showModal({kicker:'Hội xuân',title:'Hai người bạn',body:'<p>Cò sững người, rồi cười gượng: "Thế thì để Thảo chọn." Cả buổi hội, cậu không nói với bạn câu nào.</p><p class="note">Đến năm 1279, Thảo sẽ chọn người cô ấy thân thiết hơn.</p>'})}},
+   {label:'Gạt đi, ra sân đấu vật',note:'+2 Võ',fn:()=>{S.flags.vat=true;gain('vo',2);showModal({kicker:'Hội xuân',title:'Sới vật',body:'<p>Bạn vật ngã ba trai làng bên, được thưởng một tấm khăn đỏ. Còn Cò thì tự mình đi tìm Thảo.</p>'})}}]})}},
+ {id:'daumua',y:1278,s:0,run:()=>{if(!S.cha)return;S.pending=null;showModal({kicker:K(0,1278),title:'Dịch đậu mùa',body:`<p>Mùa xuân năm nay, dân chết nhiều vì bệnh đậu mùa. Cha bạn lên cơn sốt, nổi mụn khắp người, nằm li bì.</p>${src('mùa xuân, tháng 2 năm 1278, dân chết nhiều vì bệnh đậu mùa.')}`,choices:[
+   {label:'Bỏ hết mọi việc, ở nhà chăm cha',note:'hết Sức mùa này · +3 Đức',fn:()=>{S.flags.daumua='cham';S.suc=0;gain('duc',3);showModal({kicker:'Cuối xuân',title:'Cha qua khỏi',body:'<p>Bạn thức trắng bao đêm bên giường, đút từng thìa cháo. Cuối xuân, cha ngồi dậy được, nắm tay bạn không nói nên lời.</p>'})}},
+   {label:'Lên phường Nhai Tuân mua thuốc của người Tống',note:S.tien>=5?'−5 quan · còn 2 Sức':'cần 5 quan',disabled:S.tien<5,fn:()=>{S.flags.daumua='thuoc';S.tien-=5;S.suc=2;renderHUD();showModal({kicker:'Cuối xuân',title:'Thang thuốc phương bắc',body:'<p>Bạn chạy một mạch lên kinh, mua được thang thuốc của ông lái buôn người Tống. Uống được mươi hôm, cha dần lại sức.</p>'})}},
+   {label:'Nhờ mẹ trông, mình vẫn lo việc học, luyện',note:'+4 '+(S.path==='vo'?'Võ':'Văn'),fn:()=>{S.flags.daumua='mat';S.cha=false;if(S.path==='vo')gain('vo',4);else gain('van',4);showModal({kicker:'Cuối xuân',title:'Cha mất',body:'<p>Bạn về đến nhà thì đã muộn. Cha mất trong một đêm mưa phùn cuối xuân. Mẹ ngồi bên linh sàng, không khóc được nữa.</p><p class="note">Từ nay nhà chỉ còn bạn và mẹ.</p>'})}}]})}},
+ {id:'ngu',y:1278,s:1,run:()=>{if(S.nguMet)showModal({kicker:K(1,1278),title:'Tin về anh Ngũ',body:`<p>Anh Ngũ người Phù Ủng không còn ngồi đọc sách bên đường nữa. Người ta kể, Hưng Đạo Vương gặp anh, thấy có kỳ tài, đem con gái nuôi gả cho, nhận làm gia thần và dạy bảo thêm.</p><p>Đời sau biết anh với tên <b>Phạm Ngũ Lão</b>.</p>${src('Ngũ Lão người làng Phù Ủng, lúc hơn hai mươi tuổi được Hưng Đạo Vương thấy là có kỳ tài, gả con gái nuôi cho.')}`})}},
+ {id:'nhantong',y:1278,s:3,run:()=>showModal({kicker:K(3,1278),title:'Vua mới lên ngôi',body:`<p>Ngày 22 tháng 10, vua Trần Thánh Tông nhường ngôi cho Hoàng thái tử Khâm, tức vua <b>Trần Nhân Tông</b>. Vua mới sinh tháng 11 năm Mậu Ngọ, cùng tuổi với bạn.</p>${src('mùa đông, tháng 10, ngày 22 năm 1278, vua nhường ngôi cho hoàng thái tử Khâm.')}`})},
+ {id:'cuoi',y:1279,s:0,run:eventCuoi},
+ {id:'con',y:1281,s:0,run:()=>{if(!S.married)return;S.child=true;gain('duc',2);showModal({kicker:K(0,1281),title:'Tiếng khóc trẻ thơ',body:'<p>Thảo sinh một bé gái. Cả nhà đặt tên con là Sen. Mẹ bế cháu đi khắp xóm khoe.</p><p class="note">Từ nay có thêm một người để bạn bảo vệ.</p>'})}},
+ {id:'thaymat',y:1281,s:2,run:()=>{if(!S.thay)return;S.thay=false;showModal({kicker:K(2,1281),title:'Thầy đồ Chu qua đời',body:'<p>Thầy đồ Chu mất vào một chiều thu, tay vẫn cầm cuốn sách. Nhà thầy nghèo, không có con cháu gần.</p>',choices:[
+   {label:'Đứng ra lo tang cho thầy',note:'−3 quan · +3 Đức',disabled:S.tien<3,fn:()=>{S.tien-=3;S.flags.tang='lo';S.flags.lang++;gain('duc',3);const books=S.van>=30;if(books)gain('van',3);showModal({kicker:'Đám tang',title:'Ơn thầy',body:`<p>Cả làng theo bạn tiễn thầy ra đồng.${books?' Người nhà thầy trao lại cho bạn tủ sách thầy để lại: "Thầy dặn chỉ trò mới đọc được hết."':''}</p>`})}},
+   {label:'Gửi chút tiền phúng viếng',note:'−1 quan',fn:()=>{S.tien=Math.max(0,S.tien-1);S.flags.tang='vieng';gain('duc',1)}}]})}},
+ {id:'toado',y:1282,s:2,run:()=>showModal({kicker:K(2,1282),title:'Tin dữ từ Lạng Châu',body:`<p>Quan trấn giữ Lạng Châu chạy trạm về báo: Hữu thừa tướng Nguyên là Toa Đô đem 50 vạn quân, nói phao là mượn đường đánh Chiêm Thành, nhưng thực ra là sang xâm lược nước ta.</p>${src('mùa thu, tháng 8 năm 1282, Lạng Châu báo Toa Đô đem 50 vạn quân, mượn cớ đánh Chiêm Thành để sang xâm lược.')}`})},
+ {id:'binhthan',y:1282,s:3,run:()=>{showModal({kicker:K(3,1282),title:'Hội nghị Bình Than',body:`<p>Tháng 10, vua ngự ra Bình Than, họp vương hầu và trăm quan bàn kế công thủ. Ở bến sông, vua nhận ra người lái thuyền than đội nón lá, mặc áo ngắn chính là Nhân Huệ Vương Trần Khánh Dư, bèn tha tội, cho làm Phó đô tướng quân.</p><p>Hoài Văn hầu Trần Quốc Toản còn trẻ, không được dự bàn, phẫn kích bóp nát quả cam trong tay lúc nào không biết. Về nhà, chàng tập hợp hơn nghìn gia nô, thân thuộc, viết lên cờ sáu chữ <b>Phá cường địch, báo hoàng ân</b>.</p>${src('Quốc Toản trong lòng hổ thẹn, phẫn kích, tay cầm quả cam bóp nát lúc nào không biết.')}`});
+   if(S.co==='village')showModal({kicker:'Ít hôm sau',title:'Cò muốn đi',body:`<p>Cò tìm đến nhà bạn, mắt sáng rực: "Nghe nói Hoài Văn hầu đang tập hợp người đánh giặc. Tớ muốn theo. Ở làng mãi thì làm được gì?"</p>${S.thao==='co'?'<p>Phía sau, Thảo đứng nép bên cửa, mắt đỏ hoe.</p>':''}`,choices:[
+     {label:'Khuyên Cò ở lại giữ làng',note:'Cò sẽ ở bên bạn khi giặc đến',fn:()=>{S.flags.coStay=true;showModal({kicker:'Ít hôm sau',title:'Ở lại',body:'<p>"Giặc mà đến, làng mình cần người hơn ai hết." Cò im lặng rất lâu, rồi gật đầu.</p>'})}},
+     {label:'Ủng hộ Cò lên đường',note:'Cò thân hơn · rời làng',fn:()=>{S.co='army';S.rel.co+=2;showModal({kicker:'Ít hôm sau',title:'Lên đường',body:'<p>Bạn tiễn Cò ra đến bến sông. Cậu giơ cao nắm tay: "Phá cường địch, báo hoàng ân!" rồi đi không ngoảnh lại.</p>'})}}]})}},
+ {id:'tietche',y:1283,s:3,mg:true,run:()=>{
+   const body=`<p>Vua thân hành dẫn các vương hầu điều quân thủy bộ tập trận. Hưng Đạo Vương Trần Quốc Tuấn được phong Quốc công tiết chế, thống lĩnh quân đội cả nước.</p>${src('mùa đông, tháng 10 năm 1283, Hưng Đạo Vương được phong Quốc công tiết chế, thống lĩnh quân đội toàn quốc.')}`;
+   if(S.path==='vo')showModal({kicker:K(3,1283),title:'Quốc công tiết chế',body:body+'<p>Đội hương binh của bạn được gọi đi tập trận cùng quan quân. Đây là dịp để tướng lĩnh để mắt đến bạn.</p>',choices:[{label:'Ra bãi tập',fn:startTraining}]});
+   else{S.pending=null;showModal({kicker:K(3,1283),title:'Quốc công tiết chế',body})}}},
+ {id:'tolich',y:1284,s:0,run:()=>showModal({kicker:K(0,1284),title:'Vét sông Tô Lịch',body:`<p>Tháng giêng, triều đình cho vét sông Tô Lịch. Trai tráng làng An Phú, nằm ngay bên sông, đều được gọi ra làm.</p>${src('mùa xuân, tháng giêng năm 1284, vét sông Tô Lịch.')}`,choices:[
+   {label:'Ra sông cùng dân làng',note:'−1 Sức · +2 Đức · lòng sông sâu hơn',fn:()=>{S.flags.tolich='done';S.flags.lang++;S.suc=Math.max(0,S.suc-1);gain('duc',2);gain('vo',1)}},
+   {label:'Ở nhà đọc sách',note:'+2 Văn · làng chê',fn:()=>{S.flags.tolich='skip';S.flags.lang--;gain('van',2)}}]})},
+ {id:'duyetbinh',y:1284,s:2,run:()=>showModal({kicker:K(2,1284),title:'Duyệt binh Đông Bộ Đầu',body:`<p>Tháng 8, Hưng Đạo Vương điều quân các vương hầu, duyệt binh lớn ở bến Đông Bộ Đầu, rồi chia quân đóng giữ Bình Than và những nơi xung yếu.</p>${S.path==='vo'?'<p>Bạn đứng trong hàng ngũ hương binh trên bến sông, cờ xí rợp trời.</p>':'<p>Quan quân về các làng xin góp lương thảo.</p>'}${src('mùa thu, tháng 8 năm 1284, Hưng Đạo Vương duyệt binh lớn ở Đông Bộ Đầu, chia quân giữ Bình Than.')}`,
+   choices:S.path==='vo'?[{label:'Thề quyết chiến',note:'+5 Võ',fn:()=>{S.flags.duyet='the';gain('vo',5)}}]:[
+   {label:'Góp lương cho quân',note:'−3 quan · +3 Đức · làng quý',fn:()=>{S.flags.duyet='luong';S.tien=Math.max(0,S.tien-3);S.flags.lang++;gain('duc',3)}},
+   {label:'Giữ thóc cho nhà',note:'nhà nhiều thóc hơn khi có biến',fn:()=>{S.flags.duyet='giu'}}]})},
+ {id:'dienhong',y:1284,s:3,run:()=>showModal({kicker:K(3,1284),title:'Hội nghị Diên Hồng',body:`<p>Tháng chạp, sứ về báo vua Nguyên sai Thoát Hoan, A Lạt đem quân, lấy cớ mượn đường đánh Chiêm Thành, chia đường sang đánh nước ta.</p><p>Thượng hoàng Trần Thánh Tông triệu phụ lão trong nước họp ở thềm điện Diên Hồng, ban yến và hỏi kế đánh giặc. Cụ lý trưởng làng An Phú cũng được vời về kinh. Trước khi đi, cụ hỏi ý bạn.</p>`,choices:[
+   {label:'Đánh!',fn:()=>{S.flags.dh='danh';S.flags.lang++;gain('duc',2);dienHongResult()}},{label:'Giặc mạnh quá, hay là nên hòa...',fn:()=>{S.flags.dh='hoa';S.flags.lang-=2;dienHongResult()}}]})},
+ {id:'climax',y:1285,s:0,mg:true,run:()=>showModal({kicker:'Tháng giêng · Ất Dậu 1285',title:'Đêm tháng giêng',body:`<p>Ngày mồng 6 tháng giêng, tướng Nguyên Ô Mã Nhi đánh vào Vạn Kiếp. Ngày 12, giặc tràn vào Gia Lâm, Đông Ngàn rồi kéo đến bến Đông Bộ Đầu.</p>${src('ngày 12 tháng giêng năm 1285, giặc đánh vào Gia Lâm, Vũ Ninh, Đông Ngàn, rồi đến Đông Bộ Đầu.')}<p>Đêm ấy, một toán quân Nguyên đi cướp lương vượt sông Tô Lịch, kéo về làng An Phú. Trống làng nổi lên dồn dập.</p><p><b>Trước khi trời sáng</b>, hãy đưa người thân, dân làng và thóc gạo vào <b>bìa rừng phía tây nam</b>, nơi có đuốc cắm sẵn. Giặc không dám theo vào rừng.</p><p class="note">Space: đánh · E: dẫn người (nhiều người có thể đi theo cùng lúc) / vác thóc${S.path==='van'?' · Q: cắm đuốc nghi binh để dụ giặc':''}. Những gì bạn đã làm trong đời sẽ quyết định ai đứng cạnh bạn đêm nay.</p>`,choices:[{label:'Cầm đuốc lên!',fn:startClimax}]})},
+];
+function dienHongResult(){showModal({kicker:'Thềm điện Diên Hồng',title:'Muôn người như một',body:`<p>Cụ lý trưởng trở về kể: các phụ lão đều nói <b>"Đánh!"</b>, muôn người cùng hô một tiếng như bật ra từ một miệng.</p>${S.flags.dh==='hoa'?'<p>Cụ nhìn bạn: "Cả nước đã quyết. Cháu cũng nên quyết đi." Trai làng nghe chuyện, có người bĩu môi.</p>':''}${src('các phụ lão đều nói "đánh", muôn người cùng hô một tiếng.')}`})}
+function eventCuoi(){
+  if(!S.ev.thao)return;
+  if(S.thao==='co'){showModal({kicker:K(0,1279),title:'Đám cưới của Cò',body:'<p>Cò cưới Thảo. Cậu nhờ bạn làm phù rể, đi đầu đoàn nhà trai sang nhà bà Tư.</p>',choices:[
+    {label:'Mừng cưới 3 quan',note:'−3 quan · Cò thân hơn',disabled:S.tien<3,fn:()=>{S.tien-=3;S.rel.co+=2;S.flags.cuoiCo='tien'}},
+    {label:'Viết tặng đôi câu đối',note:S.van>=25?'Cò thân hơn':'cần Văn 25',disabled:S.van<25,fn:()=>{S.rel.co+=2;S.flags.cuoiCo='doi';toast('Đôi câu đối được treo giữa nhà, cả làng khen chữ đẹp.')}},
+    {label:'Cáo bận, không đến',note:'Cò buồn lắm',fn:()=>{S.rel.co=Math.max(0,S.rel.co-3);S.flags.cuoiCo='vang'}}]});return}
+  if(S.rel.thao>=5){showModal({kicker:K(0,1279),title:'Mẹ muốn sang dạm hỏi',body:`<p>Một tối, mẹ ngồi cạnh bạn: "Con bé Thảo nết na, lại thương con. Mẹ sang nhà bà Tư dạm hỏi nhé?" Sính lễ cần 5 quan.</p>${S.flags.rival?'<p>Nghe đâu Cò cũng định nhờ người sang hỏi.</p>':''}`,choices:[
+    {label:'Vâng, con thương Thảo',note:S.tien>=5?'−5 quan':'nhà phải đi vay',fn:()=>{if(S.tien>=5)S.tien-=5;else{S.tien=0;S.flags.vay=true}S.thao='wife';S.married=true;S.flags.lang++;if(S.flags.rival)S.rel.co=Math.max(0,S.rel.co-1);renderHUD();showModal({kicker:'Mùa xuân 1279',title:'Ngày cưới',body:`<p>Đám cưới đơn sơ mà ấm cúng. Thảo về làm dâu, mẹ cười suốt cả ngày.${S.flags.rival?' Cò đến muộn, uống một chén rượu mừng rồi lặng lẽ về.':''}</p>`})}},
+    {label:'Con chưa muốn lập gia đình',fn:()=>{S.thao=S.co==='village'?'co':'gone';showModal({kicker:'Mùa xuân 1279',title:S.thao==='co'?'Thảo nhận lời Cò':'Thảo đi lấy chồng',body:S.thao==='co'?'<p>Mùa thu năm ấy, Cò nhờ người sang hỏi, và Thảo nhận lời.</p>':'<p>Mùa thu năm ấy, Thảo nhận lời một người làng bên rồi theo chồng đi xa.</p>'})}}]});return}
+  S.thao=S.co==='village'?'co':'gone';
+  showModal({kicker:K(0,1279),title:S.thao==='co'?'Thảo nhận lời Cò':'Thảo đi lấy chồng',body:S.thao==='co'?`<p>Cò nhờ người sang nhà bà Tư dạm hỏi, và Thảo nhận lời.${S.flags.rival?' Bạn đã nói lời thương, nhưng chưa đủ để giữ được Thảo.':''}</p>`:'<p>Thảo nhận lời một người làng bên rồi theo chồng đi xa. Bà Tư ở lại một mình.</p>'});
+}
+function checkEvents(){for(const e of EVENTS)if(!S.ev[e.id]&&S.year===e.y&&S.season===e.s){S.ev[e.id]=1;if(e.mg)S.pending=e.id;e.run()}}
+function resumePending(){if(!S.pending)return;const e=EVENTS.find(x=>x.id===S.pending);if(e)e.run()}
+function choosePath(){
+  const voOk=S.vo>=20||(has('Binh thư')&&S.vo>=12);
+  showModal({kicker:K(0,1274),title:'Mười sáu tuổi, chọn đường đời',body:`<p>Bạn đã mười sáu tuổi. Trai làng tuổi này phải tự chọn con đường cho mình. Lựa chọn sẽ quyết định bạn làm gì khi đất nước có biến.</p><p class="note">Văn ${S.van} · Võ ${S.vo} · Đức ${S.duc}${has('Binh thư')?' · có binh thư':''}</p>`,
+    choices:[{label:'Lên kinh, vào Quốc học viện',note:S.van>=20?'con đường văn':'cần Văn 20',disabled:S.van<20,fn:()=>setPath('van')},
+     {label:'Theo võ sư, sung vào hương binh',note:voOk?'con đường võ':'cần Võ 20 (hoặc 12 nếu có binh thư)',disabled:!voOk,fn:()=>setPath('vo')},
+     {label:'Ở lại làng, cày ruộng nuôi cha mẹ',note:'con đường nông',fn:()=>setPath('nong')}]});
+}
+function setPath(p){S.path=p;S.flags.lang+=p==='nong'?1:0;renderHUD();setTimeout(()=>toast({van:'Từ nay đến gặp Học quan trước Quốc học viện để học, mỗi buổi +3 Văn. Năm sau có khoa thi.',vo:'Từ nay tập ở sân võ được +3 Võ, hoặc lên Giảng võ đường trong kinh được +4 Võ.',nong:'Từ nay mỗi buổi làm đồng được +3 quan và +1 Đức. Người làng tin cậy bạn hơn.'}[p],5600),50)}
+
+/* ================= minigame: lụt 1270 ================= */
+const sackSprite=()=>simple('sack',12,11,s=>{s(2,2,8,8,'#a8885a');s(3,1,6,1,'#a8885a');s(2,2,8,1,'#c4a472');s(4,0,4,2,'#7a5f3a');s(8,3,2,7,'#8a6c42');s(2,9,8,1,'#7a5f3a')},6,10);
+function mark(x,y,col){const sx=Math.round(x*TS)*Z-camX,sy=Math.round(y*TS)*Z-camY,b=Math.round(Math.sin(clock*6)*1.5)*Z;ctx.fillStyle='#0b0d0c';ctx.fillRect(sx-2*Z,sy-7*Z+b,4*Z,9*Z);ctx.fillStyle=col;ctx.fillRect(sx-Z,sy-6*Z+b,2*Z,4*Z);ctx.fillRect(sx-Z,sy-Z+b,2*Z,2*Z)}
+function hudBox(x,y,w,h){ctx.fillStyle='#0b0d0c';ctx.fillRect(x-3,y-3,w+6,h+6);ctx.fillStyle='#1d221f';ctx.fillRect(x,y,w,h);ctx.strokeStyle='#6b5430';ctx.lineWidth=2;ctx.strokeRect(x+1,y+1,w-2,h-2)}
+function hudBar(x,y,w,frac,col){ctx.fillStyle='#0b0d0c';ctx.fillRect(x,y,w,12);ctx.fillStyle=col;ctx.fillRect(x+2,y+2,Math.max(0,(w-4)*Math.min(1,frac)),8)}
+function startFlood(){
+  const xs=[31,37,44,50,57];
+  MG={type:'flood',carry:false,level:0,coT:7,br:xs.map(x=>({x:x+.5,y:Math.floor(tolichY(x)+2.6)+.5,got:0})),pile:{x:41.5,y:33.4},
+    update:floodUpdate,findTarget:floodTarget,draw:floodDraw,hud:floodHud,post:rainPost,speedMul:()=>MG.carry?.75:1};
+  S.x=41.5;S.y=34.8;P.dir='up';document.body.classList.add('mg');
+  setKeys('<span><kbd>E</kbd> vác bao đất ở đống đất, đắp vào chỗ đê vỡ</span><span><kbd>Shift</kbd> chạy</span><span>Mỗi chỗ vỡ cần 2 bao</span>');
+}
+function floodUpdate(dt){const M=MG,open=M.br.filter(b=>b.got<2).length;
+  M.level+=dt*(.004+.0023*open);
+  if(S.rel.co>=3&&open){M.coT-=dt;if(M.coT<=0){M.coT=8;const b=M.br.find(b=>b.got<2);b.got++;floatAt('Cò đắp giúp một bao!',b.x,b.y,'#e2bf72')}}
+  if(!M.br.some(b=>b.got<2))endFlood(true);else if(M.level>=1)endFlood(false)}
+function floodTarget(){const M=MG;if(!M.carry&&Math.hypot(M.pile.x-S.x,M.pile.y-S.y)<1.7)return{label:'Vác bao đất',act:()=>{M.carry=true}};
+  if(M.carry){let best=1.7,tb=null;for(const b of M.br)if(b.got<2){const d=Math.hypot(b.x-S.x,b.y-S.y);if(d<best){best=d;tb=b}}
+    if(tb)return{label:'Đắp chỗ đê vỡ',act:()=>{tb.got++;M.carry=false;floatAt(tb.got>=2?'Đã chặn được!':'Thêm một bao nữa!',tb.x,tb.y,'#9fcaa9')}}}
+  return null}
+function gush(x,y){const sx=Math.round(x*TS),sy=Math.round(y*TS);for(let i=0;i<12;i++){const ph=(clock*2.4+i*.37)%1;const px=sx-7+Math.floor(Hs(i,7,1)*14),py=sy-12+Math.floor(ph*13);ctx.fillStyle=i%3?'#7fb3c8':'#d6eaf0';ctx.fillRect(px*Z-camX,py*Z-camY,Z*2,Z*2)}}
+function floodDraw(list){const M=MG;
+  list.push({y:M.pile.y,f:()=>{for(let i=0;i<6;i++)drawSprite(sackSprite(),M.pile.x-.45+(i%3)*.45,M.pile.y-Math.floor(i/3)*.4)},lab:Math.hypot(M.pile.x-S.x,M.pile.y-S.y)<5?['Đống bao đất',M.pile.x,M.pile.y-1.1]:null});
+  for(const b of M.br)list.push({y:b.y,f:()=>{if(b.got>=2){for(let i=0;i<3;i++)drawSprite(sackSprite(),b.x-.45+i*.45,b.y)}else{gush(b.x,b.y);if(b.got)drawSprite(sackSprite(),b.x,b.y+.15);mark(b.x,b.y-1.1,'#e07f6b')}}});
+  if(M.carry)list.push({y:S.y+.01,f:()=>drawSprite(sackSprite(),S.x,S.y-1.55)});
+}
+function floodHud(){const M=MG,w=Math.min(420,VW-32),x=Math.round(VW/2-w/2);hudBox(x,16,w,64);
+  ctx.font='600 12px "Be Vietnam Pro", system-ui, sans-serif';ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillStyle='#9fcaa9';ctx.fillText('Nước lên',x+12,32);hudBar(x+90,26,w-102,M.level,'#5aa0c0');
+  const open=M.br.filter(b=>b.got<2).length;ctx.fillStyle='#efe8d4';ctx.fillText(`Chỗ đê vỡ còn ${open}/5`,x+12,56);ctx.textAlign='right';ctx.fillStyle=M.carry?'#e2bf72':'#aab2a2';ctx.fillText(M.carry?'Đang vác bao đất':'Ra đống đất lấy bao',x+w-12,56)}
+function rainPost(){ctx.fillStyle='rgba(30,50,90,.3)';ctx.fillRect(0,0,VW,VH);if(reduce)return;ctx.fillStyle='rgba(205,220,245,.45)';
+  for(let i=0;i<140;i++){const rx=(Hs(i,1,2)*VW+clock*200*(.8+Hs(i,2,3)*.4))%VW,ry=(Hs(i,3,4)*VH+clock*620*(.8+Hs(i,5,6)*.4))%VH;ctx.fillRect(Math.round(rx/Z)*Z,Math.round(ry/Z)*Z,Z,Z*3)}}
+function endFlood(win){MG=null;setKeys();document.body.classList.remove('mg');S.pending=null;
+  if(win){S.flags.de='saved';S.flags.lang+=2;gain('duc',4);gain('tien',2);showModal({kicker:'Thu · Canh Ngọ 1270',title:'Đê đã giữ được',body:`<p>Bao đất cuối cùng được đắp xuống lúc nước vừa chạm mặt đê. Ruộng lúa làng An Phú thoát nạn. Sáng hôm sau, cụ lý trưởng đến tận nhà cảm ơn.</p>${S.rel.co>=3?'<p>Cò lấm lem bùn đất, cười hề hề: "Nhớ đấy, công tớ một nửa!"</p>':''}<p class="note">Cả làng nhớ việc này. Sau này làng có biến, sẽ có người đứng ra giúp bạn.</p>`})}
+  else{S.flags.de='lost';S.tien=Math.max(0,S.tien-3);renderHUD();showModal({kicker:'Thu · Canh Ngọ 1270',title:'Nước tràn qua đê',body:'<p>Nước sông Tô Lịch tràn qua chỗ đê vỡ, ruộng làng An Phú ngập trắng. Vụ thu mất trắng, nhà bạn phải bán bớt đồ để có gạo ăn qua đông (−3 quan).</p><p class="note">Bạn đã cố hết sức. Người làng không trách, nhưng năm ấy ai cũng đói.</p>'})}
+  save()}
+
+/* ================= minigame: kỳ thi 1275 ================= */
+const QBANK=[
+ {q:'Quốc học viện được lập vào năm nào?',a:['Năm 1226','Năm 1253','Năm 1258','Năm 1272'],c:1},
+ {q:'Ai soạn bộ Đại Việt sử ký?',a:['Lê Văn Hưu','Trần Quốc Tuấn','Đào Tiêu','Lê Phụ Trần'],c:0},
+ {q:'Đại Việt sử ký chép từ Triệu Vũ Đế đến đời nào?',a:['Lý Thái Tổ','Đinh Tiên Hoàng','Lý Chiêu Hoàng','Trần Thái Tông'],c:2},
+ {q:'Năm Mậu Ngọ (1258), quân ta phá giặc ở bến nào?',a:['Bạch Đằng','Đông Bộ Đầu','Bình Than','Vạn Kiếp'],c:1},
+ {q:'Tứ thư gồm Luận ngữ, Mạnh Tử, Đại học và sách nào?',a:['Kinh Thi','Trung dung','Kinh Dịch','Xuân Thu'],c:1},
+ {q:'Sách nào KHÔNG thuộc Ngũ kinh?',a:['Kinh Thi','Kinh Thư','Kinh Lễ','Luận ngữ'],c:3},
+ {q:'Năm 1271, Mông Cổ đặt quốc hiệu là gì?',a:['Đại Liêu','Đại Kim','Đại Nguyên','Đại Hạ'],c:2},
+ {q:'Mùa thu năm Canh Ngọ (1270), kinh đô gặp chuyện gì?',a:['Hạn hán lớn','Nước to, phố phải đi bằng thuyền','Động đất','Bão làm đổ tháp'],c:1},
+ {q:'Tam tự kinh mở đầu "Nhân chi sơ", câu tiếp theo là gì?',a:['tính bản thiện','tính tương cận','tập tương viễn','cẩu bất giáo'],c:0},
+ {q:'Người Tống sang quy phụ được cho ở phường nào?',a:['Nhai Tuân','Giang Khẩu','Đông Hà','Thịnh Quang'],c:0},
+ {q:'Ai đang làm vua năm 1275?',a:['Trần Thái Tông','Trần Thánh Tông','Trần Nhân Tông','Lý Huệ Tông'],c:1},
+ {q:'Giảng võ đường được lập cùng năm với nơi nào?',a:['Tháp Báo Thiên','Quốc học viện','Điện Diên Hồng','Hành cung Thiên Trường'],c:1},
+];
+function startExam(){const qs=shuffle(QBANK).slice(0,5),need=S.quests.sach==='done'?3:4,elim=S.van>=55?2:S.van>=35?1:0;let i=0,ok=0;
+  const ask=()=>{const q=qs[i],off=shuffle([0,1,2,3].filter(j=>j!==q.c)).slice(0,elim);
+    showModal({kicker:`Trường thi · câu ${i+1}/5`,title:q.q,body:elim?`<p class="note">Nhờ học rộng (Văn ${S.van}), bạn loại được ${elim} đáp án sai.</p>`:'<p class="note">Học thêm để loại được đáp án sai: Văn 35 loại 1, Văn 55 loại 2.</p>',
+      choices:q.a.map((t,j)=>({label:t,disabled:off.includes(j),note:off.includes(j)?'loại':'',fn:()=>{if(j===q.c)ok++;i++;if(i<5)ask();else examResult(ok,need)}}))})};
+  ask()}
+function examResult(ok,need){S.pending=null;
+  if(ok>=need){S.dothi=true;S.flags.exam='pass';S.flags.lang+=2;gain('duc',3);
+    showModal({kicker:'Ngày xướng danh',title:'Đỗ Thái học sinh',body:`<p>Bạn trả lời đúng ${ok}/5 câu. Đào Tiêu đỗ Trạng nguyên, Quách Nhẫn đỗ Thám hoa, và tên bạn nằm trong bảng 27 Thái học sinh! Cả làng An Phú mở tiệc mừng.</p>`});
+    showModal({kicker:'Tiệc mừng ở nhà',title:'Cò đứng ngoài ngõ',body:'<p>Giữa tiệc, bạn thấy Cò đứng ngoài ngõ, không vào. Cậu mặc bộ áo cũ, tay còn dính bùn.</p>',choices:[
+      {label:'Ra kéo Cò vào ngồi mâm trên',note:'Cò thân hơn',fn:()=>{S.flags.exam='pass';S.rel.co+=2;toast('"Ông Thái học sinh mà vẫn nhớ thằng bạn chăn trâu này à?" Cò cười, mắt đỏ hoe.',5000)}},
+      {label:'Mải tiếp khách quan, để Cò đứng đó',note:'Cò tủi thân',fn:()=>{S.flags.exam='khoe';S.rel.co=Math.max(0,S.rel.co-2);toast('Lúc bạn ngoảnh ra, Cò đã đi mất.',4000)}}]});
+  }else{S.flags.exam='fail';showModal({kicker:'Ngày xướng danh',title:'Không có tên trên bảng',body:`<p>Bạn trả lời đúng ${ok}/5 câu, chưa đủ để đỗ. Đào Tiêu đỗ Trạng nguyên, cùng 27 người đỗ Thái học sinh.</p><p>${S.rel.co>=3?'Tối ấy Cò mang sang một vò rượu: "Trượt thì học tiếp, tớ còn chẳng biết chữ đây này."':'Mẹ nấu nồi chè đậu đen, không nhắc gì chuyện thi.'}</p>`})}
+  save()}
+
+/* ================= minigame: tập trận 1283 ================= */
+function startTraining(){
+  MG={type:'timing',round:0,score:0,pos:0,dir:1,speed:240,res:[],flash:0,tick:tmTick,modalKey:k=>{if(k===' '||k==='e'){tmHit();return true}return false}};tmZone();
+  showModal({kicker:K(3,1283),title:'Bãi tập trận',body:'<p>Bấm <kbd>Space</kbd> hoặc <kbd>E</kbd> khi mũi giáo nằm trong vùng sáng của hình nộm. Giữa vùng là trúng hiểm. Có 6 lượt, càng về sau càng nhanh. Võ càng cao, vùng sáng càng rộng.</p><canvas id="tm" width="480" height="72" style="width:100%;max-width:480px;image-rendering:pixelated;border:2px solid #0b0d0c"></canvas><p class="note" id="tmInfo">Lượt 1/6</p>',choices:[{label:'Đâm!',fn:()=>{tmHit();return false}}]});
+}
+function tmZone(){const w=Math.max(28,Math.min(120,30+S.vo*.9));MG.zw=w;MG.zc=60+w/2+Math.random()*(360-w)}
+function tmTick(dt){const M=MG,c=document.getElementById('tm');if(!c)return;M.pos+=M.dir*M.speed*dt;if(M.pos>470){M.pos=470;M.dir=-1}if(M.pos<10){M.pos=10;M.dir=1}M.flash=Math.max(0,M.flash-dt);
+  const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.fillStyle='#2a302b';g.fillRect(0,0,480,72);
+  g.fillStyle='#4a3a28';g.fillRect(0,48,480,24);
+  g.fillStyle='rgba(226,191,114,.35)';g.fillRect(M.zc-M.zw/2,8,M.zw,40);g.fillStyle='rgba(226,191,114,.7)';g.fillRect(M.zc-M.zw*.18,8,M.zw*.36,40);
+  g.fillStyle='#c9a36a';g.fillRect(M.zc-3,10,6,38);g.fillRect(M.zc-12,20,24,4);g.fillStyle='#8a6a3a';g.fillRect(M.zc-6,4,12,10);
+  const x=Math.round(M.pos);g.fillStyle='#6a4e2e';g.fillRect(x-1,24,3,46);g.fillStyle='#d3d7da';g.fillRect(x-3,18,7,7);g.fillStyle='#b8322a';g.fillRect(x-2,27,5,2);
+  if(M.flash>0){g.fillStyle=`rgba(255,255,255,${M.flash*2})`;g.fillRect(0,0,480,72)}}
+function tmHit(){const M=MG;if(!M||M.type!=='timing'||M.round>=6)return;const d=Math.abs(M.pos-M.zc),pts=d<M.zw*.18?2:d<M.zw/2?1:0;M.score+=pts;M.res.push(pts);M.round++;M.speed+=50;M.flash=.25;tmZone();
+  const info=document.getElementById('tmInfo');if(info)info.textContent=(pts===2?'Trúng hiểm!':pts?'Trúng!':'Trượt!')+`  ·  Điểm ${M.score}  ·  `+(M.round<6?`Lượt ${M.round+1}/6`:'Xong');
+  if(M.round>=6)setTimeout(tmEnd,500)}
+function tmEnd(){const sc=MG.score;MG=null;S.pending=null;let title,body;
+  if(sc>=9){S.flags.train='top';gain('vo',5);title='Xuất sắc nhất đội';body='<p>Đường giáo của bạn nhanh và chuẩn đến mức cả bãi tập phải dừng lại xem.</p>'+(S.nguMet?'<p>Một viên tướng trẻ cưỡi ngựa đi qua, dừng lại nhìn bạn rất lâu. Bạn nhận ra anh Ngũ ngồi đọc sách bên đường năm nào, nay đã là tướng dưới trướng Hưng Đạo Vương. Anh gật đầu: "Ta nhớ cậu."</p>':'')+'<p class="note">Khi có biến, bạn sẽ khỏe hơn trong chiến đấu.</p>';if(S.nguMet)S.flags.nguKnows=true}
+  else if(sc>=5){S.flags.train='ok';gain('vo',3);title='Đạt yêu cầu';body='<p>Bạn hoàn thành buổi tập, được võ quan khen một câu.</p>'}
+  else{S.flags.train='low';gain('vo',1);title='Cần luyện thêm';body='<p>Mấy lần bạn đâm trượt hình nộm, bị đội trưởng mắng trước hàng quân.</p>'}
+  showModal({kicker:`Điểm ${sc}/12`,title,body});nextModal();save()}
+
+/* ================= cao trào: đêm tháng giêng 1285 ================= */
+const ZONE={x0:23,y0:54,x1:29,y1:66};
+const inZone=(x,y)=>x>=ZONE.x0&&x<=ZONE.x1+1&&y>=ZONE.y0&&y<=ZONE.y1+1;
+const FIRES=[[53.5,21.6],[24.5,20.2],[48.5,21.2]];
+function startClimax(){
+  const v=[],add=(id,name,x,y,look,slow)=>v.push({id,name,x,y,look,st:'wait',slow:slow||1,walk:0,dir:'down'});
+  add('me','Mẹ',45.5,50.4,{shirt:'#7b4656',hair:'oldwoman'},.85);
+  if(S.cha)add('cha','Cha',42.5,56.4,{shirt:'#5b4a35',hair:'old',hat:true},.85);
+  add('batu','Bà Tư',52.4,49.9,{shirt:'#4f4a3c',hair:'oldwoman'},.75);
+  if(S.ev.thao&&S.thao!=='gone'){const p=S.thao==='wife'?[47.4,50.7]:S.thao==='co'?[36.4,49.7]:[49.3,50.6];add('thao','Thảo',p[0],p[1],LOOK_THAO)}
+  if(S.child)add('sen','Bé Sen',46.6,51.7,{shirt:'#c9785a',hair:'kid',kid:true},.8);
+  add('ly','Cụ lý trưởng',35.8,36.9,{shirt:'#2c3a45',hair:'old',long:true},.8);
+  const sk=[[42.3,50.3],[44.9,50.3],[33.4,37.4],[35.3,37.5]];if(S.flags.duyet==='giu')sk.push([43.6,51.4]);
+  const al=[];
+  if(S.co==='village')al.push({id:'co',name:'Cò',x:38.5,y:45.2,look:{shirt:'#7a6a3a',hair:'man',band:true},hp:S.rel.co>=4?6:4,dmg:1,cd:0,sp:4,inv:0,dir:'down',walk:0});
+  const nLang=(S.flags.de==='saved'?1:0)+(S.flags.lang>=6?1:0)+(S.path==='nong'?1:0)-(S.flags.dh==='hoa'?1:0);
+  for(let i=0;i<Math.max(0,nLang);i++)al.push({id:'trai'+i,name:'Trai làng',x:39+i*2,y:44.6,look:{shirt:'#5b4a35',hair:'man',band:true},hp:4,dmg:1,cd:0,sp:3.6,inv:0,dir:'down',walk:0});
+  const maxhp=4+(S.path==='vo'?2:0)+(S.flags.train==='top'?1:0);
+  MG={type:'climax',T:150,t:150,hp:maxhp,maxhp,v,sk:sk.map(([x,y])=>({x,y,st:'wait'})),carry:null,en:[],al,spawnT:3,decoy:null,decoys:S.path==='van'?(S.dothi?3:2):0,cd:0,inv:0,slash:0,kills:0,ngu:false,nLang:Math.max(0,nLang),
+    hideNPC:true,update:clUpdate,findTarget:clTarget,draw:clDraw,hud:clHud,post:nightPost,key:clKey,speedMul:()=>MG.carry?(S.path==='nong'?.92:.74):1};
+  S.x=43.5;S.y=50.6;P.dir='down';document.body.classList.add('mg');
+  setKeys(`<span><kbd>Space</kbd> đánh</span><span><kbd>E</kbd> dẫn người · vác thóc</span>${MG.decoys?'<span><kbd>Q</kbd> đuốc nghi binh</span>':''}<span><kbd>Shift</kbd> chạy</span>`);
+  toast(al.length?`${al.map(a=>a.name).filter((x,i,a)=>a.indexOf(x)===i).join(', ')} cầm gậy chạy ra đứng cạnh bạn.`:'Không ai trong làng đứng ra cùng bạn. Bạn phải tự xoay xở.',4600);
+}
+const pDmg=()=>1+(S.path==='vo'?1:0)+(has('Kiếm sắt')?1:0);
+function clKey(k){if(k===' '){clAttack();return true}if(k==='q'&&MG.decoys>0){MG.decoys--;MG.decoy={x:S.x,y:S.y,t:7};toast('Bạn cắm đuốc, hò hét giả làm quân mai phục. Giặc kéo về phía ánh lửa!');return true}return false}
+function clAttack(){const M=MG;if(M.cd>0)return;M.cd=S.path==='vo'?.3:.45;M.slash=.15;const v={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[P.dir];
+  for(const e of M.en){if(e.dead)continue;const dx=e.x-S.x,dy=e.y-S.y,d=Math.hypot(dx,dy);if(d<1.6&&(d<.8||(dx*v[0]+dy*v[1])/d>.2))hitEnemy(e,pDmg(),S.x,S.y)}}
+function hitEnemy(e,dmg,fx,fy){e.hp-=dmg;const d=Math.hypot(e.x-fx,e.y-fy)||1;e.x+=(e.x-fx)/d*.6;e.y+=(e.y-fy)/d*.6;e.flash=.15;
+  if(e.hp<=0){e.dead=true;MG.kills++;if(e.cap){e.cap.st='wait';e.cap.x=e.x;e.cap.y=e.y;floatAt('Cứu được '+e.cap.name+'!',e.x,e.y,'#9fcaa9');e.cap=null}}}
+function spawnEnemy(){const M=MG,pts=[[53.5,21.8],[24.5,20.4]];
+  if(S.flags.tolich!=='done'){const x=30+Math.floor(Math.random()*30);pts.push([x+.5,tolichY(x)-2.4])}
+  if(M.T-M.t>40)pts.push([79.5,31.5]);
+  const p=pts[Math.floor(Math.random()*pts.length)],ky=Math.random()<.25;
+  M.en.push({x:p[0],y:p[1],home:p,hp:ky?3:2,sp:ky?3:2.1,ky,st:'hunt',cap:null,walk:0,dir:'down',flash:0,dead:false})}
+const dirOf=(dx,dy)=>Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
+function clUpdate(dt){
+  const M=MG;M.t-=dt;M.cd=Math.max(0,M.cd-dt);M.inv=Math.max(0,M.inv-dt);M.slash=Math.max(0,M.slash-dt);
+  if(M.decoy){M.decoy.t-=dt;if(M.decoy.t<=0)M.decoy=null}
+  if(!M.ngu&&M.t>8){M.spawnT-=dt;if(M.spawnT<=0){if(M.en.length<9)spawnEnemy();M.spawnT=Math.max(1.9,4.4-(M.T-M.t)*.018)}}
+  if(!M.ngu&&S.nguMet&&M.t<=45){M.ngu=true;for(let i=0;i<4;i++)M.al.push({id:'quan'+i,name:i?'Quân Trần':'Phạm Ngũ Lão',x:79+i*.6,y:31.2+(i%2)*.6,look:{shirt:'#7a2b22',hair:'man',band:true,spear:true},hp:99,dmg:3,cd:0,sp:6,inv:0,quan:true,dir:'left',walk:0});
+    toast(S.flags.nguKnows?'Tiếng tù và! Phạm Ngũ Lão dẫn quân đến. Ông nhận ra bạn từ buổi tập trận năm nào!':'Tiếng tù và! Một đội quân áo đỏ phi đến. Người đi đầu chính là anh Ngũ ngồi đọc sách bên đường năm xưa!',5600)}
+  let lead={x:S.x,y:S.y};
+  for(const p of M.v){
+    if(p.st==='follow'){const d=Math.hypot(lead.x-p.x,lead.y-p.y);if(d>.9){const m=Math.min(d-.85,4.3*p.slow*dt);p.x+=(lead.x-p.x)/d*m;p.y+=(lead.y-p.y)/d*m;p.moving=true;p.walk+=dt*8;p.dir=dirOf(lead.x-p.x,lead.y-p.y)}else p.moving=false;lead=p;
+      if(inZone(p.x,p.y)){p.st='safe';floatAt(p.name+' đã an toàn',p.x,p.y,'#9fcaa9');p.spot=[ZONE.x0+.8+Math.random()*(ZONE.x1-ZONE.x0-.6),ZONE.y0+1+Math.random()*(ZONE.y1-ZONE.y0-2)]}}
+    else if(p.st==='safe'){const d=Math.hypot(p.spot[0]-p.x,p.spot[1]-p.y);if(d>.1){const m=Math.min(d,2*dt);p.x+=(p.spot[0]-p.x)/d*m;p.y+=(p.spot[1]-p.y)/d*m;p.moving=true;p.walk+=dt*8;p.dir=dirOf(p.spot[0]-p.x,p.spot[1]-p.y)}else{p.moving=false;p.dir='right'}}
+    else p.moving=false}
+  if(M.carry&&inZone(S.x,S.y)){M.carry.st='safe';M.carry.x=ZONE.x0+1.2+Math.random()*4;M.carry.y=ZONE.y0+1.5+Math.random()*10;M.carry=null;floatText('Đã giấu thóc!','#e2bf72')}
+  for(const e of M.en){if(e.dead)continue;e.flash=Math.max(0,e.flash-dt);let tx,ty;
+    if(e.cap||e.st==='flee'||M.ngu){e.st='flee';tx=e.home[0];ty=e.home[1]}
+    else{let tg=null;
+      if(M.decoy&&Math.hypot(M.decoy.x-e.x,M.decoy.y-e.y)<11)tg=M.decoy;
+      else{let best=1e9;for(const p of M.v)if(p.st==='wait'||p.st==='follow'){const d=Math.hypot(p.x-e.x,p.y-e.y);if(d<best){best=d;tg=p}}
+        if(!tg||Math.hypot(S.x-e.x,S.y-e.y)<best*1.2)tg={x:S.x,y:S.y};
+        for(const a of M.al)if(!a.down&&!a.quan&&Math.hypot(a.x-e.x,a.y-e.y)<1.2)tg=a}
+      tx=tg.x;ty=tg.y}
+    const dx=tx-e.x,dy=ty-e.y,d=Math.hypot(dx,dy);
+    if(d>.05){const m=Math.min(d,e.sp*dt*(e.st==='flee'?1.15:1));const nx=e.x+dx/d*m,ny=e.y+dy/d*m;if(!(inZone(nx,ny)&&e.st!=='flee')){e.x=nx;e.y=ny}e.walk+=dt*9;e.dir=dirOf(dx,dy)}
+    if(e.cap){e.cap.x=e.x+.45;e.cap.y=e.y+.15}
+    if(e.st==='flee'&&d<.3){e.dead=true;if(e.cap){e.cap.st='lost';toast(e.cap.name+' đã bị giặc bắt đi mất...',4200);e.cap=null}continue}
+    if(e.st!=='flee'){
+      for(const p of M.v)if((p.st==='wait'||p.st==='follow')&&Math.hypot(p.x-e.x,p.y-e.y)<.55){p.st='cap';e.cap=p;e.st='flee';toast(p.name+' bị giặc bắt! Đuổi theo đánh hạ tên lính để cứu.',3800);break}
+      if(!e.cap&&M.inv<=0&&Math.hypot(S.x-e.x,S.y-e.y)<.6){M.hp--;M.inv=1.1;const kd=Math.hypot(S.x-e.x,S.y-e.y)||1,nx=S.x+(S.x-e.x)/kd*.9,ny=S.y+(S.y-e.y)/kd*.9;if(canStand(nx,ny)){S.x=nx;S.y=ny}
+        if(M.carry){M.carry.st='wait';M.carry.x=S.x;M.carry.y=S.y;M.carry=null;toast('Bạn bị đánh trúng, đánh rơi bao thóc!')}floatText('−1 máu','#e07f6b')}
+      for(const a of M.al)if(!a.down&&!a.quan&&a.inv<=0&&Math.hypot(a.x-e.x,a.y-e.y)<.6){a.hp--;a.inv=1;if(a.hp<=0){a.down=true;toast(a.name+' bị thương nặng, ngã xuống!',3800)}}}}
+  M.en=M.en.filter(e=>!e.dead);
+  for(const a of M.al){if(a.down)continue;a.cd=Math.max(0,a.cd-dt);a.inv=Math.max(0,a.inv-dt);a.slash=Math.max(0,(a.slash||0)-dt);let tg=null,best=a.quan?60:9;
+    for(const e of M.en){const d=Math.hypot(e.x-a.x,e.y-a.y);if(d<best&&(a.quan||Math.hypot(e.x-42,e.y-44)<15)){best=d;tg=e}}
+    const tx=tg?tg.x:S.x+(a.id==='co'?-1.3:1.3),ty=tg?tg.y:S.y+.7,dx=tx-a.x,dy=ty-a.y,d=Math.hypot(dx,dy);
+    if(d>(tg?.7:1)){const m=Math.min(d-.6,a.sp*dt);a.x+=dx/d*m;a.y+=dy/d*m;a.moving=true;a.walk+=dt*9;a.dir=dirOf(dx,dy)}else a.moving=false;
+    if(tg&&d<1.1&&a.cd<=0){a.cd=a.quan?.5:.9;a.slash=.15;hitEnemy(tg,a.dmg,a.x,a.y)}}
+  M.en=M.en.filter(e=>!e.dead);
+  if(M.hp<=0)return finishClimax('down');
+  if(M.t<=0)return finishClimax('dawn');
+  if(M.v.every(p=>p.st==='safe'||p.st==='lost')&&M.sk.every(s=>s.st==='safe')&&inZone(S.x,S.y))finishClimax('done');
+}
+function clTarget(){const M=MG;let best=1.4,t=null;
+  for(const p of M.v)if(p.st==='wait'){const d=Math.hypot(p.x-S.x,p.y-S.y);if(d<best){best=d;t={label:'Dẫn '+p.name+' đi',act:()=>{p.st='follow';floatAt(p.name+' đi theo bạn',p.x,p.y,'#9fcaa9')}}}}
+  if(!M.carry)for(const s of M.sk)if(s.st==='wait'){const d=Math.hypot(s.x-S.x,s.y-S.y);if(d<best){best=d;t={label:'Vác bao thóc',act:()=>{s.st='carry';M.carry=s}}}}
+  return t}
+function torchFx(x,y,big){const sx=Math.round(x*TS),sy=Math.round(y*TS);ctx.fillStyle='#5a3f25';ctx.fillRect(sx*Z-camX,(sy-10)*Z-camY,Z,10*Z);
+  const n=big?14:6;for(let i=0;i<n;i++){const ph=(clock*3+i*.29)%1,fx=sx-(big?5:2)+Math.floor(Hs(i,3,9)*(big?10:5)),fy=sy-12-Math.floor(ph*(big?14:7));ctx.fillStyle=ph<.4?'#ffe08a':ph<.7?'#f2913a':'#b8322a';ctx.fillRect(fx*Z-camX,fy*Z-camY,Z*(big?2:1),Z*(big?2:1))}}
+function slashFx(x,y,dir){const v={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[dir],cx=Math.round((x+v[0]*.8)*TS),cy=Math.round((y-.5+v[1]*.7)*TS);ctx.fillStyle='rgba(255,255,240,.85)';
+  for(let i=-4;i<=4;i++){const px=v[0]?cx+v[0]*Math.round(4-Math.abs(i)*.6):cx+i*2,py=v[1]?cy+v[1]*Math.round(4-Math.abs(i)*.6):cy+i*2;ctx.fillRect(px*Z-camX,py*Z-camY,Z*2,Z*2)}}
+const enLook=e=>e.ky?{shirt:'#4a3a2a',hair:'helm',helm:true,plume:true}:{shirt:'#3e4450',hair:'helm',helm:true};
+function clDraw(list){const M=MG,fr=o=>o.moving?[1,0,2,0][Math.floor(o.walk)%4]:0;
+  for(const f of FIRES)list.push({y:f[1],f:()=>torchFx(f[0],f[1],true)});
+  for(const t of [[ZONE.x0+.5,ZONE.y0+.5],[ZONE.x1+.5,ZONE.y0+.5],[ZONE.x0+.5,ZONE.y1+.5],[ZONE.x1+.5,ZONE.y1+.5],[ZONE.x1+.5,(ZONE.y0+ZONE.y1)/2]])list.push({y:t[1],f:()=>torchFx(t[0],t[1])});
+  for(const s of M.sk)if(s.st!=='carry')list.push({y:s.y,f:()=>{drawSprite(sackSprite(),s.x,s.y);if(s.st==='wait')mark(s.x,s.y-.9,'#e2bf72')}});
+  for(const p of M.v){if(p.st==='lost')continue;list.push({y:p.y,f:()=>{shadow(p.x,p.y,10);drawSprite(personSprite(p.look,p.dir,fr(p)),p.x,p.y);if(p.st==='wait')mark(p.x,p.y-(p.look.kid?1.4:1.85),'#e2bf72');if(p.st==='cap')mark(p.x,p.y-1.85,'#e07f6b')},lab:p.st!=='safe'&&Math.hypot(p.x-S.x,p.y-S.y)<4?[p.name,p.x,p.y-(p.look.kid?1.75:2.15)]:null})}
+  for(const e of M.en)list.push({y:e.y,f:()=>{shadow(e.x,e.y,10);if(e.flash>0)ctx.globalAlpha=.45;drawSprite(personSprite(enLook(e),e.dir,[1,0,2,0][Math.floor(e.walk)%4]),e.x,e.y);ctx.globalAlpha=1}});
+  for(const a of M.al)list.push({y:a.y,f:()=>{shadow(a.x,a.y,10);if(a.down)ctx.globalAlpha=.5;drawSprite(personSprite(a.look,a.down?'down':a.dir,a.down?0:fr(a)),a.x,a.y);ctx.globalAlpha=1;if(a.slash>0)slashFx(a.x,a.y,a.dir)},lab:Math.hypot(a.x-S.x,a.y-S.y)<4?[a.name+(a.down?' (bị thương)':''),a.x,a.y-(a.look.spear?2.05:1.75)]:null});
+  if(M.carry)list.push({y:S.y+.01,f:()=>drawSprite(sackSprite(),S.x,S.y-1.55)});
+  if(M.decoy)list.push({y:M.decoy.y,f:()=>torchFx(M.decoy.x,M.decoy.y,true)});
+  if(M.slash>0)list.push({y:S.y+.02,f:()=>slashFx(S.x,S.y,P.dir)});
+  list.push({y:ZONE.y0,f:()=>{},lab:Math.hypot(ZONE.x1-S.x,ZONE.y0+5-S.y)<9?['Bìa rừng · nơi an toàn',(ZONE.x0+ZONE.x1+1)/2,ZONE.y0-.2]:null});
+}
+let darkC=null;
+function nightPost(){const M=MG;if(!darkC)darkC=document.createElement('canvas');if(darkC.width!==VW||darkC.height!==VH){darkC.width=VW;darkC.height=VH}
+  const g=darkC.getContext('2d'),k=Math.min(1,M.t/25);g.globalCompositeOperation='source-over';g.clearRect(0,0,VW,VH);g.fillStyle=`rgba(8,12,32,${.74*k+.08})`;g.fillRect(0,0,VW,VH);
+  g.globalCompositeOperation='destination-out';
+  const hole=(x,y,r)=>{const sx=x*T-camX,sy=(y-.7)*T-camY;if(sx<-r||sy<-r||sx>VW+r||sy>VH+r)return;const gr=g.createRadialGradient(sx,sy,r*.2,sx,sy,r);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(sx-r,sy-r,r*2,r*2)};
+  hole(S.x,S.y,240);for(const f of FIRES)hole(f[0],f[1],200);hole(ZONE.x0+.5,ZONE.y0+.5,110);hole(ZONE.x1+.5,ZONE.y0+.5,110);hole(ZONE.x0+.5,ZONE.y1+.5,110);hole(ZONE.x1+.5,ZONE.y1+.5,110);hole(ZONE.x1+.5,(ZONE.y0+ZONE.y1)/2,110);if(M.decoy)hole(M.decoy.x,M.decoy.y,220);
+  g.globalCompositeOperation='source-over';ctx.drawImage(darkC,0,0,VW,VH);
+  if(M.t<25){ctx.fillStyle=`rgba(255,165,110,${.14*(1-k)})`;ctx.fillRect(0,0,VW,VH)}}
+function clHud(){const M=MG,w=Math.min(460,VW-32),x=Math.round(VW/2-w/2);hudBox(x,16,w,64);
+  ctx.font='600 12px "Be Vietnam Pro", system-ui, sans-serif';ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillStyle='#e2bf72';ctx.fillText('Trời sáng sau',x+12,32);hudBar(x+110,26,w-122,M.t/M.T,'#d08a54');
+  for(let i=0;i<M.maxhp;i++){ctx.fillStyle=i<M.hp?'#e07f6b':'#3b443d';ctx.fillRect(x+12+i*16,50,12,12)}
+  const sv=M.v.filter(p=>p.st==='safe').length,ss=M.sk.filter(s=>s.st==='safe').length;
+  ctx.fillStyle='#efe8d4';ctx.textAlign='right';ctx.fillText(`Người an toàn ${sv}/${M.v.length} · Thóc ${ss}/${M.sk.length}${MG.decoys?` · Đuốc ${MG.decoys}`:''}`,x+w-12,56)}
+function finishClimax(reason){const M=MG;MG=null;setKeys();document.body.classList.remove('mg');S.pending=null;
+  const allyUp=M.al.some(a=>!a.down);
+  for(const p of M.v)if(p.st==='wait'||p.st==='follow'||p.st==='cap')p.st=p.st==='cap'?'lost':(reason==='down'&&!allyUp?'lost':'left');
+  const res={reason,saved:M.v.filter(p=>p.st==='safe').map(p=>p.name),left:M.v.filter(p=>p.st==='left').map(p=>p.name),lost:M.v.filter(p=>p.st==='lost').map(p=>p.name),
+    thoc:M.sk.filter(s=>s.st==='safe').length,thocT:M.sk.length,kills:M.kills,coDown:M.al.some(a=>a.id==='co'&&a.down),coThere:M.al.some(a=>a.id==='co'),nLang:M.nLang,ngu:M.ngu};
+  S.res=res;
+  const rescuer=M.ngu?'quân của Phạm Ngũ Lão':M.al.some(a=>a.id==='co'&&!a.down)?'Cò':allyUp?'trai làng':'mấy người làng liều mình quay lại';
+  const lead={down:`<p>Một nhát giáo sượt qua, bạn ngã xuống bờ ruộng. Lúc mở mắt ra, ${rescuer} đã kéo bạn vào bìa rừng.</p>`,dawn:'<p>Trời hửng sáng. Tiếng tù và của giặc vang lên gọi quân rút về phía bến sông.</p>',done:'<p>Người cuối cùng đã vào rừng, bao thóc cuối cùng đã giấu kỹ. Bạn đứng ở bìa rừng, nhìn về phía làng đang cháy.</p>'}[reason];
+  showModal({kicker:'Rạng sáng ngày 12 tháng giêng',title:reason==='done'?'Không bỏ lại ai':reason==='down'?'Ngã xuống':'Bình minh',body:lead+
+    `<p><b>An toàn trong rừng:</b> ${res.saved.join(', ')||'không ai'}.</p>${res.left.length?`<p><b>Kẹt lại trong làng</b> (thoát nạn nhưng nhà cửa bị đốt): ${res.left.join(', ')}.</p>`:''}${res.lost.length?`<p><b>Bị giặc bắt đi:</b> ${res.lost.join(', ')}.</p>`:''}<p>Thóc giấu được ${res.thoc}/${res.thocT} bao. Bạn và mọi người đánh hạ ${res.kills} tên giặc.${res.coDown?' Cò bị thương nặng nhưng còn sống.':''}</p>`,
+    choices:[{label:'Nhìn lại cuộc đời',fn:()=>endChapter(res)}]});
+  save()}
+
+function endChapter(res){
+  res=res||S.res||{saved:[],left:[],lost:[],thoc:0,thocT:4,kills:0};
+  S.ended=true;save();const F=S.flags,L=[];
+  L.push({but:'Năm một tuổi, bạn bốc cây bút lông.',kiem:'Năm một tuổi, bạn bốc thanh kiếm gỗ.',lua:'Năm một tuổi, bạn bốc bông lúa.',hat:'Năm một tuổi, bạn bốc chuỗi tràng hạt.'}[S.toi]||'');
+  if(F.dieu)L.push(F.dieu==='di'?'Năm 8 tuổi trốn học thả diều với Cò, bị mẹ phạt quỳ, đổi lại một người bạn thân.':'Năm 8 tuổi ở lại học bài, Cò giận mất mấy hôm.');
+  L.push(F.de==='saved'?'Năm nước to 1270, bạn cùng trai làng giữ được đê. Làng nhớ ơn đến tận bây giờ.':F.de==='lost'?'Năm nước to 1270, bạn ra đê nhưng không giữ nổi. Cả làng mất mùa.':F.de==='home'?'Năm nước to 1270, bạn ở nhà giữ đồ đạc, để mặc đê làng vỡ.':'');
+  if(S.path==='van')L.push(F.exam==='pass'||F.exam==='khoe'?`Năm 1275 đỗ Thái học sinh${F.exam==='khoe'?', nhưng để bạn cũ đứng ngoài ngõ':''}.`:'Năm 1275 lều chõng đi thi nhưng không đỗ.');
+  if(S.path==='vo')L.push(F.train==='top'?'Năm 1283 đứng đầu buổi tập trận'+(F.nguKnows?', được Phạm Ngũ Lão nhớ mặt.':'.'):F.train==='ok'?'Năm 1283 tập trận đạt yêu cầu.':'Năm 1283 tập trận còn vụng về.');
+  if(S.ev.thao)L.push(S.thao==='wife'?`Bạn cưới Thảo${S.child?', có bé Sen':''}${F.vay?', nhà phải vay tiền làm sính lễ':''}.`:S.thao==='co'?(F.rival?'Bạn nói lời thương nhưng Thảo chọn Cò.':'Bạn nhường Thảo cho Cò'+(F.cuoiCo==='vang'?', rồi không đến dự đám cưới.':', và làm phù rể cho bạn mình.')):'Thảo theo chồng về làng bên, không ai giữ lại.');
+  if(F.daumua)L.push(F.daumua==='mat'?'Năm dịch đậu mùa, bạn mải lo việc riêng. Cha mất cuối xuân Mậu Dần.':F.daumua==='cham'?'Năm dịch đậu mùa, bạn bỏ hết mọi việc ở nhà chăm cha. Cha qua khỏi.':'Năm dịch đậu mùa, bạn lên kinh mua thuốc cứu được cha.');
+  if(F.tang)L.push(F.tang==='lo'?'Thầy đồ Chu mất, bạn đứng ra lo tang cho thầy.':'Thầy đồ Chu mất, bạn chỉ gửi chút tiền phúng viếng.');
+  if(S.co==='army')L.push('Bạn tiễn Cò theo cờ "Phá cường địch, báo hoàng ân" của Hoài Văn hầu.');else if(F.coStay)L.push('Bạn khuyên Cò ở lại giữ làng'+(res.coThere?', và đêm ấy Cò đứng cạnh bạn.':'.'));
+  if(F.tolich)L.push(F.tolich==='done'?'Bạn cùng làng vét sông Tô Lịch. Đêm giặc đến, chúng chỉ qua được bằng hai cây cầu.':'Bạn không ra vét sông Tô Lịch. Đêm giặc đến, chúng lội qua được chỗ sông nông.');
+  if(F.duyet&&F.duyet!=='the')L.push(F.duyet==='luong'?'Bạn góp lương cho quân của Hưng Đạo Vương.':'Bạn giữ thóc cho nhà, đêm giặc đến có thêm một bao phải cứu.');
+  if(F.dh)L.push(F.dh==='danh'?'Trước Diên Hồng, bạn nói "Đánh!".':'Trước Diên Hồng, bạn nói "nên hòa". Trai làng nhớ câu ấy.');
+  if(S.nguMet)L.push('Bạn từng ngồi nghe anh Ngũ bàn binh pháp bên đường. Đêm giặc đến, anh ấy dẫn quân tới.');
+  const path={van:(S.dothi?'Là Thái học sinh, bạn':'Bạn')+' được giao việc thảo văn thư, theo xa giá triều đình rời Thăng Long khi giặc áp sát.',
+    vo:'Như các quân sĩ khác, trên cánh tay bạn thích hai chữ <b>Sát Thát</b> bằng mực. Bạn theo cờ Hưng Đạo Vương ra trận'+(F.nguKnows?', vào đội quân của Phạm Ngũ Lão.':'.'),
+    nong:'Bạn dẫn dân làng vào rừng dựng lán, cất giấu lương thực. Giặc đến chỉ thấy làng không.'}[S.path||'nong'];
+  const hook=res.lost.length?`Chương hai: ${res.lost.join(', ')} đang trong tay giặc. Bạn phải tìm cách cứu họ, trong khi cuộc kháng chiến dẫn tới trận Bạch Đằng năm 1288.`:'Chương hai: cuộc kháng chiến, dẫn tới trận Bạch Đằng năm 1288.';
+  showModal({kicker:'Xuân · Ất Dậu 1285',title:'Hết chương một',
+    body:`<p>${path}</p><p class="kicker" style="margin-top:6px">Biên niên đời bạn</p><ul style="margin:0;padding-left:18px;display:grid;gap:4px;line-height:1.5">${L.filter(Boolean).map(x=>`<li>${x}</li>`).join('')}</ul>
+     <div class="endstats"><div><b>${S.van}</b><span>Văn</span></div><div><b>${S.vo}</b><span>Võ</span></div><div><b>${S.duc}</b><span>Đức</span></div><div><b>${S.tien}</b><span>quan</span></div></div>
+     <p class="note">${S.name}, 27 tuổi.</p><p><span class="seal">Hết chương một</span>&nbsp; ${hook}</p>`,
+    choices:[{label:'Bắt đầu một cuộc đời mới',fn:()=>{try{localStorage.removeItem('dvmd-save')}catch(e){}location.reload();return false}}]});
+}
+
+/* ================= intro ================= */
+function titleScreen(){
+  const sv=loadSave(),touch=matchMedia('(pointer:coarse)').matches&&!matchMedia('(pointer:fine)').matches;
+  showModal({big:true,kicker:'Một cuộc đời dưới triều Trần',title:'Đại Việt Một Đời',
+    body:`<p>Sinh năm Mậu Ngọ 1258, lớn lên ở làng An Phú bên sông Tô Lịch. Học chữ, luyện võ, làm ruộng, thương một người, giữ một người bạn, rồi đứng trước đêm giặc phương bắc kéo đến làng.</p><p class="note">Sự kiện lịch sử trong game theo Đại Việt sử ký toàn thư. Mọi lựa chọn đều có hậu quả.${touch?' Game cần bàn phím, nên chơi trên máy tính.':''}</p>`,
+    choices:[...(sv&&!sv.ended&&sv.name?[{label:'Tiếp tục',note:`${sv.name} · ${sv.year-1258} tuổi`,fn:()=>{S=sv;startPlay(true)}}]:[]),{label:'Bắt đầu cuộc đời',fn:birthScreen}]});
+}
+function birthScreen(){
+  showModal({kicker:'Xuân · Mậu Ngọ 1258',title:'Tiếng khóc chào đời',
+    body:`<p>Mấy tuần trước, vua Trần Thái Tông cùng Thái tử ngự lâu thuyền đến bến Đông Bộ Đầu, phá tan quân giặc. Tháng hai, vua nhường ngôi cho Thái tử, tức vua Trần Thánh Tông.</p><p>Ở làng An Phú, ven sông Tô Lịch, có một đứa trẻ cất tiếng khóc chào đời. Cha mẹ đặt tên con là:</p><input id="nameIn" maxlength="24" value="Phạm Văn An" aria-label="Tên nhân vật">`,
+    choices:[{label:'Đặt tên',fn:()=>{const v=($('nameIn').value||'').trim()||'Phạm Văn An';S=newState(v);thoiNoi()}}]});
+}
+function thoiNoi(){
+  const pickItem=(id,k,n,msg)=>()=>{S.toi=id;S[k]+=n;showModal({kicker:'Năm năm sau · Giáp Tý 1264',title:'Sáu tuổi',body:`<p>${msg}</p><p>Năm năm trôi qua. Bạn sáu tuổi, đầu còn để chỏm, đã chạy khắp xóm cùng thằng Cò nhà bên. Sáng nay mẹ gọi bạn lại, có chuyện muốn dặn.</p><p class="note">Đi lại bằng WASD hoặc phím mũi tên. Đến gần mẹ và bấm E.</p>`,choices:[{label:'Ra sân',fn:()=>startPlay(false)}]})};
+  showModal({kicker:'Xuân · Kỷ Mùi 1259',title:'Lễ thôi nôi',body:`<p>Tròn một tuổi, cả nhà bày một mâm đồ trước mặt bạn để xem con sau này theo nghề gì. Bạn bò tới và nắm lấy...</p>`,
+    choices:[{label:'Cây bút lông',note:'+5 Văn',fn:pickItem('but','van',5,'Cả nhà cười: thằng bé sau này theo nghiệp bút nghiên.')},{label:'Thanh kiếm gỗ',note:'+5 Võ',fn:pickItem('kiem','vo',5,'Cha vỗ đùi: con nhà này sau làm tướng!')},
+     {label:'Bông lúa',note:'+5 quan',fn:pickItem('lua','tien',5,'Ông bà gật gù: có bát ăn bát để là phúc rồi.')},{label:'Chuỗi tràng hạt',note:'+5 Đức',fn:pickItem('hat','duc',5,'Mẹ chắp tay: con hiền lành thì trời thương.')}]});
+}
+let playing=false;
+function startPlay(fromSave){playing=true;if(S._reLose){S._reLose=false;loseBuffalo()}$('hud').hidden=false;renderHUD();if(fromSave)setTimeout(resumePending,60);else save();return true}
+
+/* ================= input & physics ================= */
+const keys={};let lastAxis='y';
+addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'){if(e.key==='Enter'){e.preventDefault();mpick(0)}return}
+  const k=e.key.toLowerCase();keys[k]=true;
+  if(['a','d','arrowleft','arrowright'].includes(k))lastAxis='x';else if(['w','s','arrowup','arrowdown'].includes(k))lastAxis='y';
+  if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
+  if(MG&&MG.modalKey&&modalOpen&&MG.modalKey(k))return;
+  if(modalOpen){if(/^[1-9]$/.test(k))mpick(+k-1);return}
+  if(dialogOpen){if(/^[1-9]$/.test(k))pick(+k-1);else if(k==='escape')closeDialog();return}
+  if(MG&&MG.key&&playing&&MG.key(k))return;
+  if(k==='e'&&playing&&target)target.act();
+});
+addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
+addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
+function solidAt(px,py){const tx=Math.floor(px),ty=Math.floor(py),t=get(tx,ty);if(isW(t)||t===MO||t===TR||t===WL)return true;if(t===GA&&age()<12)return true;return bsolid[ty*W+tx]===1}
+function canStand(x,y){const r=.28;return!solidAt(x-r,y-.12)&&!solidAt(x+r,y-.12)&&!solidAt(x-r,y+.12)&&!solidAt(x+r,y+.12)}
+let target=null,gateWarn=0;
+function update(dt){
+  if(!playing||modalOpen||dialogOpen){P.moving=false;return}
+  let dx=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),dy=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);
+  if(dx&&dy){if(lastAxis==='x')dy=0;else dx=0}
+  P.moving=!!(dx||dy);
+  if(P.moving){const l=Math.hypot(dx,dy);dx/=l;dy/=l;const sp=(keys.shift?7:4.4)*(.8+.2*Math.min(1,(age()-6)/10))*(MG&&MG.speedMul?MG.speedMul():1)*dt;
+    if(Math.abs(dx)>Math.abs(dy))P.dir=dx>0?'right':'left';else P.dir=dy>0?'down':'up';
+    const nx=S.x+dx*sp,ny=S.y+dy*sp;if(canStand(nx,S.y))S.x=nx;if(canStand(S.x,ny))S.y=ny;
+    P.walk+=dt*(keys.shift?14:9);
+    if(age()<12&&get(Math.floor(S.x+dx*.6),Math.floor(S.y+dy*.6))===GA&&performance.now()-gateWarn>4000){gateWarn=performance.now();toast('Lính gác: Trẻ con không được một mình vào kinh. Đợi mười hai tuổi đã.')}
+  }
+  buffaloUpdate(dt);
+  for(const n of NPCS)if(n.wander){n.t=(n.t||0)-dt;if(n.t<=0){n.t=2+Math.random()*3;n.tx=n.home[0]+(Math.random()*4-2);n.ty=n.home[1]+(Math.random()*2-1)}
+    const d=Math.hypot(n.tx-n.x,n.ty-n.y);if(d>.05){const nx=n.x+(n.tx-n.x)/d*1.2*dt,ny=n.y+(n.ty-n.y)/d*1.2*dt;n.face=dirOf(n.tx-n.x,n.ty-n.y);if(!solidAt(nx,ny)){n.x=nx;n.y=ny;n.moving=true}else n.tx=n.x}else n.moving=false}
+  findTarget();
+  if(MG&&MG.update)MG.update(dt);
+  for(const f of floats)f.t+=dt;while(floats.length&&floats[0].t>1.6)floats.shift();
+}
+function setPrompt(){const p=$('prompt');if(target){p.hidden=false;p.innerHTML='<kbd>E</kbd> ';p.append(target.label)}else p.hidden=true}
+function findTarget(){
+  if(MG&&MG.findTarget){target=MG.findTarget();return setPrompt()}
+  target=null;let best=1.5;
+  for(const n of NPCS){if(!npcOn(n))continue;const d=Math.hypot(n.x-S.x,n.y-S.y);if(d<best){best=d;target={label:'Nói chuyện với '+n.name,act:()=>n.talk()}}}
+  const b=S.buffalo;{const d=Math.hypot(b.x-S.x,b.y-S.y),lab=buffaloLabel();if(lab&&d<best){best=d;target={label:lab,act:talkBuffalo}}}
+  for(const sg of SIGNS){const d=Math.hypot(sg.x+.5-S.x,sg.y+1.2-S.y);if(d<best){best=d;target={label:'Đọc biển: '+sg.name,act:()=>say(sg.name,sg.text)}}}
+  if(!target)for(const bd of BUILDINGS){if(!['home','cung','chua','dinh','truong','thap'].includes(bd.id))continue;const dx=bd.x+Math.floor(bd.w/2)+.5,dy=bd.y+bd.h+.3;if(Math.hypot(dx-S.x,dy-S.y)<1.3){target={label:bd.id==='home'?'Vào nhà':'Xem '+bd.name,act:()=>doorAction(bd)};break}}
+  if(!target&&get(Math.floor(S.x),Math.floor(S.y))===FI&&age()>=8)target={label:'Làm đồng  (−1 Sức)',act:fieldAction};
+  if(!target){const v={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[P.dir];if(isW(get(Math.floor(S.x+v[0]*.9),Math.floor(S.y+v[1]*.9))))target={label:'Câu cá  (−1 Sức)',act:fishAction}}
+  setPrompt();
+}
+
+/* ================= render ================= */
+let VW=0,VH=0,DPR=1,camX=0,camY=0,clock=0,titleCam=48;
+function resize(){DPR=Math.min(2,devicePixelRatio||1);VW=innerWidth;VH=innerHeight;cv.width=Math.round(VW*DPR);cv.height=Math.round(VH*DPR);cv.style.width=VW+'px';cv.style.height=VH+'px'}
+addEventListener('resize',resize);resize();
+const season=()=>S?S.season:0;
+function blit(c,ax,ay){ctx.drawImage(c,Math.round(ax)*Z-camX,Math.round(ay)*Z-camY,c.width*Z,c.height*Z)}
+function drawSprite(c,wx,wy){blit(c,wx*TS-c.ax,wy*TS-c.ay)}
+function shadow(wx,wy,w){const ax=Math.round(wx*TS),ay=Math.round(wy*TS);ctx.fillStyle='rgba(20,15,10,.28)';ctx.fillRect((ax-w/2+1)*Z-camX,(ay-1)*Z-camY,(w-2)*Z,Z);ctx.fillRect((ax-w/2)*Z-camX,ay*Z-camY,w*Z,Z);ctx.fillRect((ax-w/2+1)*Z-camX,(ay+1)*Z-camY,(w-2)*Z,Z)}
+function label(txt,x,y,col){ctx.font='600 12px "Be Vietnam Pro", system-ui, sans-serif';const w=Math.ceil(ctx.measureText(txt).width)+12;x=Math.round(x);y=Math.round(y);ctx.fillStyle='#0b0d0c';ctx.fillRect(x-w/2-2,y-11,w+4,22);ctx.fillStyle='#1d221f';ctx.fillRect(x-w/2,y-9,w,18);ctx.fillStyle=col;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,x,y+.5)}
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const parts=Array.from({length:46},()=>({x:Math.random(),y:Math.random(),s:.5+Math.random(),p:Math.random()*6}));
+
+function render(){
+  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.imageSmoothingEnabled=false;
+  const fx=S?S.x:titleCam,fy=S?S.y:30;
+  camX=Math.max(0,Math.min(W*T-VW,fx*T-VW/2));camY=Math.max(0,Math.min(H*T-VH,fy*T-VH/2));
+  camX=Math.round(camX/Z)*Z;camY=Math.round(camY/Z)*Z;
+  ctx.fillStyle='#0f1311';ctx.fillRect(0,0,VW,VH);
+  const s=season(),gc=ground(s);
+  ctx.drawImage(gc,camX/Z,camY/Z,VW/Z,VH/Z,0,0,VW,VH);
+  const x0=Math.max(0,Math.floor(camX/T)-1),y0=Math.max(0,Math.floor(camY/T)-1),x1=Math.min(W-1,Math.ceil((camX+VW)/T)+1),y1=Math.min(H-1,Math.ceil((camY+VH)/T)+2);
+  if(!reduce)for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(!isW(map[y*W+x]))continue;const h=Hs(x,y,7);if(h>.45)continue;const ph=(clock*.9+h*7)%3;if(ph>1.3)continue;ctx.fillStyle='rgba(255,255,255,.55)';const gx=Math.floor(Hs(x,y,8)*11)+Math.floor(ph*2),gy=3+Math.floor(Hs(x,y,9)*10);ctx.fillRect((x*TS+gx)*Z-camX,(y*TS+gy)*Z-camY,2*Z,Z)}
+  if(S&&age()<12){ctx.fillStyle='#4a2c1c';for(let x=52;x<=54;x++)ctx.fillRect((x*TS+2)*Z-camX,(19*TS+2)*Z-camY,12*Z,14*Z);for(let y=11;y<=12;y++)ctx.fillRect((70*TS+2)*Z-camX,(y*TS+1)*Z-camY,12*Z,14*Z);ctx.fillStyle='#d9b14a';for(let x=52;x<=54;x++){ctx.fillRect((x*TS+5)*Z-camX,(19*TS+8)*Z-camY,Z,Z);ctx.fillRect((x*TS+10)*Z-camX,(19*TS+8)*Z-camY,Z,Z)}}
+  drawTracks();
+  const list=[];
+  for(const t of TREES)if(t.x>=x0-1&&t.x<=x1+1&&t.y>=y0&&t.y<=y1+2)list.push({y:t.y+.9,f:()=>drawSprite(treeSprite(s,t.v),t.x+.5,t.y+1)});
+  for(const b of BUILDINGS){if(b.x>x1+2||b.x+b.w<x0-2||b.y>y1+3||b.y+b.h<y0-2)continue;list.push({y:b.y+b.h,f:()=>{const c=buildingSprite(b);blit(c,b.x*TS-c.ox,b.y*TS-c.oy)}})}
+  for(const d of DECOR){if(d.x<x0-3||d.x>x1+3||d.y<y0-3||d.y>y1+3)continue;list.push({y:d.y+(d.kind==='boat'?.4:1),f:()=>{if(d.kind==='banyan')drawSprite(banyanSprite(s),d.x+.5,d.y+1);else if(d.kind==='well')drawSprite(wellSprite(),d.x+.5,d.y+1);else{const bob=reduce?0:Math.round(Math.sin(clock*1.5+d.x));drawSprite(boatSprite(),d.x+.5,d.y+.6+bob/TS)}}})}
+  for(const sg of SIGNS)list.push({y:sg.y+1,f:()=>drawSprite(signSprite(),sg.x+.5,sg.y+1)});
+  if(S){
+    const a=age();
+    for(const n of NPCS){if(!npcOn(n))continue;if(n.x<x0-2||n.x>x1+2||n.y<y0-2||n.y>y1+2)continue;
+      const look=n.id==='co'?coLook():n.look,dpx=S.x-n.x,dpy=S.y-n.y;let dir=n.moving?n.face:'down';
+      if(!n.moving&&Math.hypot(dpx,dpy)<3)dir=Math.abs(dpx)>Math.abs(dpy)?(dpx>0?'right':'left'):(dpy>0?'down':'up');
+      const fr=n.moving?[1,0,2,0][Math.floor(clock*8)%4]:0;
+      list.push({y:n.y,f:()=>{shadow(n.x,n.y,10);drawSprite(personSprite(look,dir,fr),n.x,n.y)},lab:Math.hypot(dpx,dpy)<4?[n.name,n.x,n.y-(look.kid?1.35:look.spear?2.05:1.75)]:null})}
+    list.push({y:S.buffalo.y,f:()=>{shadow(S.buffalo.x,S.buffalo.y,22);drawSprite(buffaloSprite(S.buffalo.dir||'left'),S.buffalo.x,S.buffalo.y)}});
+    const look={shirt:S.path==='van'?'#2f4f62':S.path==='vo'?'#7a3328':'#6b4a2e',hair:a<14?'kid':'man',kid:a<14,band:S.path==='vo',long:S.path==='van'};
+    const fr=P.moving?[1,0,2,0][Math.floor(P.walk)%4]:0;
+    list.push({y:S.y,f:()=>{if(MG&&MG.inv>0&&Math.floor(clock*14)%2)return;shadow(S.x,S.y,10);drawSprite(personSprite(look,P.dir,fr),S.x,S.y)}});
+  }
+  if(MG&&MG.draw)MG.draw(list);
+  list.sort((p,q)=>p.y-q.y);for(const o of list)o.f();
+  if(!S)return;
+  if(MG&&MG.post)MG.post();
+  for(const b of BUILDINGS)if(b.name&&Math.hypot(b.x+b.w/2-S.x,b.y+b.h-S.y)<7){const c=buildingSprite(b);label(b.name,(b.x*TS+b.w*TS/2)*Z-camX,(b.y*TS-c.oy+6)*Z-camY,'#efe8d4')}
+  for(const o of list)if(o.lab)label(o.lab[0],o.lab[1]*T-camX,o.lab[2]*T-camY,'#e2bf72');
+  for(const sg of SIGNS)if(Math.hypot(sg.x-S.x,sg.y-S.y)<5)label(sg.name,(sg.x+.5)*T-camX,(sg.y-.2)*T-camY,'#9fcaa9');
+  ctx.fillStyle=['rgba(255,220,230,.04)','rgba(255,210,120,.05)','rgba(220,160,60,.07)','rgba(150,180,220,.11)'][s];ctx.fillRect(0,0,VW,VH);
+  if(!reduce&&s!==1&&!(MG&&MG.post)){ctx.fillStyle=s===0?'#f3b6c4':s===2?'#d99a3a':'rgba(235,242,250,.85)';for(const p of parts){p.y+=.0006*p.s;p.x+=Math.sin(clock+p.p)*.0004;if(p.y>1)p.y=0;ctx.fillRect(Math.round(p.x*VW/Z)*Z,Math.round(p.y*VH/Z)*Z,Z*(s===3?1:2),Z)}}
+  ctx.font='700 14px "Be Vietnam Pro", system-ui, sans-serif';ctx.textAlign='center';
+  for(const f of floats){ctx.globalAlpha=Math.max(0,1-f.t/1.6);const fx2=f.x*T-camX,fy2=f.y*T-camY-90-f.t*26;ctx.fillStyle='#0b0d0c';ctx.fillText(f.txt,fx2+2,fy2+2);ctx.fillStyle=f.color;ctx.fillText(f.txt,fx2,fy2)}ctx.globalAlpha=1;
+  if(MG&&MG.hud)MG.hud();
+  drawMini();
+}
+const mini=$('mini'),mctx=mini.getContext('2d');
+function drawMini(){mctx.imageSmoothingEnabled=true;mctx.drawImage(ground(season()),0,0,192,144);mctx.fillStyle='#6b3a28';for(const b of BUILDINGS)mctx.fillRect(b.x*2,b.y*2,b.w*2,b.h*2);
+  mctx.strokeStyle='rgba(255,255,255,.6)';mctx.strokeRect(camX/T*2+.5,camY/T*2+.5,VW/T*2,VH/T*2);
+  mctx.fillStyle='#fff';mctx.fillRect(S.x*2-2,S.y*2-2,4,4);mctx.fillStyle='#000';mctx.fillRect(S.x*2-1,S.y*2-1,2,2);}
+
+let last=performance.now();
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;clock+=dt;if(MG&&MG.tick)MG.tick(dt);if(!S)titleCam=48+Math.sin(clock*.08)*22;if(S)update(dt);render();requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+titleScreen();
+})();
+</script>
+</body>
+</html>
