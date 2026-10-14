@@ -194,5 +194,30 @@
     for (let i = 0; i < 4000 && d.MG === M; i++) d.step(0.1);
   }
 
-  window.__bots = {SKILL, makeWalker, floodBot, floodTeleport, climaxBot, climaxTeleport, DT};
+  /* ---------- Việc hằng ngày (src/minigames/daily.js) ----------
+     level: 'giỏi' (trọn vẹn), 'khá' (đạt), 'kém' (hỏng), 'qua' (bấm Làm qua loa). Bấm phím thật qua game,
+     chỉ chỉnh đồng hồ, vị trí trong minigame cho đúng lúc. Gọi __dv.dailyFlush() sau để kết thúc ngay. */
+  function dailyAuto(level) {
+    const d = D(), M = d.MG; if (!M || M.type !== 'daily') return;
+    const tap = k => { ev(k, true); ev(k, false); };
+    if (level === 'qua') { document.getElementById('mopt0').click(); return; }
+    const KEY = {up: 'w', down: 's', left: 'a', right: 'd'};
+    if (M.kind === 'viet') {
+      M.phase = 'input'; M.t = 0;
+      const good = level === 'giỏi' ? M.seq.length : level === 'khá' ? Math.ceil(M.seq.length * .6) : 0;
+      for (let i = 0; i < M.seq.length && !M.over; i++) {
+        const want = M.seq[i];
+        tap(i < good ? KEY[want] : KEY[['up', 'down', 'left', 'right'].find(x => x !== want)]);
+      }
+    } else if (M.kind === 'vo') {
+      for (let r = 0; r < 3 && !M.over; r++) { M.pos = level === 'giỏi' || (level === 'khá' && r < 2) ? M.zc : M.zc + M.zw; tap(' '); }
+    } else if (M.kind === 'dong') {
+      M.notes.forEach((n, i) => { if (level === 'giỏi' || (level === 'khá' && i % 3 !== 2)) { M.t = n.t; tap(n.k); } });
+      M.t = M.end + 1; M.tick(0);
+    } else if (M.kind === 'ca') {
+      if (level === 'kém') { M.t = 0.3; tap(' '); } else { M.t = M.bite + .1; tap(' '); }
+    }
+  }
+
+  window.__bots = {SKILL, makeWalker, floodBot, floodTeleport, climaxBot, climaxTeleport, dailyAuto, DT};
 })();

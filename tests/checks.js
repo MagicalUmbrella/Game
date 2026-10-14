@@ -377,5 +377,33 @@
     return {errs, count, gap};
   }
 
-  window.__checks = {reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  /* Việc hằng ngày: mỗi màn, mỗi mức chơi cho đúng phần thưởng (khá = mức cũ, giỏi +1, kém/qua loa −1). */
+  function daily() {
+    const d = D(), errs = [], out = {};
+    const cases = [
+      ['học chữ (thầy)', 'van', () => { d.talkThay(); d.pick(d.S.quests.hoc === 'active' ? 0 : 0); }, {'giỏi': 3, 'khá': 2, 'kém': 1, 'qua': 1}],
+      ['luyện võ (võ sư)', 'vo', () => { d.talkVo(); d.pick(0); }, {'giỏi': 3, 'khá': 2, 'kém': 1, 'qua': 1}],
+      ['làm đồng (đường nông)', 'tien', () => d.fieldAction(), {'giỏi': 4, 'khá': 3, 'kém': 2, 'qua': 2}],
+    ];
+    for (const [name, stat, open, want] of cases) for (const lv of ['giỏi', 'khá', 'kém', 'qua']) {
+      d.setS(Object.assign(d.newState('Thử'), {year: 1276, path: 'nong', quests: {hoc: 'done', trau: 'done'}, van: 10, vo: 10}));
+      d.startPlay(false); while (d.modalOpen) d.nextModal();
+      const v0 = d.S[stat]; open();
+      if (!d.MG || d.MG.type !== 'daily') { errs.push(`${name}: không mở màn chơi`); break; }
+      window.__bots.dailyAuto(lv); d.dailyFlush();
+      const got = d.S[stat] - v0; (out[name] ||= {})[lv] = got;
+      if (got !== want[lv]) errs.push(`${name}, mức ${lv}: +${got}, mong +${want[lv]}`);
+      if (d.MG || d.modalOpen) errs.push(`${name}, mức ${lv}: chơi xong mà màn chơi chưa đóng`);
+      while (d.modalOpen) d.nextModal();
+    }
+    for (const lv of ['giỏi', 'kém']) {
+      d.setS(Object.assign(d.newState('Thử'), {year: 1270, quests: {ca: 'done'}})); d.startPlay(false); while (d.modalOpen) d.nextModal();
+      const t0 = d.S.tien; d.fishAction(); window.__bots.dailyAuto(lv); d.dailyFlush();
+      const ok = d.S.tien > t0;
+      if (ok !== (lv === 'giỏi')) errs.push(`câu cá, mức ${lv}: ${ok ? 'câu được' : 'không câu được'}`);
+    }
+    return {errs, out};
+  }
+
+  window.__checks = {daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();

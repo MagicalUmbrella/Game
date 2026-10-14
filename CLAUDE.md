@@ -51,7 +51,7 @@ Mỗi file mở đầu bằng comment `/* ===== tên ===== */`. Các module impo
 | `ui.js` | `say()` mở hội thoại, `showModal()` xếp hàng modal (`modalQueue`), `toast()`, `floatAt()`, `renderHUD()`, `setKeys()` đổi dòng hướng dẫn phím. |
 | `dialogs.js` | `talkX()` cho từng NPC, `doorAction()`, `chooseFocus()` + `fastForward()` để thời gian trôi nhanh, câu cá, làm đồng, toàn bộ cơ chế con trâu. |
 | `events.js` | `advanceOne()` sang mùa; `EVENTS` là danh sách sự kiện `{id, y: năm, s: mùa 0–3, mg?, run}`; `eventCuoi`, `choosePath`, `setPath`. |
-| `minigames/` | Lụt 1270 (`startFlood`), kỳ thi 1275 (`QBANK`, `startExam`), tập trận 1283 (`startTraining`). |
+| `minigames/` | Lụt 1270 (`startFlood`), kỳ thi 1275 (`QBANK`, `startExam`), tập trận 1283 (`startTraining`). `daily.js`: việc hằng ngày chơi trong modal 5–15 giây: tập viết nhớ nét (`startWriting`), luyện võ canh nhịp (`startDrill`), làm đồng bấm theo nhịp (`startField`), câu cá canh phao (`startFishing`); luôn có nút "Làm qua loa". `dailyReward(base,q)`: khá = mức cũ, giỏi +1, kém hoặc qua loa −1. |
 | `pathfind.js` | `gridPath`, `nextStep`: tìm đường BFS cho người do máy điều khiển (giặc, người cùng đánh) để không đi xuyên sông, cây, nhà. |
 | `life.js` | Chuyện đời thường (hư cấu): `LIFE` gồm 23 chuyện nhỏ theo tuổi, mùa (bắt dế, cháy xóm, năm hạn, cho vay…). `maybeLife()` sau mỗi lần sang mùa không có sự kiện lịch sử, cứ khoảng 1–2 mùa một chuyện. Lựa chọn ghi `S.life[id]`, có hậu quả và dòng trong mục "Những chuyện nhỏ" ở màn kết (`lifeChronicle`). Thêm chuyện mới: mỗi khóa kết quả phải có dòng `chron`. |
 | `stats.js` | Mốc chỉ số và tác dụng: `traiFromDuc`, `followFast`, `voHp`, `voDmg`, `voFast`, `DUC_FF_CAP`; bảng chỉ số `showStats()` (phím C). Đổi mốc thì sửa ở đây, đêm 1285 và bảng chỉ số cùng đọc. |
@@ -146,6 +146,7 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 
 ### Cân bằng điểm
 
+- Việc hằng ngày là màn chơi ngắn (`minigames/daily.js`); các con số dưới đây là mức chơi khá, giỏi thì +1, kém hoặc làm qua loa thì −1.
 - Đến lớp thầy đồ: +2 Văn mỗi Sức (+1 nếu đã biếu Tứ thư). Võ sư: +2 Võ (+3 đường võ, +1 có kiếm). Quốc học viện +3, Giảng võ đường +4. Một mùa dùng hết Sức được 8 điểm trở lên.
 - "Chọn việc chính" ở nhà là tự học, tự luyện: +1 mỗi mùa (+2 nếu đúng đường), **có trần** 25 (45 nếu đúng đường), mùa đang dở chỉ tính theo Sức còn lại. Muốn Văn 55 (loại 2 đáp án khi thi) hay Võ cao thì phải đến lớp.
 - "Lo việc làng" ở nhà: +2 Đức mỗi mùa, trần `DUC_FF_CAP` = 40. Đức 60 phải giúp làng thật (cụ lý +3 Đức mỗi Sức) và qua các sự kiện.

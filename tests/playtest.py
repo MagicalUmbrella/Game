@@ -50,6 +50,7 @@ STEP = """(r) => {
   if(S && S.ended) return 'ended';
   const M=D.MG;
   if(M && M.type==='timing'){ if(M.round<6) D.tmHit(); return 'train'; }
+  if(M && M.type==='daily'){ __bots.dailyAuto(['giỏi','khá','kém','qua'][rnd(4)]); D.dailyFlush(); return 'daily'; }
   if(D.modalOpen){
     const inp=document.querySelector('#modal input'); if(inp && !inp.value) inp.value='Kiểm Thử';
     const bs=[...document.querySelectorAll('#modal .opt')].filter(b=>!b.disabled);
@@ -105,13 +106,13 @@ def balance(page, fails):
         for k, talk in (('van', 'talkThay'), ('vo', 'talkVo')):
             # Đến lớp: mỗi mùa dùng hết 4 Sức, rồi ngủ.
             fresh(page, path)
-            page.evaluate("() => {__dv.S.year=1267; __dv.S.ev=new Proxy({}, {get:()=>1})}")
+            page.evaluate("() => {__dv.S.year=1267; __dv.S.ev=new Proxy({}, {get:()=>1}); __dv.S.lifeWait=1e9}")
             cls = page.evaluate(f"""() => {{const D=__dv; let n=0, v0=D.S.{k};
-              for(let s=0;s<8;s++){{ for(let i=0;i<4;i++){{ D.{talk}(); D.pick(0) }} D.advance(1); n++ }}
+              for(let s=0;s<8;s++){{ for(let i=0;i<4;i++){{ D.{talk}(); D.pick(0); __bots.dailyAuto('khá'); D.dailyFlush() }} D.advance(1); while(D.modalOpen) D.nextModal(); n++ }}
               return (D.S.{k}-v0)/n }}""")
             # Tự học: chọn việc chính, 8 mùa (bỏ qua sự kiện).
             fresh(page, path)
-            page.evaluate("() => {__dv.S.year=1267; __dv.S.ev=new Proxy({}, {get:()=>1})}")
+            page.evaluate("() => {__dv.S.year=1267; __dv.S.ev=new Proxy({}, {get:()=>1}); __dv.S.lifeWait=1e9}")
             home = page.evaluate(f"""() => {{const D=__dv, v0=D.S.{k}; let n=0;
               const y0=D.S.year*4+D.S.season; D.fastForward('{k}');
               n=D.S.year*4+D.S.season-y0; return [(D.S.{k}-v0)/n, D.S.{k}, n] }}""")
@@ -127,7 +128,7 @@ def balance(page, fails):
 
 def mechanics(page, fails):
     """Đi tới được mọi nơi, không đi chéo, trâu giật mình."""
-    for name, fn in (('đi tới được (BFS)', 'reach'), ('không đi chéo', 'noDiagonal'), ('trâu giật mình', 'buffalo'),
+    for name, fn in (('việc hằng ngày: phần thưởng theo mức chơi', 'daily'), ('đi tới được (BFS)', 'reach'), ('không đi chéo', 'noDiagonal'), ('trâu giật mình', 'buffalo'),
                      ('đường văn: dân tự vào rừng', 'selfWalk'), ('ngã xuống: ai bị bắt, ai kẹt lại', 'downRule'),
                      ('giặc không đứng dàn hàng ở bìa rừng', 'noCamping'),
                      ('giấy bút, thuốc bổ mỗi mùa một lần', 'shopLimit'), ('lo trước ngày giặc đến', 'prep'),
