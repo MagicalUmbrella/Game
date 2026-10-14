@@ -133,6 +133,12 @@ def mechanics(page, fails):
         extra = f" ({r['n']} điểm)" if 'n' in r else ''
         print(f"  {name}{extra}: {'đạt' if not r['errs'] else 'LỖI'}")
         fails.extend(f'{name}: {e}' for e in r['errs'])
+    for dredged in (True, False):
+        name = 'đêm 1285, giặc đi đúng địa hình (' + ('đã vét sông' if dredged else 'chưa vét sông') + ')'
+        fresh(page)
+        r = page.evaluate('(x) => __checks.terrain(x)', dredged)
+        print(f"  {name}: {'đạt' if not r['errs'] else 'LỖI'} (lội sông {r['wade']}, ở bờ nam {r['south']} trên {r['samples']} mẫu)")
+        fails.extend(f'{name}: {e}' for e in r['errs'])
 
 
 def teleport_checks(page, fails):
@@ -141,7 +147,7 @@ def teleport_checks(page, fails):
             ('lụt, cố hết sức', "S.year=1270;S.season=2;D.startFlood()", '__bots.floodTeleport(true)', "S.flags.de==='saved'"),
             ('lụt, bỏ dở', "S.year=1270;S.season=2;D.startFlood()", '__bots.floodTeleport(false)', "S.flags.de==='lost'"),
             ('đêm 1285, cứu đủ', "S.year=1285;S.season=0;S.flags.de='saved';D.startClimax()", '__bots.climaxTeleport(true)', "S.res.reason==='done'"),
-            ('đêm 1285, bỏ dở', "S.year=1285;S.season=0;S.flags.de='lost';D.startClimax()", '__bots.climaxTeleport(false)', "S.res.left.length+S.res.lost.length>0&&(S.res.reason!=='done'||document.querySelector('#modal h2').textContent!=='Không bỏ lại ai')")):
+            ('đêm 1285, bỏ mặc mọi người', "S.year=1285;S.season=0;S.flags.de='lost';D.startClimax()", '__bots.climaxTeleport(false, 1)', "S.res.reason==='dawn'&&S.res.saved.length===0&&document.querySelector('#modal h2').textContent==='Bình minh'")):
         fresh(page)
         r = page.evaluate(f"""() => {{const D=__dv,S=D.S; {start}; {bot}; const ok={want};
           let chron=null; if(S.res){{ D.mpick(0); chron=document.querySelector('#modal').innerText }}
@@ -162,46 +168,57 @@ def teleport_checks(page, fails):
 SKILLS = ('giỏi', 'khá', 'kém')
 
 
-def flood_table(page, fails):
-    """Bot bấm phím chơi lụt 1270. Người chơi 12 tuổi; có hoặc không có Cò đắp giúp."""
-    print(f"  {'tay nghề':9s} {'Cò giúp':8s} {'kết quả':10s} {'thời gian':>9s} {'mực nước':>8s} {'bao':>4s}")
+def flood_table(page, fails, n):
+    """Bot bấm phím chơi lụt 1270, n lượt mỗi ô. Người chơi 12 tuổi; có hoặc không có Cò đắp giúp."""
+    print(f"  {'tay nghề':9s} {'Cò giúp':8s} {'giữ được đê':>11s} {'mực nước TB':>11s} {'thời gian TB':>12s}")
     out = {}
     for sk in SKILLS:
         for co in (0, 3):
-            fresh(page)
-            r = page.evaluate("""([sk,co]) => {const D=__dv; D.S.year=1270; D.S.season=2; D.S.rel.co=co;
-              D.startFlood(); return __bots.floodBot(sk)}""", [sk, co])
-            out[(sk, co)] = r
-            print(f"  {sk:9s} {'có' if co else 'không':8s} {'giữ được' if r['win'] else 'vỡ đê':10s} {r['t']:8.1f}s {r['level']:8.2f} {r['bags']:4d}")
-    if not out[('giỏi', 0)]['win']:
-        fails.append('lụt 1270: bot giỏi tự làm một mình mà vẫn không giữ được đê (quá khó?)')
+            rs = []
+            for _ in range(n):
+                fresh(page)
+                rs.append(page.evaluate("""([sk,co]) => {const D=__dv; D.S.year=1270; D.S.season=2; D.S.rel.co=co;
+                  D.startFlood(); return __bots.floodBot(sk)}""", [sk, co]))
+            win = sum(r['win'] for r in rs)
+            out[(sk, co)] = win / n
+            print(f"  {sk:9s} {'có' if co else 'không':8s} {win:>7d}/{n:<3d} {sum(r['level'] for r in rs) / n:11.2f} {sum(r['t'] for r in rs) / n:11.1f}s")
+    if out[('giỏi', 0)] < 1:
+        fails.append('lụt 1270: bot giỏi tự làm một mình mà có lượt không giữ được đê (quá khó?)')
     return out
 
 
-# Các kiểu nhân vật cho đêm 1285 (mã JS chạy trên S trước startClimax).
+# Các kiểu nhân vật cho đêm 1285 (mã JS chạy trên S trước startClimax). Mọi kiểu đều có cha, vợ Thảo, bé Sen.
 CLIMAX_BUILDS = {
     'võ, có Cò và trai làng': "S.path='vo';S.co='village';S.rel.co=4;S.flags.de='saved';S.flags.lang=6;S.flags.tolich='done';",
+    'võ, một mình': "S.path='vo';S.co='army';S.flags.tolich='done';",
+    'văn đỗ, có Cò': "S.path='van';S.dothi=true;S.co='village';S.rel.co=4;S.flags.tolich='done';",
     'văn đỗ, một mình': "S.path='van';S.dothi=true;S.co='army';S.flags.tolich='done';",
-    'nông, không vét sông': "S.path='nong';S.co='village';S.rel.co=2;S.flags.tolich='skip';S.cha=false;",
+    'nông, có Cò, chưa vét sông': "S.path='nong';S.co='village';S.rel.co=2;S.flags.tolich='skip';",
 }
+REASON = {'done': 'đủ người', 'dawn': 'trời sáng', 'down': 'ngã xuống'}
 
 
-def climax_table(page, fails):
-    """Bot bấm phím chơi đêm 1285 với vài kiểu nhân vật. Có cha (trừ kiểu nông), vợ Thảo, bé Sen."""
-    print(f"  {'nhân vật':24s} {'tay nghề':9s} {'kết thúc':9s} {'cứu':>5s} {'thóc':>5s} {'máu':>4s} {'giặc hạ':>7s} {'còn':>5s}")
+def climax_table(page, fails, n):
+    """Bot bấm phím chơi đêm 1285 với vài kiểu nhân vật, n lượt mỗi ô."""
+    print(f"  {'nhân vật':27s} {'tay nghề':9s} {'cứu TB':>7s} {'thóc TB':>7s} {'ngã xuống':>9s}  kết thúc")
     out = {}
     for name, setup in CLIMAX_BUILDS.items():
         for sk in SKILLS:
-            fresh(page)
-            r = page.evaluate("""([setup,sk]) => {const D=__dv,S=D.S; S.year=1285; S.season=0; S.cha=true;
-              S.ev.thao=1; S.thao='wife'; S.child=true; new Function('S',setup)(S);
-              D.startClimax(); return __bots.climaxBot(sk)}""", [setup, sk])
-            out[(name, sk)] = r
-            reason = {'done': 'đủ người', 'dawn': 'trời sáng', 'down': 'ngã xuống'}.get(r['reason'], str(r['reason']))
-            print(f"  {name:24s} {sk:9s} {reason:9s} {r['saved']:>2d}/{r['total']:<2d} {r['thoc']:>2d}/{r['thocT']:<2d} {r['hp']:4d} {r['kills']:7d} {r['tLeft']:4d}s")
-    best = out[('võ, có Cò và trai làng', 'giỏi')]
-    if best['reason'] == 'down' or best['saved'] < best['total'] - 1:
-        fails.append(f"đêm 1285: nhân vật mạnh nhất, bot giỏi mà chỉ cứu {best['saved']}/{best['total']} ({best['reason']}) (quá khó?)")
+            rs = []
+            for _ in range(n):
+                fresh(page)
+                rs.append(page.evaluate("""([setup,sk]) => {const D=__dv,S=D.S; S.year=1285; S.season=0; S.cha=true;
+                  S.ev.thao=1; S.thao='wife'; S.child=true; new Function('S',setup)(S);
+                  D.startClimax(); return __bots.climaxBot(sk)}""", [setup, sk]))
+            total = rs[0]['total']
+            saved = sum(r['saved'] for r in rs) / n
+            down = sum(r['reason'] == 'down' for r in rs)
+            ends = ', '.join(f"{REASON.get(k, k)} {sum(r['reason'] == k for r in rs)}" for k in ('done', 'dawn', 'down') if any(r['reason'] == k for r in rs))
+            out[(name, sk)] = (saved, total, down)
+            print(f"  {name:27s} {sk:9s} {saved:4.1f}/{total:<2d} {sum(r['thoc'] for r in rs) / n:4.1f}/{rs[0]['thocT']:<2d} {down:>5d}/{n:<3d}  {ends}")
+    saved, total, down = out[('võ, có Cò và trai làng', 'giỏi')]
+    if down or saved < total - 1:
+        fails.append(f"đêm 1285: nhân vật mạnh nhất, bot giỏi mà chỉ cứu TB {saved:.1f}/{total}, ngã xuống {down} lần (quá khó?)")
     return out
 
 
@@ -253,6 +270,7 @@ def main():
     ap.add_argument('--shots', default=None, help='thư mục lưu ảnh chụp màn hình')
     ap.add_argument('--build', action='store_true', help='build lại dist-test/ trước khi chạy')
     ap.add_argument('--no-bots', action='store_true', help='bỏ phần đo độ khó bằng bot bấm phím (nhanh hơn)')
+    ap.add_argument('--bot-runs', type=int, default=4, help='số lượt bot chơi mỗi ô trong bảng độ khó')
     a = ap.parse_args()
     url = serve(a.build)
     shots = a.shots or tempfile.mkdtemp(prefix='dvmd-')
@@ -270,9 +288,9 @@ def main():
         teleport_checks(page, fails)
         if not a.no_bots:
             print('== Độ khó lụt 1270 (bot bấm phím) ==')
-            flood_table(page, fails)
+            flood_table(page, fails, a.bot_runs)
             print('== Độ khó đêm 1285 (bot bấm phím) ==')
-            climax_table(page, fails)
+            climax_table(page, fails, a.bot_runs)
         print('== Chạy thật: đi lại, lụt, đêm giặc ==')
         smoke(page, shots, fails)
         page.close()

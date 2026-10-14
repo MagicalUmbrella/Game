@@ -51,6 +51,7 @@ Mỗi file mở đầu bằng comment `/* ===== tên ===== */`. Các module impo
 | `dialogs.js` | `talkX()` cho từng NPC, `doorAction()`, `chooseFocus()` + `fastForward()` để thời gian trôi nhanh, câu cá, làm đồng, toàn bộ cơ chế con trâu. |
 | `events.js` | `advanceOne()` sang mùa; `EVENTS` là danh sách sự kiện `{id, y: năm, s: mùa 0–3, mg?, run}`; `eventCuoi`, `choosePath`, `setPath`. |
 | `minigames/` | Lụt 1270 (`startFlood`), kỳ thi 1275 (`QBANK`, `startExam`), tập trận 1283 (`startTraining`). |
+| `pathfind.js` | `gridPath`, `nextStep`: tìm đường BFS cho người do máy điều khiển (giặc, người cùng đánh) để không đi xuyên sông, cây, nhà. |
 | `climax.js` | Đêm tháng giêng 1285: `startClimax`, `clUpdate`, `finishClimax`, `endChapter` (biên niên). |
 | `intro.js` | Màn tiêu đề, đặt tên, lễ thôi nôi, `startPlay(fromSave)`. |
 | `input.js` | Bàn phím, va chạm (`solidAt`, `canStand`), `update(dt)`, `findTarget()` tìm thứ để tương tác bằng E. |
@@ -113,7 +114,7 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 ### Hậu quả nối vào màn cao trào
 
 - Đồng minh: Cò (nếu còn ở làng), trai làng (`flags.de==='saved'`, `flags.lang>=6`, đường nông; trừ đi nếu nói "hòa" ở Diên Hồng), quân Phạm Ngũ Lão đến khi còn 45 giây (nếu đã gặp anh Ngũ).
-- Không vét sông Tô Lịch thì giặc lội qua chỗ nông. Giữ thóc thì thêm một bao phải cứu.
+- Giặc và người cùng đánh đi theo đường thật (`src/pathfind.js`). Đã vét sông Tô Lịch thì giặc chỉ qua được bằng cầu; không vét thì giặc lội qua sông (chậm một nửa) và có thêm chỗ xuất hiện ở bờ bắc. Giữ thóc thì thêm một bao phải cứu.
 - Đường võ thêm máu và sát thương; tập trận xuất sắc thêm máu. Đường văn có đuốc nghi binh (đỗ thì thêm một cây). Đường nông vác thóc nhanh.
 - Người bị giặc bắt đi được nhắc ở phần mở đầu chương hai.
 
@@ -143,11 +144,12 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 - Sông Tô Lịch không nối với sông Hồng: dải cát của sông Hồng từng đè lên nước Tô Lịch.
 - Con trâu hiện sẵn trong rừng từ năm 6 tuổi: giờ ở chuồng cạnh ruộng cho đến khi cha giao việc.
 - Thời gian trôi nhanh chạy xuyên qua sự kiện: vòng lặp phải dừng khi `modalOpen`, không phải khi `modalQueue.length`.
+- Giặc đêm 1285 từng đi thẳng xuyên sông, cây, nhà; điểm xuất hiện bờ bắc từng rơi vào ô cây, tường thành. Test `terrain` trong `tests/checks.js` canh lỗi này.
+- Màn kết 1285 từng ghi "Không bỏ lại ai" cả khi có người bị bắt.
 
 ## Hướng phát triển tiếp
 
 - **Chương hai (1285–1288):** cứu người bị bắt; Chương Dương, Hàm Tử, giải phóng Thăng Long (1285); cuộc kháng chiến lần ba; **trận Bạch Đằng 1288** với cơ chế canh thủy triều, cắm cọc (ý tưởng gốc của chủ dự án). Đối chiếu Toàn thư năm Ất Dậu 1285 đến Mậu Tý 1288 trước khi viết.
 - Cân bằng độ khó (tốc độ nước lũ, lượng giặc) cần người chơi thật thử.
-- Giặc trong đêm 1285 đi thẳng, xuyên sông, cây, nhà (`clUpdate` không xét địa hình), trái với biên niên "vét sông thì giặc chỉ qua được bằng hai cây cầu". Chủ dự án chưa quyết có sửa không (sửa sẽ đổi độ khó).
-- Đường văn đi một mình rất khó: bot cả ba mức đều ngã xuống, mà ngã xuống khi không có đồng minh thì mất hết người chưa cứu.
+- **Đường văn trong đêm 1285 quá khó** (bot giỏi ngã xuống 3/4 lượt, kể cả có Cò): chỉ có đuốc nghi binh, điểm Văn không có tác dụng gì ở cao trào. Đang bàn phương án với chủ dự án.
 - Chương hai nên nằm trong thư mục riêng (ví dụ `src/chapter2/`), tách dữ liệu sự kiện khỏi logic.

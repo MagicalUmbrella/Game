@@ -7,7 +7,8 @@ import * as ui from './ui.js';
 import {advance,advanceOne} from './events.js';
 import {fastForward,chooseFocus,talkThay,talkVo,talkBuffalo,loseBuffalo,walkable,bfs,pathTo,hideSpots,PEN} from './dialogs.js';
 import {update,canStand} from './input.js';
-import {BUILDINGS,SIGNS} from './map.js';
+import {BUILDINGS,SIGNS,get,tolichY} from './map.js';
+import {WA} from './constants.js';
 import {startFlood,endFlood} from './minigames/flood.js';
 import {startExam} from './minigames/exam.js';
 import {startTraining,tmHit} from './minigames/training.js';
@@ -23,4 +24,4 @@ if(import.meta.env.MODE==='test')window.__dv={
   get modalOpen(){return ui.modalOpen},get dialogOpen(){return ui.dialogOpen},pick:ui.pick,mpick:ui.mpick,nextModal:ui.nextModal,startQuest:ui.startQuest,
   advance,advanceOne,fastForward,chooseFocus,talkThay,talkVo,startPlay,
   startFlood,endFlood,startExam,startTraining,tmHit,startClimax,finishClimax,
-  step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE};
+  step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY};

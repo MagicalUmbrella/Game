@@ -1,16 +1,23 @@
 /* ================= cao trào: đêm tháng giêng 1285 ================= */
-import {T,TS,Z,ctx} from './constants.js';
+import {T,TS,WA,Z,ctx} from './constants.js';
 import {Hs} from './pixel.js';
-import {tolichY} from './map.js';
+import {get,tolichY} from './map.js';
 import {personSprite} from './sprites.js';
 import {LOOK_THAO,MG,P,S,has,save,setMG} from './state.js';
 import {floatAt,floatText,setKeys,showModal,toast} from './ui.js';
 import {hudBar,hudBox,mark,sackSprite} from './minigames/flood.js';
 import {canStand} from './input.js';
+import {walkable} from './dialogs.js';
+import {nextStep} from './pathfind.js';
 import {VH,VW,camX,camY,clock,drawSprite,shadow} from './render.js';
 
 export const ZONE={x0:23,y0:54,x1:29,y1:66};
 const inZone=(x,y)=>x>=ZONE.x0&&x<=ZONE.x1+1&&y>=ZONE.y0&&y<=ZONE.y1+1;
+/* Giặc và người cùng đánh đi theo đường thật (src/pathfind.js), không xuyên sông, cây, nhà.
+   Chưa vét sông Tô Lịch thì giặc lội qua được (đi chậm lại một nửa); đã vét thì phải qua cầu. */
+const okAlly=(x,y)=>walkable(x,y);
+const okEnemy=(x,y)=>walkable(x,y)||(S.flags.tolich!=='done'&&get(x,y)===WA);
+const wading=o=>get(Math.floor(o.x),Math.floor(o.y))===WA;
 const FIRES=[[53.5,21.6],[24.5,20.2],[48.5,21.2]];
 export function startClimax(){
   const v=[],add=(id,name,x,y,look,slow)=>v.push({id,name,x,y,look,st:'wait',slow:slow||1,walk:0,dir:'down'});
@@ -36,10 +43,10 @@ const pDmg=()=>1+(S.path==='vo'?1:0)+(has('Kiếm sắt')?1:0);
 function clKey(k){if(k===' '){clAttack();return true}if(k==='q'&&MG.decoys>0){MG.decoys--;MG.decoy={x:S.x,y:S.y,t:7};toast('Bạn cắm đuốc, hò hét giả làm quân mai phục. Giặc kéo về phía ánh lửa!');return true}return false}
 function clAttack(){const M=MG;if(M.cd>0)return;M.cd=S.path==='vo'?.3:.45;M.slash=.15;const v={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[P.dir];
   for(const e of M.en){if(e.dead)continue;const dx=e.x-S.x,dy=e.y-S.y,d=Math.hypot(dx,dy);if(d<1.6&&(d<.8||(dx*v[0]+dy*v[1])/d>.2))hitEnemy(e,pDmg(),S.x,S.y)}}
-function hitEnemy(e,dmg,fx,fy){e.hp-=dmg;const d=Math.hypot(e.x-fx,e.y-fy)||1;e.x+=(e.x-fx)/d*.6;e.y+=(e.y-fy)/d*.6;e.flash=.15;
+function hitEnemy(e,dmg,fx,fy){e.hp-=dmg;const d=Math.hypot(e.x-fx,e.y-fy)||1,kx=e.x+(e.x-fx)/d*.6,ky=e.y+(e.y-fy)/d*.6;if(okEnemy(Math.floor(kx),Math.floor(ky))){e.x=kx;e.y=ky}e.flash=.15;
   if(e.hp<=0){e.dead=true;MG.kills++;if(e.cap){e.cap.st='wait';e.cap.x=e.x;e.cap.y=e.y;floatAt('Cứu được '+e.cap.name+'!',e.x,e.y,'#9fcaa9');e.cap=null}}}
 function spawnEnemy(){const M=MG,pts=[[53.5,21.8],[24.5,20.4]];
-  if(S.flags.tolich!=='done'){const x=30+Math.floor(Math.random()*30);pts.push([x+.5,tolichY(x)-2.4])}
+  if(S.flags.tolich!=='done')for(let k=0;k<10;k++){const x=30+Math.floor(Math.random()*30),y=tolichY(x)-2.4;if(walkable(x,Math.floor(y))){pts.push([x+.5,y]);break}}
   if(M.T-M.t>40)pts.push([79.5,31.5]);
   const p=pts[Math.floor(Math.random()*pts.length)],ky=Math.random()<.25;
   M.en.push({x:p[0],y:p[1],home:p,hp:ky?3:2,sp:ky?3:2.1,ky,st:'hunt',cap:null,walk:0,dir:'down',flash:0,dead:false})}
@@ -66,7 +73,7 @@ function clUpdate(dt){
         for(const a of M.al)if(!a.down&&!a.quan&&Math.hypot(a.x-e.x,a.y-e.y)<1.2)tg=a}
       tx=tg.x;ty=tg.y}
     const dx=tx-e.x,dy=ty-e.y,d=Math.hypot(dx,dy);
-    if(d>.05){const m=Math.min(d,e.sp*dt*(e.st==='flee'?1.15:1));const nx=e.x+dx/d*m,ny=e.y+dy/d*m;if(!(inZone(nx,ny)&&e.st!=='flee')){e.x=nx;e.y=ny}e.walk+=dt*9;e.dir=dirOf(dx,dy)}
+    if(d>.05){const st=nextStep(e,tx,ty,okEnemy,M.T-M.t);if(st){const sx=st[0]-e.x,sy=st[1]-e.y,sd=Math.hypot(sx,sy)||1,m=Math.min(sd,e.sp*dt*(e.st==='flee'?1.15:1)*(wading(e)?.5:1)),nx=e.x+sx/sd*m,ny=e.y+sy/sd*m;if(!(inZone(nx,ny)&&e.st!=='flee')){e.x=nx;e.y=ny}e.walk+=dt*9;e.dir=dirOf(sx,sy)}}
     if(e.cap){e.cap.x=e.x+.45;e.cap.y=e.y+.15}
     if(e.st==='flee'&&d<.3){e.dead=true;if(e.cap){e.cap.st='lost';toast(e.cap.name+' đã bị giặc bắt đi mất...',4200);e.cap=null}continue}
     if(e.st!=='flee'){
@@ -78,7 +85,7 @@ function clUpdate(dt){
   for(const a of M.al){if(a.down)continue;a.cd=Math.max(0,a.cd-dt);a.inv=Math.max(0,a.inv-dt);a.slash=Math.max(0,(a.slash||0)-dt);let tg=null,best=a.quan?60:9;
     for(const e of M.en){const d=Math.hypot(e.x-a.x,e.y-a.y);if(d<best&&(a.quan||Math.hypot(e.x-42,e.y-44)<15)){best=d;tg=e}}
     const tx=tg?tg.x:S.x+(a.id==='co'?-1.3:1.3),ty=tg?tg.y:S.y+.7,dx=tx-a.x,dy=ty-a.y,d=Math.hypot(dx,dy);
-    if(d>(tg?.7:1)){const m=Math.min(d-.6,a.sp*dt);a.x+=dx/d*m;a.y+=dy/d*m;a.moving=true;a.walk+=dt*9;a.dir=dirOf(dx,dy)}else a.moving=false;
+    a.moving=false;if(d>(tg?.7:1)){const st=nextStep(a,tx,ty,okAlly,M.T-M.t);if(st){const fin=st[0]===tx&&st[1]===ty,sx=st[0]-a.x,sy=st[1]-a.y,sd=Math.hypot(sx,sy)||1,m=Math.min(sd-(fin?.6:0),a.sp*dt);if(m>0){a.x+=sx/sd*m;a.y+=sy/sd*m;a.moving=true;a.walk+=dt*9;a.dir=dirOf(sx,sy)}}}
     if(tg&&d<1.1&&a.cd<=0){a.cd=a.quan?.5:.9;a.slash=.15;hitEnemy(tg,a.dmg,a.x,a.y)}}
   M.en=M.en.filter(e=>!e.dead);
   if(M.hp<=0)return finishClimax('down');

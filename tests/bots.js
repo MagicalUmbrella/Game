@@ -171,19 +171,20 @@
       lost: (r.lost || []).length, thoc: r.thoc, thocT: r.thocT, kills: r.kills, hp, tLeft: +tLeft.toFixed(0)};
   }
 
-  function climaxTeleport(full) {
+  // full: cứu hết; không thì mỗi người, mỗi bao thóc bị bỏ lại với xác suất skip.
+  function climaxTeleport(full, skip = 0.3) {
     const d = D(), M = d.MG, S = d.S, [zx, zy] = zoneC();
     const act = () => { const tg = M.findTarget(); if (tg) tg.act(); };
     const toZone = () => { S.x = zx; S.y = zy; };
     for (const p of M.v) {
       if (d.MG !== M) return;
-      if (p.st !== 'wait' || (!full && Math.random() < 0.3)) continue;
+      if (p.st !== 'wait' || (!full && Math.random() < skip)) continue;
       S.x = p.x; S.y = p.y; act(); toZone();
       for (let i = 0; i < 900 && d.MG === M && p.st === 'follow'; i++) d.step(1 / 30);
     }
     for (const s of M.sk) {
       if (d.MG !== M) return;
-      if (s.st !== 'wait' || (!full && Math.random() < 0.3)) continue;
+      if (s.st !== 'wait' || (!full && Math.random() < skip)) continue;
       S.x = s.x; S.y = s.y; act(); toZone(); d.step(1 / 30);
     }
     toZone();

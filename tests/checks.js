@@ -133,5 +133,34 @@
     return {errs};
   }
 
-  window.__checks = {reach, noDiagonal, buffalo};
+  /* Đêm 1285: giặc và người cùng đánh không đi xuyên cây, nhà; chỉ lội sông Tô Lịch khi chưa vét sông.
+     Giặc vẫn phải tới được làng (qua cầu hoặc lội), không kẹt ở bờ bắc. Chạy 70 giây, người chơi đứng yên ở rừng. */
+  function terrain(dredged) {
+    const d = D(), S = d.S, errs = [];
+    Object.assign(S, {year: 1285, season: 0, path: 'vo', co: 'village', cha: true});
+    S.flags.tolich = dredged ? 'done' : 'skip';
+    d.startClimax();
+    const M = d.MG, Z = d.ZONE;
+    S.x = (Z.x0 + Z.x1) / 2 + .5; S.y = (Z.y0 + Z.y1) / 2 + .5;
+    let bad = 0, wade = 0, samples = 0, south = 0;
+    const where = new Set();
+    for (let i = 0; i < 70 * 60 && d.MG === M; i++) {
+      d.step(DT);
+      for (const o of M.en.concat(M.al)) {
+        if (o.dead || o.down) continue;
+        samples++;
+        const tx = Math.floor(o.x), ty = Math.floor(o.y);
+        if (d.walkable(tx, ty)) { if (M.en.includes(o) && o.y > d.tolichY(o.x) + 3) south++; continue; }
+        if (M.en.includes(o) && d.tileAt(tx, ty) === d.WA && !dredged) { wade++; continue; }
+        bad++; where.add(`${M.en.includes(o) ? 'giặc' : o.name} ở ${tx},${ty}`);
+      }
+    }
+    if (bad) errs.push(`${bad}/${samples} lần có người đứng trên ô cấm: ${[...where].slice(0, 5).join('; ')}`);
+    if (!south) errs.push('giặc không sang được bờ nam sông Tô Lịch (kẹt?)');
+    if (dredged && wade) errs.push('đã vét sông mà giặc vẫn lội sông');
+    d.setMG(null); document.body.classList.remove('mg');
+    return {errs, samples, wade, south};
+  }
+
+  window.__checks = {reach, noDiagonal, buffalo, terrain};
 })();
