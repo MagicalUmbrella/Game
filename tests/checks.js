@@ -245,5 +245,59 @@
     return {errs, near: samples ? near / samples : 0, speed};
   }
 
-  window.__checks = {reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping};
+  // Bấm lựa chọn trong hội thoại đang mở theo chữ trên nút. Trả về false nếu không có hoặc bị khóa.
+  function choose(text) {
+    const b = [...document.querySelectorAll('#dialog .opt')].find(x => x.textContent.includes(text));
+    if (!b || b.disabled) { if (D().dialogOpen) D().pick(99); return false; }
+    b.click(); return true;
+  }
+  const closeDialog = () => { const o = [...document.querySelectorAll('#dialog .opt')]; if (D().dialogOpen && o.length) o[o.length - 1].click(); };
+
+  /* Giấy bút, thuốc bổ mỗi mùa chỉ mua được một lần. */
+  function shopLimit() {
+    const d = D(), S = d.S, errs = [];
+    Object.assign(S, {year: 1276, tien: 999});
+    S.ev = new Proxy({}, {get: () => 1});
+    const v0 = S.van;
+    for (let season = 0; season < 4; season++) {
+      for (let i = 0; i < 4; i++) { d.talkSach(); choose('Mua giấy bút'); closeDialog(); }
+      for (let i = 0; i < 3; i++) { S.suc = 0; d.talkTong(); choose('Mua thuốc bổ'); closeDialog(); }
+      if (S.suc > 2) errs.push(`mùa ${season + 1}: mua thuốc bổ nhiều lần (Sức ${S.suc})`);
+      d.advance(1);
+      while (d.modalOpen) d.nextModal();
+    }
+    const per = (S.van - v0) / 4;
+    if (per > 2) errs.push(`giấy bút cho ${per} Văn mỗi mùa (tối đa 2)`);
+    return {errs, per};
+  }
+
+  /* Lo trước ngày giặc đến: chưa có tin Toa Đô thì chưa làm được; làm đủ ba việc thì đêm 1285 có
+     bà Tư, bé Sen ở sẵn trong rừng, một bao thóc giấu sẵn, trai làng cầm giáo; biên niên ghi lại. */
+  function prep() {
+    const d = D(), S = d.S, errs = [];
+    Object.assign(S, {year: 1281, season: 0, tien: 100, path: 'nong', cha: true, thao: 'wife', child: true});
+    S.ev.thao = 1; S.flags.lang = 6; S.flags.de = 'saved'; S.quests.trau = 'done';
+    d.talkLy(); if (choose('dựng lán')) errs.push('năm 1281 (chưa có tin Toa Đô) đã góp được tiền dựng lán'); closeDialog();
+    S.year = 1283;
+    for (const [talk, text] of [['talkLy', 'dựng lán'], ['talkRen', 'Rèn giáo'], ['talkCha', 'Cất bớt thóc']]) {
+      d[talk](); if (!choose(text)) errs.push(`năm 1283 không làm được việc "${text}" (${talk})`); closeDialog();
+    }
+    if (S.tien !== 100 - 12 - 10 - 6) errs.push(`tiền sau ba việc là ${S.tien}, mong ${100 - 28}`);
+    if (!S.flags.lan || !S.flags.giao || !S.flags.catThoc) errs.push('thiếu cờ sau khi làm đủ ba việc');
+    S.year = 1285; S.season = 0;
+    d.startClimax();
+    const M = d.MG;
+    for (const id of ['batu', 'sen']) { const p = M.v.find(x => x.id === id); if (!p || p.st !== 'safe') errs.push(`${id} chưa ở sẵn trong rừng`); }
+    if (M.sk.filter(s => s.st === 'safe').length !== 1) errs.push('không có đúng một bao thóc giấu sẵn');
+    const trai = M.al.filter(a => a.id.startsWith('trai'));
+    if (!trai.length) errs.push('kiểu nhân vật thử phải có trai làng');
+    if (trai.some(a => a.dmg !== 2 || !a.look.spear)) errs.push('trai làng chưa có giáo');
+    window.__bots.climaxTeleport(true);
+    d.mpick(0); // Nhìn lại cuộc đời
+    const chron = document.querySelector('#modal').innerText;
+    for (const t of ['dựng lán', 'rèn giáo', 'cất bớt thóc']) if (!chron.includes(t)) errs.push(`biên niên thiếu dòng "${t}"`);
+    return {errs};
+  }
+
+  window.__checks = {reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep};
 })();

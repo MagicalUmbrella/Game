@@ -9,6 +9,7 @@ import {hudBar,hudBox,mark,sackSprite} from './minigames/flood.js';
 import {canStand} from './input.js';
 import {bfs,walkable} from './dialogs.js';
 import {nextStep} from './pathfind.js';
+import {prepChronicle,prepClimax} from './prep.js';
 import {VH,VW,camX,camY,clock,drawSprite,shadow} from './render.js';
 
 export const ZONE={x0:23,y0:54,x1:29,y1:66};
@@ -49,6 +50,8 @@ export function startClimax(){
   const maxhp=4+(S.path==='vo'?2:0)+(S.flags.train==='top'?1:0);
   setMG({type:'climax',T:150,t:150,hp:maxhp,maxhp,v,sk:sk.map(([x,y])=>({x,y,st:'wait'})),carry:null,en:[],al,spawnT:3,decoy:null,decoys:torches(),cd:0,inv:0,slash:0,kills:0,ngu:false,nLang:Math.max(0,nLang),
     hideNPC:true,update:clUpdate,findTarget:clTarget,draw:clDraw,hud:clHud,post:nightPost,key:clKey,speedMul:()=>MG.carry?(S.path==='nong'?.92:.74):1});
+  // những gì đã lo trước (src/prep.js): người, thóc đã ở sẵn trong rừng; trai làng có giáo
+  prepClimax(MG.v,MG.sk,MG.al,o=>{o.st='safe';o.x=ZONE.x0+1.2+Math.random()*4;o.y=ZONE.y0+1.5+Math.random()*10;if(o.look)o.spot=[o.x,o.y]});
   S.x=43.5;S.y=50.6;P.dir='down';document.body.classList.add('mg');
   setKeys(`<span><kbd>Space</kbd> đánh</span><span><kbd>E</kbd> ${S.path==='van'?'chỉ đường':'dẫn người'} · vác thóc</span>${MG.decoys?'<span><kbd>Q</kbd> đuốc nghi binh</span>':''}<span><kbd>Shift</kbd> chạy</span>`);
   toast(al.length?`${al.map(a=>a.name).filter((x,i,a)=>a.indexOf(x)===i).join(', ')} cầm gậy chạy ra đứng cạnh bạn.`:'Không ai trong làng đứng ra cùng bạn. Bạn phải tự xoay xở.',4600);
@@ -181,6 +184,7 @@ function endChapter(res){
   if(F.tolich)L.push(F.tolich==='done'?'Bạn cùng làng vét sông Tô Lịch. Đêm giặc đến, chúng chỉ qua được bằng hai cây cầu.':'Bạn không ra vét sông Tô Lịch. Đêm giặc đến, chúng lội qua được chỗ sông nông.');
   if(F.duyet&&F.duyet!=='the')L.push(F.duyet==='luong'?'Bạn góp lương cho quân của Hưng Đạo Vương.':'Bạn giữ thóc cho nhà, đêm giặc đến có thêm một bao phải cứu.');
   if(F.dh)L.push(F.dh==='danh'?'Trước Diên Hồng, bạn nói "Đánh!".':'Trước Diên Hồng, bạn nói "nên hòa". Trai làng nhớ câu ấy.');
+  L.push(...prepChronicle(res.nLang||0));
   if(S.nguMet)L.push('Bạn từng ngồi nghe anh Ngũ bàn binh pháp bên đường. Đêm giặc đến, anh ấy dẫn quân tới.');
   const path={van:(S.dothi?'Là Thái học sinh, bạn':'Bạn')+' được giao việc thảo văn thư, theo xa giá triều đình rời Thăng Long khi giặc áp sát.',
     vo:'Như các quân sĩ khác, trên cánh tay bạn thích hai chữ <b>Sát Thát</b> bằng mực. Bạn theo cờ Hưng Đạo Vương ra trận'+(F.nguKnows?', vào đội quân của Phạm Ngũ Lão.':'.'),

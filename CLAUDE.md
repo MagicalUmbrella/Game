@@ -53,6 +53,7 @@ Mỗi file mở đầu bằng comment `/* ===== tên ===== */`. Các module impo
 | `events.js` | `advanceOne()` sang mùa; `EVENTS` là danh sách sự kiện `{id, y: năm, s: mùa 0–3, mg?, run}`; `eventCuoi`, `choosePath`, `setPath`. |
 | `minigames/` | Lụt 1270 (`startFlood`), kỳ thi 1275 (`QBANK`, `startExam`), tập trận 1283 (`startTraining`). |
 | `pathfind.js` | `gridPath`, `nextStep`: tìm đường BFS cho người do máy điều khiển (giặc, người cùng đánh) để không đi xuyên sông, cây, nhà. |
+| `prep.js` | Lo trước ngày giặc đến (thu 1282 → hết 1284, hư cấu): `PREP` gồm dựng lán (cụ lý, 12 quan), rèn giáo cho trai làng (thợ rèn, 10), cất bớt thóc vào rừng (cha hoặc mẹ, 6). `prepChoice`, `prepClimax`, `prepChronicle`. |
 | `climax.js` | Đêm tháng giêng 1285: `startClimax`, `clUpdate`, `finishClimax`, `endChapter` (biên niên). |
 | `intro.js` | Màn tiêu đề, đặt tên, lễ thôi nôi, `startPlay(fromSave)`. |
 | `input.js` | Bàn phím, va chạm (`solidAt`, `canStand`), `update(dt)`, `findTarget()` tìm thứ để tương tác bằng E. |
@@ -82,7 +83,8 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 - `path`: `'van' | 'vo' | 'nong'`, chọn năm 1274.
 - `rel.co`, `rel.thao`: mức thân thiết.
 - `cha`, `thay`: còn sống hay không. `co`: `'village' | 'army'`. `thao`: `'none' | 'wife' | 'co' | 'gone'`. `married`, `child`.
-- `flags`: hậu quả các lựa chọn, gồm `lang` (uy tín với làng), `de`, `dieu`, `exam`, `train`, `daumua`, `tang`, `tolich`, `duyet`, `dh`, `rival`, `coStay`, `nguKnows`, `vay`, `cuoiCo`.
+- `flags`: hậu quả các lựa chọn, gồm `lang` (uy tín với làng), `de`, `dieu`, `exam`, `train`, `daumua`, `tang`, `tolich`, `duyet`, `dh`, `rival`, `coStay`, `nguKnows`, `vay`, `cuoiCo`, `lan`, `giao`, `catThoc`.
+- `paper`, `tonic`: mùa này đã mua giấy bút, thuốc bổ chưa (mỗi mùa một lần, đặt lại trong `advanceOne`).
 - `buffalo`: `{x, y, st: 'pen'|'lost'|'run'|'follow', tracks, bolts, stop}`.
 - `ev`: sự kiện đã xảy ra. `quests`: `hoc`, `trau`, `ca`, `sach`, `lua`.
 - `toi`: món bốc lúc thôi nôi. `res`: kết quả màn cao trào.
@@ -107,7 +109,7 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 | 1278 | Đậu mùa (cha sống hay mất); tin Phạm Ngũ Lão; Nhân Tông lên ngôi | Toàn thư |
 | 1279 Xuân | Cưới xin (ai lấy Thảo) | Hư cấu |
 | 1281 | Bé Sen ra đời; thầy Chu mất | Hư cấu |
-| 1282 Thu/Đông | Toa Đô; Bình Than, quả cam; Cò muốn theo Quốc Toản | Toàn thư + hư cấu |
+| 1282 Thu/Đông | Toa Đô (mở việc "Lo trước ngày giặc đến"); Bình Than, quả cam; Cò muốn theo Quốc Toản | Toàn thư + hư cấu |
 | 1283 Đông | Quốc công tiết chế (đường võ chơi tập trận) | Toàn thư |
 | 1284 | Vét sông Tô Lịch; duyệt binh Đông Bộ Đầu; Diên Hồng | Toàn thư |
 | 1285 Xuân | Cao trào: đêm giặc đến làng → kết chương | Toàn thư + hư cấu |
@@ -120,6 +122,7 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 - Đường võ thêm máu và sát thương; tập trận xuất sắc thêm máu. Đường nông vác thóc nhanh, thêm một trai làng.
 - **Đường văn** (người có chữ, mưu trí, không giỏi đánh): bấm E với dân làng là **chỉ đường**, người ấy tự tìm lối vào rừng (chậm hơn khi được dẫn, giặc gặp trên đường vẫn bắt được). **Đuốc nghi binh** (Q): 2 cây, cứ 25 Văn thêm một cây (tối đa 5), đỗ Thái học sinh thêm một cây, mỗi cây cháy 10 giây. Hằng số `SELF_SPEED`, `TORCH_T`, hàm `torches()` ở đầu `src/climax.js`.
 - **Ngã xuống** (hết máu): người đang đi theo bạn bị bắt nếu không có đồng minh đỡ; người chưa dẫn hoặc đang tự đi thì kẹt lại trong làng (thoát nạn, nhà bị đốt), không bị bắt.
+- Lo trước (`prep.js`): dựng lán thì bà Tư, bé Sen ở sẵn trong rừng; rèn giáo thì trai làng thêm 1 máu, đánh mạnh gấp đôi, cầm giáo; cất thóc thì một bao thóc giấu sẵn.
 - Người bị giặc bắt đi được nhắc ở phần mở đầu chương hai.
 
 ## Kiểm tra
@@ -140,7 +143,8 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 ### Cân bằng điểm
 
 - Đến lớp thầy đồ: +2 Văn mỗi Sức (+1 nếu đã biếu Tứ thư). Võ sư: +2 Võ (+3 đường võ, +1 có kiếm). Quốc học viện +3, Giảng võ đường +4. Một mùa dùng hết Sức được 8 điểm trở lên.
-- "Chọn việc chính" ở nhà là tự học, tự luyện: +1 mỗi mùa (+2 nếu đúng đường), **có trần** 25 (45 nếu đúng đường), mùa đang dở chỉ tính theo Sức còn lại. Muốn Văn 55 (loại 2 đáp án khi thi) hay Võ cao thì phải đến lớp. `FF_RATE`, `FF_CAP` ở `src/dialogs.js`; đổi thì chạy lại `npm test`.
+- "Chọn việc chính" ở nhà là tự học, tự luyện: +1 mỗi mùa (+2 nếu đúng đường), **có trần** 25 (45 nếu đúng đường), mùa đang dở chỉ tính theo Sức còn lại. Muốn Văn 55 (loại 2 đáp án khi thi) hay Võ cao thì phải đến lớp.
+- Giấy bút (+2 Văn, 3 quan) và thuốc bổ (+2 Sức, 5 quan) mỗi mùa chỉ mua được một lần, để tiền không thay được việc học. `FF_RATE`, `FF_CAP` ở `src/dialogs.js`; đổi thì chạy lại `npm test`.
 
 ## Lỗi đã sửa (đừng để tái phát)
 

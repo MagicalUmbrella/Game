@@ -129,7 +129,8 @@ def mechanics(page, fails):
     """Đi tới được mọi nơi, không đi chéo, trâu giật mình."""
     for name, fn in (('đi tới được (BFS)', 'reach'), ('không đi chéo', 'noDiagonal'), ('trâu giật mình', 'buffalo'),
                      ('đường văn: dân tự vào rừng', 'selfWalk'), ('ngã xuống: ai bị bắt, ai kẹt lại', 'downRule'),
-                     ('giặc không đứng dàn hàng ở bìa rừng', 'noCamping')):
+                     ('giặc không đứng dàn hàng ở bìa rừng', 'noCamping'),
+                     ('giấy bút, thuốc bổ mỗi mùa một lần', 'shopLimit'), ('lo trước ngày giặc đến', 'prep')):
         fresh(page)
         r = page.evaluate(f'() => __checks.{fn}()')
         extra = (f" ({r['n']} điểm)" if 'n' in r else f" ({r['safe']}/{r['total']} vào tới rừng)" if 'safe' in r
@@ -197,6 +198,7 @@ CLIMAX_BUILDS = {
     'văn đỗ (Văn 55), có Cò': "S.path='van';S.van=55;S.dothi=true;S.co='village';S.rel.co=4;S.flags.tolich='done';",
     'văn đỗ (Văn 55), một mình': "S.path='van';S.van=55;S.dothi=true;S.co='army';S.flags.tolich='done';",
     'nông, có Cò, chưa vét sông': "S.path='nong';S.co='village';S.rel.co=2;S.flags.tolich='skip';",
+    'như trên, lo đủ 3 việc': "S.path='nong';S.co='village';S.rel.co=2;S.flags.tolich='skip';S.flags.lan=S.flags.giao=S.flags.catThoc=true;",
 }
 REASON = {'done': 'đủ người', 'dawn': 'trời sáng', 'down': 'ngã xuống'}
 

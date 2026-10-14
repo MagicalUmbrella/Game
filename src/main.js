@@ -5,7 +5,7 @@ import {titleScreen,startPlay} from './intro.js';
 import * as state from './state.js';
 import * as ui from './ui.js';
 import {advance,advanceOne} from './events.js';
-import {fastForward,chooseFocus,talkThay,talkVo,talkBuffalo,loseBuffalo,walkable,bfs,pathTo,hideSpots,PEN} from './dialogs.js';
+import {fastForward,chooseFocus,talkThay,talkVo,talkLy,talkRen,talkCha,talkMe,talkSach,talkTong,talkBuffalo,loseBuffalo,walkable,bfs,pathTo,hideSpots,PEN} from './dialogs.js';
 import {update,canStand} from './input.js';
 import {BUILDINGS,SIGNS,get,tolichY} from './map.js';
 import {WA} from './constants.js';
@@ -23,6 +23,6 @@ titleScreen();
 if(import.meta.env.MODE==='test')window.__dv={
   get S(){return state.S},get MG(){return state.MG},setS:state.setS,setMG:state.setMG,newState:state.newState,P:state.P,NPCS:state.NPCS,
   get modalOpen(){return ui.modalOpen},get dialogOpen(){return ui.dialogOpen},pick:ui.pick,mpick:ui.mpick,nextModal:ui.nextModal,startQuest:ui.startQuest,
-  advance,advanceOne,fastForward,chooseFocus,talkThay,talkVo,startPlay,
+  advance,advanceOne,fastForward,chooseFocus,talkThay,talkVo,talkLy,talkRen,talkCha,talkMe,talkSach,talkTong,startPlay,
   startFlood,endFlood,startExam,startTraining,tmHit,startClimax,finishClimax,
   step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY,personSprite};

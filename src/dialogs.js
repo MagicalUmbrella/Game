@@ -4,6 +4,7 @@ import {bsolid,get,map} from './map.js';
 import {P,S,age,has,save} from './state.js';
 import {doneQuest,floatAt,floatText,gain,modalOpen,renderHUD,say,spend,startQuest,toast} from './ui.js';
 import {advance,advanceOne} from './events.js';
+import {prepChoice} from './prep.js';
 import {keys,solidAt} from './input.js';
 import {camX,camY} from './render.js';
 
@@ -13,6 +14,7 @@ function voLesson(){const v=S.vo;return v<10?'Đứng tấn đến run cả châ
 export function talkMe(){
   const a=age(),ch=[];
   if(!S.quests.hoc){startQuest('hoc');return say('Mẹ','Con lên sáu rồi, phải đi học chữ thôi. Trường làng ở phía tây bắc, ngay dưới đình làng. Con đến chào thầy đồ Chu nhé.')}
+  if(!S.cha){const pc=prepChoice('catThoc');if(pc)ch.push(pc)}
   if(!S.ate)ch.push({label:'Ăn cơm mẹ nấu',note:'+1 Sức',fn:()=>{S.ate=true;S.suc=Math.min(4,S.suc+1);renderHUD();floatText('+1 Sức','#9fcaa9');toast('Cơm gạo mới, canh rau, cà muối. Bạn thấy khỏe hẳn.')}});
   if(S.year>=1275&&a>=17&&!S.quests.lua)startQuest('lua');
   if(S.quests.lua==='active'&&has('Lụa'))ch.push({label:'Biếu mẹ tấm lụa',fn:()=>{S.items.splice(S.items.indexOf('Lụa'),1);doneQuest('lua');gain('duc',4);say('Mẹ','Lụa đẹp quá con ạ. Mẹ để dành may áo đi lễ chùa.')}});
@@ -28,6 +30,7 @@ export function talkCha(){
   if(S.quests.trau==='active'&&b.st==='follow'&&Math.hypot(b.x-S.x,b.y-S.y)<4){b.st='pen';b.stop=false;b.x=PEN.x;b.y=PEN.y;b.tracks=[];doneQuest('trau');gain('duc',3);gain('tien',3);return say('Cha',(b.bolts?'Nghe nói con làm nó giật mình chạy mấy bận mà vẫn tìm về được. ':'')+'Giỏi lắm! Không có trâu thì nhà mình không cày được. Cầm lấy mấy quan tiền mà tiêu.')}
   if(a>=7&&!S.quests.trau){startQuest('trau');loseBuffalo();return say('Cha','Sáng nay con trâu đứt thừng, giẫm nát cả bờ ruộng rồi chạy vào rừng phía tây. Con lần theo dấu chân nó mà tìm. Nhớ là trâu nhát lắm, lại gần thì đi khẽ thôi.')}
   if(a<8)return say('Cha','Ruộng nhà mình đây. Tám tuổi con ra phụ cha được rồi.');
+  {const pc=prepChoice('catThoc');if(pc)return say('Cha','Giặc mà sang thì thóc trong kho khó giữ. Hay nhà mình thuê người gánh bớt vào rừng, chôn kỹ từ bây giờ?',[pc])}
   if(S.flags.daumua&&S.year<1281)return say('Cha',S.flags.daumua==='cham'?'Năm dịch, con bỏ cả việc để ngồi bên giường cha. Cha nhớ mãi.':'Nhờ thuốc của người Tống mà cha qua khỏi. Con biết lo xa lắm.');
   say('Cha',['Xuân thì cấy, hạ làm cỏ, thu gặt, đông cày ải. Đứng trên ruộng rồi bấm E mà làm.','Năm nào nước sông lên to là lo lắm. Phải giữ đê cho chắc.','Được mùa thì phải nhớ để dành thóc giống.'][S.season%3]);
 }
@@ -60,6 +63,7 @@ export function talkThao(){
 }
 export function talkLy(){
   const ch=[];if(age()>=10)ch.push({label:'Giúp việc làng',note:'−1 Sức · +Đức · +1 quan · làng quý',fn:()=>{if(!spend())return;S.flags.lang++;gain('duc',2);gain('tien',1);toast(pickR(['Bạn cùng trai làng đắp lại đoạn đê.','Bạn giúp dọn sân đình chuẩn bị lễ hội.','Bạn đi báo tin cho các xóm.']))}});
+  {const pc=prepChoice('lan');if(pc)ch.push(pc)}
   const L=S.flags.lang;
   say('Cụ lý trưởng',S.flags.dh==='hoa'?'Trước Diên Hồng, cháu lại bảo nên hòa. Ta không trách, nhưng trai làng nghe thế thì nản lòng.':S.year>=1282?'Tin từ kinh thành không lành. Người Nguyên đòi mượn đường sang đánh Chiêm Thành. Làng mình phải sẵn sàng.':L>=6?'Làng An Phú nhớ công cháu. Có việc gì, trai làng sẵn lòng theo cháu.':S.flags.de==='home'?'Năm nước to, nhà cháu lo dọn đồ, còn đê làng thì vỡ. Ta vẫn nhớ đấy.':'Làng An Phú ta ruộng tốt, người hiền. Ai có sức thì góp sức với làng.',ch);
 }
@@ -75,15 +79,15 @@ export function talkCo(){
 }
 export function talkSach(){
   const ch=[{label:'Mua Tứ thư',note:'6 quan',disabled:S.tien<6||has('Tứ thư'),fn:()=>{S.tien-=6;S.items.push('Tứ thư');renderHUD();toast('Bạn mua một bộ Tứ thư.')}},
-    {label:'Mua giấy bút',note:'3 quan · +2 Văn',disabled:S.tien<3,fn:()=>{S.tien-=3;gain('van',2)}}];
+    {label:'Mua giấy bút',note:S.paper?'mùa này đã mua':'3 quan · +2 Văn · mỗi mùa một lần',disabled:S.tien<3||S.paper,fn:()=>{S.tien-=3;S.paper=true;gain('van',2)}}];
   if(age()>=14)ch.push({label:'Mua binh thư chép tay',note:'8 quan · +3 Võ · mở đường võ',disabled:S.tien<8||has('Binh thư'),fn:()=>{S.tien-=8;S.items.push('Binh thư');gain('vo',3);gain('van',1);toast('Có binh thư, đến tuổi 16 bạn có thể theo đường võ dù Võ chỉ cần 12.')}});
   say('Chủ hàng sách','Sách chép tay, sách in ván đủ cả. Mua đi cậu, chữ nghĩa không bao giờ thừa.',ch);
 }
 export function talkRen(){if(age()<14)return say('Bác thợ rèn','Lò rèn nóng lắm, nhóc đứng xa ra! Lớn lên rồi hãy quay lại.');
-  say('Bác thợ rèn','Thanh kiếm này rèn từ sắt tốt, tôi đi tôi lại cả tháng trời.',[{label:'Mua kiếm sắt',note:'8 quan · đánh mạnh hơn',disabled:S.tien<8||has('Kiếm sắt'),fn:()=>{S.tien-=8;S.items.push('Kiếm sắt');renderHUD();toast('Mỗi lần luyện võ được thêm 1 Võ, và khi đánh nhau ra đòn mạnh hơn.')}}])}
+  const pc=prepChoice('giao');say('Bác thợ rèn',pc?'Nghe tin giặc, làng nào cũng đặt rèn giáo. Làng mình có góp không, cậu?':'Thanh kiếm này rèn từ sắt tốt, tôi đi tôi lại cả tháng trời.',[{label:'Mua kiếm sắt',note:'8 quan · đánh mạnh hơn',disabled:S.tien<8||has('Kiếm sắt'),fn:()=>{S.tien-=8;S.items.push('Kiếm sắt');renderHUD();toast('Mỗi lần luyện võ được thêm 1 Võ, và khi đánh nhau ra đòn mạnh hơn.')}},...(pc?[pc]:[])])}
 export function talkTong(){
   say('Lái buôn người Tống','Nhà tôi vượt biển sang đây, được vua cho ở phường Nhai Tuân này. Tôi bán vải lụa và thuốc bắc.',[
-    {label:'Mua thuốc bổ',note:'5 quan · +2 Sức',disabled:S.tien<5,fn:()=>{S.tien-=5;S.suc=Math.min(4,S.suc+2);renderHUD();floatText('+2 Sức','#9fcaa9')}},
+    {label:'Mua thuốc bổ',note:S.tonic?'mùa này đã mua':'5 quan · +2 Sức · mỗi mùa một lần',disabled:S.tien<5||S.tonic,fn:()=>{S.tien-=5;S.tonic=true;S.suc=Math.min(4,S.suc+2);renderHUD();floatText('+2 Sức','#9fcaa9')}},
     {label:'Mua tấm lụa',note:'7 quan',disabled:S.tien<7||has('Lụa'),fn:()=>{S.tien-=7;S.items.push('Lụa');renderHUD();toast('Một tấm lụa mềm. Biếu mẹ hay tặng ai đó, tùy bạn.')}}]);
 }
 export function talkLinh(){say('Lính gác',age()<12?'Đứng lại! Trẻ con không được một mình vào kinh. Đợi mười hai tuổi hẵng đến.':'Vào đi. Trong kinh thành phải giữ phép tắc, không được chạy nhảy ồn ào.')}
