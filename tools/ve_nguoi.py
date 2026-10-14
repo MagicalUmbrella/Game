@@ -116,7 +116,7 @@ HAIR = {
 
 HAT = {
     'nonla': {d: T('.......TT.......', '......TUTt......', '.....TUUTtt.....', '....TUUTTTtt....', '...TUTTTTTTtt...', '..TUTTTTTTTTtt..',
-                   '.TTTTTTTTTTTTTt.', 'tttttttttttttttt', y=-5, x=-1) for d in DIRS},
+                   '.TTTTTTTTTTTTTt.', 'tttttttttttttttt', y=-6, x=-1) for d in DIRS},
     'khan': {  # khăn chít đen (thầy đồ, lý trưởng, học trò)
         'down': T('....TTTTTT....', '...TUUTTTTt...', '..TUTTTTTTTt..', '..TTTTTTTTTt..', '..tttttttttt..', y=-1),
         'left': T('.....TTTTTT...', '....TUUTTTTt..', '...TUTTTTTTTt.', '..TTTTTTTTTTt.', '..ttttttttttt.', '..........tt..', y=-1),
@@ -166,7 +166,7 @@ BEARD = {
              'left': T('.SDDSSSS......', '.DDDDSSS......', '.DDDDDDS......', '..DDDDD.......', '..dDDd........', y=7), 'up': []},
     'long': {'down': T('..SDDSSSSDDS..', '..DDDDmmDDDD..', '..DDDDDDDDDD..', '...DDDDDDDD...', '....DDDDDD....', '....dDDDDd....', '.....DDDD.....', '......dd......', y=7),
              'left': T('.SDDSSSS......', '.DDDDSSS......', '.DDDDDDS......', '..DDDDD.......', '..DDDD........', '..dDDd........', '...dd.........', y=7), 'up': []},
-    'mus': {'down': T('...DDDDDDDD...', '..DdSSmmSSdD..', y=7), 'left': T('.DDDSSSS......', '.DdS..........', y=7), 'up': []},
+    'mus': {'down': T('....dDmmDd....', '....d....d....', y=8), 'left': T('.Dm...........', '.d............', y=8), 'up': []},   # ria rủ hai bên miệng, chừa một hàng da dưới mắt
     'goat': {'down': T('....DDDDDD....', '..SSSSmmSSSS..', '....SSDDSSS...', '.....DDDD.....', '......dd......', y=7),
              'left': T('.DDDSSSS......', '.SmSS.........', '..DDS.........', '..DD..........', '..d...........', y=7), 'up': []},
 }

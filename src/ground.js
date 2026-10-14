@@ -3,9 +3,9 @@
    nhiễu mịn, khóm cỏ, hoa, sỏi; đường đất có vệt sẫm và đá; ranh giới cỏ với đường, cát lượn theo nhiễu chứ
    không vuông theo ô; nước sâu nông theo khoảng cách tới bờ, có bọt ven bờ và vệt sóng; ruộng có bờ, lúa
    theo mùa; núi đá có vách; tường thành gạch có lỗ châu mai; sân lát đá. Không đổi ô nào của bản đồ. */
-import {BR,FI,G,GA,H,MO,PA,SA,ST,TR,TS,W,WA,WL,WR} from './constants.js';
+import {BR,DK,FI,G,GA,H,MO,PA,SA,ST,TR,TS,W,WA,WL,WR} from './constants.js';
 import {Hs,mk} from './pixel.js';
-import {get,map} from './map.js';
+import {CULVERT,get,map} from './map.js';
 
 const PW=W*TS,PH=H*TS;
 const rgb={};const C=h=>rgb[h]||(rgb[h]=[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]);
@@ -16,8 +16,9 @@ function vn(x,y,sc,k){const gx=x/sc,gy=y/sc,x0=Math.floor(gx),y0=Math.floor(gy),
 const fbm=(x,y,k)=>vn(x,y,22,k)*.6+vn(x,y,8,k+5)*.3+vn(x,y,3,k+9)*.1;
 
 /* ---- vật liệu từng điểm ảnh và khoảng cách tới vật liệu khác (tính một lần) ---- */
-const K={grass:0,path:1,sand:2,water:3,field:4,rock:5,wall:6,stone:7};
-const kindOf=t=>t===G||t===TR?K.grass:t===PA?K.path:t===SA?K.sand:t===WA||t===WR||t===BR?K.water:t===FI?K.field:t===MO?K.rock:t===WL?K.wall:K.stone;
+const K={grass:0,path:1,sand:2,water:3,field:4,rock:5,wall:6,stone:7,hong:8,dike:9};
+const wet=k=>k===K.water||k===K.hong;
+const kindOf=t=>t===G||t===TR?K.grass:t===PA?K.path:t===SA?K.sand:t===DK?K.dike:t===WR?K.hong:t===WA||t===BR?K.water:t===FI?K.field:t===MO?K.rock:t===WL?K.wall:K.stone;
 let mat=null,dist={};
 function prep(){
   if(mat)return;mat=new Uint8Array(PW*PH);
@@ -43,7 +44,7 @@ const FIELD=[{g:'#79a998',d:'#6a9a8a',l:'#93c0ae'},{g:'#4a7a36',d:'#3c682c',l:'#
 const groundCache={};
 export function ground(s){if(groundCache[s])return groundCache[s];
   prep();
-  const dW=distTo('w',k=>k===K.water,26),dL=distTo('l',k=>k!==K.water,26),dG=distTo('g',k=>k===K.grass,6),dF=distTo('f',k=>k!==K.field,4),
+  const dW=distTo('w',wet,26),dL=distTo('l',k=>!wet(k),26),dH=distTo('h',k=>k===K.hong,48),dD=distTo('d',k=>k!==K.dike,8),dK=distTo('k',k=>k===K.dike,3),dG=distTo('g',k=>k===K.grass,6),dF=distTo('f',k=>k!==K.field,4),
     dP=distTo('p',k=>k===K.path||k===K.stone,4),dR=distTo('r',k=>k!==K.rock,8);
   const [c,g]=mk(PW,PH),img=g.createImageData(PW,PH),D=img.data;
   const gr=GRASS[s],tl=TOLICH[s],hg=HONG[s],fd=FIELD[s];
@@ -55,14 +56,19 @@ export function ground(s){if(groundCache[s])return groundCache[s];
     case K.grass:{const v=n+(Hs(x,y,1)-.5)*.08;let col=v<.3?gr[0]:v<.66?gr[1]:gr[2];
       if(dW[i]<=2+Math.floor(e*2))col=dW[i]<=1?'#5b4a32':gr[3];     // bờ đất ẩm sát nước
       else if(dP[i]===1&&e<.5)col=gr[3];                              // cỏ sẫm men theo mép đường
+      else if(dK[i]<=2)col=dK[i]===1?gr[3]:gr[0];                     // chân đê
       put(i,col);break}
     case K.path:{const v=n+(Hs(x,y,2)-.5)*.1;put(i,dG[i]<=3+Math.floor(e*3)?(v<.5?'#9d8150':'#ad9160'):v<.38?'#ad9160':v<.7?'#c1a46e':'#cfb582');break}
     case K.sand:{const r=Math.sin((x+vn(x,y,10,4)*14)/3+y/9);put(i,r>.82?'#e9dcae':n<.35?'#c9b47c':'#dbc896');break}
+    case K.dike:{const v=n+(Hs(x,y,4)-.5)*.1,dd=dD[i]+Math.floor(e*1.5),east=get((x+5)>>4,y>>4)!==DK;   // đê: mái cỏ hai bên (phía sông tối hơn), mặt đê đất nện
+      put(i,dd<=1?gr[3]:dd<=5?(east?(dd<=3?gr[0]:gr[3]):(v<.5?gr[1]:gr[2])):dd<=6?'#9a7e50':v<.35?'#a88c5c':v<.75?'#b9a070':'#cbb284');break}
+    case K.hong:
     case K.water:{if(dL[i]<=Math.floor(e*3.2)){const st=shoreTile(x,y);if(st===SA){put(i,n<.35?'#c9b47c':'#dbc896');break}if(st===G){put(i,'#5b4a32');break}}   // bờ lượn, bớt gãy khúc theo ô
-      const hong=map[(y>>4)*W+(x>>4)]===WR||isHongBridge(x>>4,y>>4),p=hong?hg:tl,dd=dL[i]+(e-.5)*3;
+      const hong=k===K.hong||isHongBridge(x>>4,y>>4),p=hong?hg:tl,mix=hong||dH[i]>=48?0:Math.pow(1-dH[i]/48,1.2),   // Tô Lịch ngả dần sang màu phù sa gần chỗ đổ ra sông Hồng
+      dd=dL[i]+(e-.5)*3;
       let col=dd<1.6?p[3]:dd<4?p[0]:dd<11?p[1]:p[2];
       if(dd>=2&&Math.sin(x/5+vn(x,y,30,8)*9+(y%9)*1.7)>.93&&Hs(x,y,5)<.7)col=dd<4?p[3]:p[0];   // vệt sóng
-      put(i,col);break}
+      if(mix>0){const a=C(col),b=C(hg[p.indexOf(col)]),j=i*4;for(let q=0;q<3;q++)D[j+q]=a[q]+(b[q]-a[q])*mix;D[j+3]=255}else put(i,col);break}
     case K.field:{const tx=x>>4,ty=y>>4,lx=x&15;
       const bund=dF[i]<2||(tx%6===0&&lx<2&&get(tx-1,ty)===FI);
       if(bund){put(i,dF[i]===0||lx===0?'#6b5a3a':Hs(x,y,3)<.5?gr[1]:gr[2]);break}
@@ -71,14 +77,26 @@ export function ground(s){if(groundCache[s])return groundCache[s];
       let col=v<.35?'#5f6656':v<.62?'#737b67':'#8a927c';if(cliff)col=((x+Math.floor(vn(x,y,6,2)*3))%4===0)?'#3c4136':'#4d5345';
       if(!cliff&&Math.abs(vn(x,y,7,13)-.5)<.025)col='#4a5143';    // vết nứt
       put(i,col);break}
-    case K.wall:{const ly=y&15,row=ly>>2,bx=(x+(row%2?4:0))&7;let col=(ly&3)===0||bx===0?'#5e3826':Hs(x>>3,y>>2,4)<.3?'#9a6444':'#8a5636';
-      if(get(x>>4,(y>>4)-1)!==WL&&ly<4)col=(x&7)<4?'#a87150':'#7a4a30';put(i,col);break}
+    case K.wall:{put(i,wallPx(x,y));break}
     default:{const lx=x&15,ly=y&15,sx=(x+(((y>>3)&1)?5:0))%11,col=ly%8===0||sx===0?'#7d776a':vn(x,y,9,21)<.45?'#a49d8e':'#b3ac9c';put(i,col)}
     }
   }
   g.putImageData(img,0,0);
   details(g,s);
   return groundCache[s]=c}
+/* tường thành nổi khối: đoạn ngang có mặt thành (lối đi lát đá, lỗ châu mai ở mép) và vách gạch nhìn từ phía nam;
+   đoạn dọc chỉ thấy mặt thành, lỗ châu mai ở phía ngoài. */
+function wallPx(x,y){const tx=x>>4,ty=y>>4,lx=x&15,ly=y&15,isWL=(a,b)=>{const t=get(a,b);return t===WL||t===GA};
+  const vert=(isWL(tx,ty-1)||isWL(tx,ty+1))&&!(isWL(tx-1,ty)||isWL(tx+1,ty));
+  const brick=(bx,by)=>{const row=by>>2,j=(bx+(row%2?4:0))&7;return (by&3)===3||j===7?'#5c3a26':Hs(bx>>3,y>>2,4)<.25?'#a8724c':(by&3)===0?'#b07c56':'#946040'};
+  if(vert){const outL=get(tx-1,ty)!==ST&&get(tx-1,ty)!==GA,o=outL?lx:15-lx;
+    if(o<3)return (ly&7)<4?(o===2?'#6e6250':'#9a8e78'):(o<2?'#5a4e3e':'#7e725e');   // lỗ châu mai phía ngoài
+    if(o===3||o===14)return '#6e6250';return vn(x,y,6,23)<.45?'#a89a82':'#b6a890'}           // lối đi trên thành
+  if(ly===0)return (lx&7)<4?'#9a8e78':'#5a4e3e';                                             // răng cưa châu mai
+  if(ly<2)return (lx&7)<4?'#8a7e68':'#4e4436';
+  if(ly<5)return vn(x,y,6,23)<.45?'#a89a82':'#b6a890';                                       // lối đi trên thành
+  if(ly===5)return '#c8baa0';
+  const b=brick(x,ly-6);return ly>=14?(ly===15?'#3e2618':'#7a4e34'):ly===6?'#6a4430':b}
 const isHongBridge=(tx,ty)=>get(tx,ty)===BR&&[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>get(tx+a,ty+b)===WR);
 /* ô đất liền sát điểm nước này (theo hướng gần nhất trong ô) */
 function shoreTile(x,y){const tx=x>>4,ty=y>>4,lx=x&15,ly=y&15,c=[[lx,-1,0],[15-lx,1,0],[ly,0,-1],[15-ly,0,1]].sort((a,b)=>a[0]-b[0]);
@@ -112,6 +130,11 @@ function details(g,s){
       for(let i=0;i<3;i++){const x=ox+2+Math.floor(Hs(tx,ty,62+i)*10),y=oy+3+Math.floor(Hs(tx,ty,65+i)*9);
         p(x,y,4,2,'#3f7d32');p(x+1,y-1,3,1,'#5d9a3e');p(x+1,y,2,1,'#79b34e');p(x+3,y,1,1,'#2e5a26');
         if(s===1&&i===0){p(x+1,y-3,2,2,'#f08aa8');p(x,y-2,1,1,'#f8b8cc');p(x+3,y-2,1,1,'#d8708e');p(x+1,y-3,1,1,'#ffd0dc')}}}
+    else if(t===BR&&CULVERT.has(ty*W+tx)){   // cống qua đê: mặt đê nện đất, hai đầu cống xây đá, miệng cống tối
+      p(ox+3,oy,10,16,'#b9a070');for(let i=0;i<6;i++)p(ox+4+Math.floor(Hs(tx,ty,i)*8),oy+Math.floor(Hs(tx,ty,i+9)*15),2,1,i%2?'#a88c5c':'#cbb284');
+      p(ox+3,oy,1,16,gr[1]);p(ox+12,oy,1,16,gr[1]);
+      for(const cx of[1,13]){p(ox+cx,oy+2,2,12,'#8a8476');p(ox+cx,oy+2,2,1,'#aaa392');p(ox+cx,oy+6,2,1,'#6a6559');p(ox+cx,oy+10,2,1,'#6a6559');p(ox+cx,oy+13,2,1,'#5a554c');
+        p(ox+cx+(cx===1?-1:2),oy+5,1,6,'#1e2a30')}}
     else if(t===BR){p(ox+1,oy,14,16,'#9a7044');for(let j=0;j<16;j+=4){p(ox+1,oy+j,14,1,'#6c4e2b');p(ox+1,oy+j+1,14,1,'#b08454')}
       p(ox,oy,1,16,'#4a331e');p(ox+15,oy,1,16,'#4a331e');p(ox+1,oy,1,16,'#7a5532');p(ox+14,oy,1,16,'#7a5532');for(const yy of[2,10]){p(ox,oy+yy,2,3,'#3a2818');p(ox+14,oy+yy,2,3,'#3a2818')}}
     else if(t===GA){p(ox,oy,16,16,'#4e3020');p(ox+2,oy+2,12,14,'#2a1a10');p(ox,oy,16,2,'#7a4a30');p(ox+7,oy+2,2,14,'#6a4028');p(ox+3,oy+7,1,2,'#d9b14a');p(ox+12,oy+7,1,2,'#d9b14a')}
