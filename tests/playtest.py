@@ -94,7 +94,12 @@ def new_page(browser, url, errors, seed=1):
 
 
 def fresh(page, path=None):
-    page.evaluate("""(path) => {const D=__dv; while(D.modalOpen) D.nextModal(); if(D.MG) D.setMG(null);
+    # nhả mọi phím bot có thể còn giữ từ bài trước
+    page.evaluate("""() => { for (const k of ['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift',' ','e','q'])
+      dispatchEvent(new KeyboardEvent('keyup', {key: k})); }""")
+    # đóng hội thoại còn mở, đưa NPC đi lang thang về chỗ cũ để bài trước không ảnh hưởng bài sau
+    page.evaluate("""(path) => {const D=__dv; while(D.modalOpen) D.nextModal(); D.closeDialog(); if(D.MG) D.setMG(null);
+      for(const n of D.NPCS) if(n.home){n.x=n.home[0]; n.y=n.home[1]}
       const s=D.newState('Kiểm Thử'); s.path=path; D.setS(s); D.startPlay(false)}""", path)
     page.evaluate(CLEAR_MODALS)
 

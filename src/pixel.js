@@ -8,3 +8,10 @@ export function outline(c,col='#221913'){const g=c.getContext('2d'),w=c.width,h=
   g.fillStyle=col;for(let i=0;i<o.length;i+=2)g.fillRect(o[i],o[i+1],1,1);return c}
 export function disc(g,cx,cy,r,col){g.fillStyle=col;for(let y=-r;y<=r;y++){const w=Math.floor(Math.sqrt(r*r+r*.8-y*y));g.fillRect(cx-w,cy+y,w*2+1,1)}}
 export function flip(c){const[f,g]=mk(c.width,c.height);g.translate(c.width,0);g.scale(-1,1);g.drawImage(c,0,0);f.ax=c.width-c.ax;f.ay=c.ay;return f}
+/* Viền theo màu: mỗi điểm viền lấy màu điểm bên cạnh (ưu tiên bên dưới, rồi hai bên, rồi bên trên) làm tối
+   đi, như pixel art viền màu (tóc viền nâu sẫm, áo viền màu áo đậm). Dùng cho sprite người. */
+export function outlineSel(c,k=-.62){const g=c.getContext('2d'),w=c.width,h=c.height,img=g.getImageData(0,0,w,h),d=img.data,o=[];
+  const A=(x,y)=>x>=0&&y>=0&&x<w&&y<h&&d[(y*w+x)*4+3]>0;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){if(A(x,y))continue;const n=[[x,y+1],[x-1,y],[x+1,y],[x,y-1]].find(([a,b])=>A(a,b));if(n)o.push(x,y,(n[1]*w+n[0])*4)}
+  for(let i=0;i<o.length;i+=3){const j=o[i+2],f=v=>Math.round(v*(1+k)*.85+20*.15);g.fillStyle=`rgb(${f(d[j])},${f(d[j+1])},${f(d[j+2])})`;g.fillRect(o[i],o[i+1],1,1)}
+  return c}

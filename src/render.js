@@ -48,7 +48,7 @@ function render(){
       const look=n.id==='co'?coLook():n.look,dpx=S.x-n.x,dpy=S.y-n.y;let dir=n.moving?n.face:'down';
       if(!n.moving&&Math.hypot(dpx,dpy)<3)dir=Math.abs(dpx)>Math.abs(dpy)?(dpx>0?'right':'left'):(dpy>0?'down':'up');
       const fr=n.moving?[1,0,2,0][Math.floor(clock*8)%4]:0;
-      list.push({y:n.y,f:()=>{shadow(n.x,n.y,10);drawSprite(personSprite(look,dir,fr),n.x,n.y)},lab:Math.hypot(dpx,dpy)<4?[n.name,n.x,n.y-(look.kid?1.35:look.spear?2.05:1.75)]:null})}
+      list.push({y:n.y,f:()=>{shadow(n.x,n.y,10);drawSprite(personSprite(look,dir,fr),n.x,n.y)},lab:Math.hypot(dpx,dpy)<4?[n.name,n.x,n.y-(look.kid?1.6:2.2)]:null})}
     list.push({y:S.buffalo.y,f:()=>{shadow(S.buffalo.x,S.buffalo.y,22);drawSprite(buffaloSprite(S.buffalo.dir||'left'),S.buffalo.x,S.buffalo.y)}});
     const look={shirt:S.path==='van'?'#2f4f62':S.path==='vo'?'#7a3328':'#6b4a2e',hair:a<14?'kid':'man',kid:a<14,band:S.path==='vo',long:S.path==='van'};
     const fr=P.moving?[1,0,2,0][Math.floor(P.walk)%4]:0;

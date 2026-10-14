@@ -25,7 +25,7 @@ titleScreen();
    step(dt) chạy đúng một nhịp cập nhật của game (phím, va chạm, minigame) để bot chơi nhanh hơn thời gian thật. */
 if(import.meta.env.MODE==='test')window.__dv={
   get S(){return state.S},get MG(){return state.MG},setS:state.setS,setMG:state.setMG,newState:state.newState,P:state.P,NPCS:state.NPCS,
-  get modalOpen(){return ui.modalOpen},get dialogOpen(){return ui.dialogOpen},pick:ui.pick,mpick:ui.mpick,nextModal:ui.nextModal,startQuest:ui.startQuest,
+  get modalOpen(){return ui.modalOpen},get dialogOpen(){return ui.dialogOpen},pick:ui.pick,closeDialog:ui.closeDialog,mpick:ui.mpick,nextModal:ui.nextModal,startQuest:ui.startQuest,
   advance,advanceOne,EVENTS,LIFE,SPOTS,runLife,lifeChronicle,fastForward,chooseFocus,talkThay,talkVo,talkLy,talkRen,talkCha,talkMe,talkSach,talkTong,talkCo,talkThao,startPlay,fieldAction,fishAction,
   startFlood,endFlood,startExam,startTraining,tmHit,startClimax,finishClimax,
   dailyFlush,step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY,personSprite};

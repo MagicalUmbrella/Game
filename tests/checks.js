@@ -128,7 +128,7 @@
         approach(false, 1.2, 20);
         d.step(DT); ev('e', true); ev('e', false);
         if (b.bolts !== 1) errs.push(`đi chậm lại gần mà trâu vẫn giật mình (bolts=${b.bolts})`);
-        if (b.st !== 'follow') errs.push(`đi chậm lại gần bấm E mà không nắm được thừng (st=${b.st}, cách ${Math.hypot(b.x - S.x, b.y - S.y).toFixed(1)} ô)`);
+        if (b.st !== 'follow') errs.push(`đi chậm lại gần bấm E mà không nắm được thừng (st=${b.st}, cách ${Math.hypot(b.x - S.x, b.y - S.y).toFixed(1)} ô, gợi ý "${document.getElementById('prompt').innerText}")`);
       }
     }
     return {errs};
@@ -410,15 +410,15 @@
   /* Khám phá: đứng ở từng chỗ, bấm E (qua game), có đúng hậu quả; đồ nhặt được dùng được ở nơi khác. */
   function explore() {
     const d = D(), errs = [];
-    const fresh = (o) => { d.setS(Object.assign(d.newState('Thử'), {year: 1268, season: 1, quests: {hoc: 'done', trau: 'done'}}, o)); d.startPlay(false); while (d.modalOpen) d.nextModal(); };
-    const press = (p) => { d.S.x = p.x; d.S.y = p.y; d.step(DT); ev('e', true); ev('e', false); const ok = d.modalOpen; const txt = ok ? document.querySelector('#modal').innerText : ''; while (d.modalOpen) d.nextModal(); return txt; };
+    const fresh = (o) => { d.setS(Object.assign(d.newState('Thử'), {year: 1268, season: 1, quests: {hoc: 'done', trau: 'done'}}, o)); d.startPlay(false); while (d.modalOpen) d.nextModal(); d.closeDialog(); };
+    const press = (p) => { d.S.x = p.x; d.S.y = p.y; d.step(DT); ev('e', true); ev('e', false); const ok = d.modalOpen; const txt = ok ? document.querySelector('#modal').innerText : ''; while (d.modalOpen) d.nextModal(); d.closeDialog(); return txt; };
     const want = {tien: S => S.tien >= 8, thuoc: S => S.items.includes('Lá thuốc'), de: S => S.items.includes('Dế chọi'), bia: S => S.van === 32,
       kiem: S => S.items.includes('Kiếm gỉ'), thuyen: S => S.suc === 3, to: S => S.duc === 1, soi: S => S.items.includes('Sỏi trắng'), do: S => S.van === 31 && S.vo === 1};
     for (const p of d.SPOTS) {
       if (p.quest) continue;
       fresh({van: p.id === 'bia' || p.id === 'do' ? 30 : 0, suc: p.id === 'thuyen' ? 2 : 4, year: p.id === 'kiem' ? 1270 : 1268});
       const txt = press(p);
-      if (!txt) { errs.push(`${p.name}: đứng tại chỗ bấm E không có gì`); continue; }
+      if (!txt) { errs.push(`${p.name}: đứng tại chỗ bấm E không có gì (hội thoại ${d.dialogOpen ? 'đang mở' : 'đóng'}, gợi ý "${document.getElementById('prompt').innerText}")`); continue; }
       if (!want[p.id](d.S)) errs.push(`${p.name}: chưa có hậu quả đúng (${txt.slice(0, 60)}…)`);
       if (p.once !== false && press(p)) errs.push(`${p.name}: xem lại lần nữa vẫn được (đáng lẽ chỉ một lần)`);
     }
@@ -481,7 +481,7 @@
       d.step = dt => { orig(dt); if (d.MG !== M) return; const live = M.en.filter(e => !e.dead);
         for (const e of live) { n++; if (inZ(e.x, e.y) && e.st !== 'flee') inside++;
           for (const f of live) if (f !== e && Math.hypot(e.x - f.x, e.y - f.y) < .25) { overlap++; break; }
-          const l = last.get(e); if (l && Math.hypot(e.x - l[0], e.y - l[1]) < 1e-4 && Math.hypot(e.x - d.S.x, e.y - d.S.y) > 1.5 && !e.cap) { still.set(e, (still.get(e) || 0) + dt); if (still.get(e) > 2) stuck++; } else still.set(e, 0);
+          const l = last.get(e), arrived = e.tgt && Math.hypot(e.tgt.x - e.x, e.tgt.y - e.y) < .6; if (l && !arrived && Math.hypot(e.x - l[0], e.y - l[1]) < 1e-4 && Math.hypot(e.x - d.S.x, e.y - d.S.y) > 1.5 && !e.cap) { still.set(e, (still.get(e) || 0) + dt); if (still.get(e) > 2) stuck++; } else still.set(e, 0);
           last.set(e, [e.x, e.y]); } };
       window.__bots.climaxBot('giỏi'); d.step = orig;
       out[name] = {overlap: +(100 * overlap / Math.max(1, n)).toFixed(1), stuck, inside};
