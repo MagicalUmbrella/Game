@@ -8,6 +8,7 @@ import {MG,NPCS,P,S,age,coLook,npcOn} from './state.js';
 import {floats} from './ui.js';
 import {drawTracks} from './dialogs.js';
 import {update} from './input.js';
+import {exploreDraw} from './explore.js';
 
 export let VW=0,VH=0,DPR=1,camX=0,camY=0,clock=0,titleCam=48;
 function resize(){DPR=Math.min(2,devicePixelRatio||1);VW=innerWidth;VH=innerHeight;cv.width=Math.round(VW*DPR);cv.height=Math.round(VH*DPR);cv.style.width=VW+'px';cv.style.height=VH+'px'}
@@ -39,6 +40,7 @@ function render(){
   for(const sg of SIGNS)list.push({y:sg.y+1,f:()=>drawSprite(signSprite(),sg.x+.5,sg.y+1)});
   if(S){
     const a=age();
+    if(!MG)exploreDraw(list,clock,camX,camY);
     for(const n of NPCS){if(!npcOn(n))continue;if(n.x<x0-2||n.x>x1+2||n.y<y0-2||n.y>y1+2)continue;
       const look=n.id==='co'?coLook():n.look,dpx=S.x-n.x,dpy=S.y-n.y;let dir=n.moving?n.face:'down';
       if(!n.moving&&Math.hypot(dpx,dpy)<3)dir=Math.abs(dpx)>Math.abs(dpy)?(dpx>0?'right':'left'):(dpy>0?'down':'up');

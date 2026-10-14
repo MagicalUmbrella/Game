@@ -34,6 +34,7 @@
       need(`cửa ${b.name || b.id}`, b.x + Math.floor(b.w / 2) + .5, b.y + b.h + .3, 1.0);
     for (const s of d.SIGNS) need(`biển ${s.name}`, s.x + .5, s.y + 1.2, 1.2);
     need('chuồng trâu', d.PEN.x, d.PEN.y, 1.2);
+    for (const p of d.SPOTS) need(`khám phá: ${p.name}`, p.x, p.y, 1.1);
     // lụt 1270
     S.year = 1270; S.season = 2; d.startFlood();
     need('đống bao đất', d.MG.pile.x, d.MG.pile.y, 1.4);
@@ -406,5 +407,28 @@
     return {errs, out};
   }
 
-  window.__checks = {daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  /* Khám phá: đứng ở từng chỗ, bấm E (qua game), có đúng hậu quả; đồ nhặt được dùng được ở nơi khác. */
+  function explore() {
+    const d = D(), errs = [];
+    const fresh = (o) => { d.setS(Object.assign(d.newState('Thử'), {year: 1268, season: 1, quests: {hoc: 'done', trau: 'done'}}, o)); d.startPlay(false); while (d.modalOpen) d.nextModal(); };
+    const press = (p) => { d.S.x = p.x; d.S.y = p.y; d.step(DT); ev('e', true); ev('e', false); const ok = d.modalOpen; const txt = ok ? document.querySelector('#modal').innerText : ''; while (d.modalOpen) d.nextModal(); return txt; };
+    const want = {tien: S => S.tien >= 8, thuoc: S => S.items.includes('Lá thuốc'), de: S => S.items.includes('Dế chọi'), bia: S => S.van === 32,
+      kiem: S => S.items.includes('Kiếm gỉ'), thuyen: S => S.suc === 3, to: S => S.duc === 1, soi: S => S.items.includes('Sỏi trắng'), do: S => S.van === 31 && S.vo === 1};
+    for (const p of d.SPOTS) {
+      fresh({van: p.id === 'bia' || p.id === 'do' ? 30 : 0, suc: p.id === 'thuyen' ? 2 : 4, year: p.id === 'kiem' ? 1270 : 1268});
+      const txt = press(p);
+      if (!txt) { errs.push(`${p.name}: đứng tại chỗ bấm E không có gì`); continue; }
+      if (!want[p.id](d.S)) errs.push(`${p.name}: chưa có hậu quả đúng (${txt.slice(0, 60)}…)`);
+      if (p.once !== false && press(p)) errs.push(`${p.name}: xem lại lần nữa vẫn được (đáng lẽ chỉ một lần)`);
+    }
+    fresh({van: 10}); if (!/Học thêm/.test(press(d.SPOTS.find(p => p.id === 'bia'))) || d.S.found.bia) errs.push('tấm bia: Văn dưới 30 mà vẫn đọc được');
+    // dùng đồ
+    fresh({items: ['Dế chọi'], year: 1266}); const co0 = d.S.rel.co; d.talkCo(); choose('Tặng Cò con dế'); if (d.S.rel.co !== co0 + 2) errs.push('tặng dế chọi cho Cò không có tác dụng');
+    fresh({items: ['Kiếm gỉ'], year: 1274, tien: 5}); d.talkRen(); choose('Rèn lại'); if (!d.S.items.includes('Kiếm sắt') || d.S.tien !== 2) errs.push('rèn lại kiếm gỉ không ra kiếm sắt');
+    fresh({items: ['Sỏi trắng'], year: 1273}); d.S.ev.thao = 1; d.S.thao = 'none'; const t0 = d.S.rel.thao; d.talkThao(); choose('Tặng Thảo hòn sỏi'); if (d.S.rel.thao !== t0 + 1) errs.push('tặng sỏi trắng cho Thảo không có tác dụng');
+    closeDialog();
+    return {errs, nspot: d.SPOTS.length};
+  }
+
+  window.__checks = {explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();

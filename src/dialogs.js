@@ -62,6 +62,7 @@ export function talkThao(){
   const ch=[],r=S.rel.thao;
   if(!S.thaoHelped)ch.push({label:'Giúp Thảo gánh nước',note:'−1 Sức · thân thiết hơn',fn:()=>{if(!spend())return;S.thaoHelped=true;S.rel.thao++;renderHUD();toast('Hai người vừa gánh nước vừa chuyện trò. Thảo cười nhiều hơn.')}});
   if(has('Lụa'))ch.push({label:'Tặng Thảo tấm lụa',note:'thân thiết hơn nhiều',fn:()=>{S.items.splice(S.items.indexOf('Lụa'),1);S.rel.thao+=3;renderHUD();say('Thảo','Lụa của người Tống ở phường Nhai Tuân phải không? Em... em cảm ơn anh.')}});
+  if(has('Sỏi trắng'))ch.push({label:'Tặng Thảo hòn sỏi trắng',note:'thân thiết hơn',fn:()=>{S.items.splice(S.items.indexOf('Sỏi trắng'),1);S.rel.thao++;renderHUD();say('Thảo','Tròn như quả trứng... Em sẽ để trên bậu cửa sổ.')}});
   say('Thảo',r<2?'Em là Thảo, cháu bà Tư. Bố mẹ em mất sau năm nước to, em lên đây ở với bà.':r<5?'Hôm nay anh lại sang à? Bà em khen anh mãi.':'Anh mà đi xa, em... em sẽ nhớ anh đấy.',ch);
 }
 export function talkLy(){
@@ -77,6 +78,7 @@ export function talkCo(){
   else if(S.flags.exam==='khoe')t='Ông Thái học sinh lại về làng à? Thôi, tôi đi làm ruộng đây.';
   else t=a<10?'Ê! Chiều nay ra bờ sông bắt cá không? Đừng để mẹ cậu biết đấy.':a<16?'Tớ nghe nói trong kinh thành có chợ to lắm. Lần nào đi rủ tớ với.':'Làm trai phải có chí, cậu nhỉ. Tớ thì chỉ mong ruộng nhà được mùa.';
   if(!S.coPlayed)ch.push({label:a<14?'Rủ Cò đi chơi':'Ngồi uống nước với Cò',note:'−1 Sức · thân thiết hơn',fn:()=>{if(!spend())return;S.coPlayed=true;S.rel.co++;renderHUD();toast(a<14?'Hai đứa lội ruộng bắt cua đến tối mịt.':'Hai người ngồi dưới gốc đa, nói đủ thứ chuyện trên trời dưới biển.')}});
+  if(has('Dế chọi'))ch.push({label:'Tặng Cò con dế chọi',note:'Cò thân hơn nhiều',fn:()=>{S.items.splice(S.items.indexOf('Dế chọi'),1);S.rel.co+=2;renderHUD();toast('Cò mắt sáng rỡ: "Con này đá thì nhất xóm!"')}});
   say('Cò',t,ch);
 }
 export function talkSach(){
@@ -86,7 +88,7 @@ export function talkSach(){
   say('Chủ hàng sách','Sách chép tay, sách in ván đủ cả. Mua đi cậu, chữ nghĩa không bao giờ thừa.',ch);
 }
 export function talkRen(){if(age()<14)return say('Bác thợ rèn','Lò rèn nóng lắm, nhóc đứng xa ra! Lớn lên rồi hãy quay lại.');
-  const pc=prepChoice('giao');say('Bác thợ rèn',pc?'Nghe tin giặc, làng nào cũng đặt rèn giáo. Làng mình có góp không, cậu?':'Thanh kiếm này rèn từ sắt tốt, tôi đi tôi lại cả tháng trời.',[{label:'Mua kiếm sắt',note:'8 quan · đánh mạnh hơn',disabled:S.tien<8||has('Kiếm sắt'),fn:()=>{S.tien-=8;S.items.push('Kiếm sắt');renderHUD();toast('Mỗi lần luyện võ được thêm 1 Võ, và khi đánh nhau ra đòn mạnh hơn.')}},...(pc?[pc]:[])])}
+  const pc=prepChoice('giao'),rk=has('Kiếm gỉ')&&!has('Kiếm sắt')?[{label:'Rèn lại thanh kiếm gỉ',note:'3 quan · thành kiếm sắt',disabled:S.tien<3,fn:()=>{S.tien-=3;S.items.splice(S.items.indexOf('Kiếm gỉ'),1);S.items.push('Kiếm sắt');S.flags.kiemRen=true;renderHUD();toast('Bác thợ rèn nung đỏ, quai búa cả buổi. Thanh kiếm gỉ sáng loáng trở lại.')}}]:[];say('Bác thợ rèn',pc?'Nghe tin giặc, làng nào cũng đặt rèn giáo. Làng mình có góp không, cậu?':'Thanh kiếm này rèn từ sắt tốt, tôi đi tôi lại cả tháng trời.',[{label:'Mua kiếm sắt',note:'8 quan · đánh mạnh hơn',disabled:S.tien<8||has('Kiếm sắt'),fn:()=>{S.tien-=8;S.items.push('Kiếm sắt');renderHUD();toast('Mỗi lần luyện võ được thêm 1 Võ, và khi đánh nhau ra đòn mạnh hơn.')}},...rk,...(pc?[pc]:[])])}
 export function talkTong(){
   say('Lái buôn người Tống','Nhà tôi vượt biển sang đây, được vua cho ở phường Nhai Tuân này. Tôi bán vải lụa và thuốc bắc.',[
     {label:'Mua thuốc bổ',note:S.tonic?'mùa này đã mua':'5 quan · +2 Sức · mỗi mùa một lần',disabled:S.tien<5||S.tonic,fn:()=>{S.tien-=5;S.tonic=true;S.suc=Math.min(4,S.suc+2);renderHUD();floatText('+2 Sức','#9fcaa9')}},

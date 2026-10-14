@@ -13,6 +13,7 @@ import {prepChronicle,prepClimax} from './prep.js';
 import {VH,VW,camX,camY,clock,drawSprite,shadow} from './render.js';
 import {followFast,traiFromDuc,voDmg,voFast,voHp} from './stats.js';
 import {lifeChronicle,lifeClimax} from './life.js';
+import {exploreChronicle} from './explore.js';
 
 export const ZONE={x0:23,y0:54,x1:29,y1:66};
 const inZone=(x,y)=>x>=ZONE.x0&&x<=ZONE.x1+1&&y>=ZONE.y0&&y<=ZONE.y1+1;
@@ -189,6 +190,7 @@ function endChapter(res){
   if(F.duyet&&F.duyet!=='the')L.push(F.duyet==='luong'?'Bạn góp lương cho quân của Hưng Đạo Vương.':'Bạn giữ thóc cho nhà, đêm giặc đến có thêm một bao phải cứu.');
   if(F.dh)L.push(F.dh==='danh'?'Trước Diên Hồng, bạn nói "Đánh!".':'Trước Diên Hồng, bạn nói "nên hòa". Trai làng nhớ câu ấy.');
   L.push(...prepChronicle(res.nLang||0));
+  L.push(...exploreChronicle());
   L.push(S.duc>=60?'Cả làng tin bạn. Đêm giặc đến, trai làng theo bạn đông nhất.':S.duc>=20?'Làng quý bạn. Có việc, người ta sẵn lòng theo.':'Làng ít ai nghe bạn. Đêm giặc đến, bạn phải tự xoay xở nhiều.');
   if(S.nguMet)L.push('Bạn từng ngồi nghe anh Ngũ bàn binh pháp bên đường. Đêm giặc đến, anh ấy dẫn quân tới.');
   const path={van:(S.dothi?'Là Thái học sinh, bạn':'Bạn')+' được giao việc thảo văn thư, theo xa giá triều đình rời Thăng Long khi giặc áp sát.',
