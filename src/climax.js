@@ -9,7 +9,7 @@ import {hudBar,hudBox,mark,sackSprite} from './minigames/flood.js';
 import {canStand} from './input.js';
 import {VH,VW,camX,camY,clock,drawSprite,shadow} from './render.js';
 
-const ZONE={x0:23,y0:54,x1:29,y1:66};
+export const ZONE={x0:23,y0:54,x1:29,y1:66};
 const inZone=(x,y)=>x>=ZONE.x0&&x<=ZONE.x1+1&&y>=ZONE.y0&&y<=ZONE.y1+1;
 const FIRES=[[53.5,21.6],[24.5,20.2],[48.5,21.2]];
 export function startClimax(){
@@ -126,8 +126,8 @@ export function finishClimax(reason){const M=MG;setMG(null);setKeys();document.b
     thoc:M.sk.filter(s=>s.st==='safe').length,thocT:M.sk.length,kills:M.kills,coDown:M.al.some(a=>a.id==='co'&&a.down),coThere:M.al.some(a=>a.id==='co'),nLang:M.nLang,ngu:M.ngu};
   S.res=res;
   const rescuer=M.ngu?'quân của Phạm Ngũ Lão':M.al.some(a=>a.id==='co'&&!a.down)?'Cò':allyUp?'trai làng':'mấy người làng liều mình quay lại';
-  const lead={down:`<p>Một nhát giáo sượt qua, bạn ngã xuống bờ ruộng. Lúc mở mắt ra, ${rescuer} đã kéo bạn vào bìa rừng.</p>`,dawn:'<p>Trời hửng sáng. Tiếng tù và của giặc vang lên gọi quân rút về phía bến sông.</p>',done:'<p>Người cuối cùng đã vào rừng, bao thóc cuối cùng đã giấu kỹ. Bạn đứng ở bìa rừng, nhìn về phía làng đang cháy.</p>'}[reason];
-  showModal({kicker:'Rạng sáng ngày 12 tháng giêng',title:reason==='done'?'Không bỏ lại ai':reason==='down'?'Ngã xuống':'Bình minh',body:lead+
+  const lead={down:`<p>Một nhát giáo sượt qua, bạn ngã xuống bờ ruộng. Lúc mở mắt ra, ${rescuer} đã kéo bạn vào bìa rừng.</p>`,dawn:'<p>Trời hửng sáng. Tiếng tù và của giặc vang lên gọi quân rút về phía bến sông.</p>',done:res.lost.length?`<p>Những người còn lại đã vào rừng, bao thóc cuối cùng đã giấu kỹ. Bạn đứng ở bìa rừng, nhìn về phía làng đang cháy, nghĩ đến ${res.lost.join(', ')} đã bị giặc bắt đi.</p>`:'<p>Người cuối cùng đã vào rừng, bao thóc cuối cùng đã giấu kỹ. Bạn đứng ở bìa rừng, nhìn về phía làng đang cháy.</p>'}[reason];
+  showModal({kicker:'Rạng sáng ngày 12 tháng giêng',title:reason==='done'?(res.lost.length?'Rút vào rừng':'Không bỏ lại ai'):reason==='down'?'Ngã xuống':'Bình minh',body:lead+
     `<p><b>An toàn trong rừng:</b> ${res.saved.join(', ')||'không ai'}.</p>${res.left.length?`<p><b>Kẹt lại trong làng</b> (thoát nạn nhưng nhà cửa bị đốt): ${res.left.join(', ')}.</p>`:''}${res.lost.length?`<p><b>Bị giặc bắt đi:</b> ${res.lost.join(', ')}.</p>`:''}<p>Thóc giấu được ${res.thoc}/${res.thocT} bao. Bạn và mọi người đánh hạ ${res.kills} tên giặc.${res.coDown?' Cò bị thương nặng nhưng còn sống.':''}</p>`,
     choices:[{label:'Nhìn lại cuộc đời',fn:()=>endChapter(res)}]});
   save()}

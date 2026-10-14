@@ -122,10 +122,15 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 **Gọi agent `game-tester` (`.claude/agents/game-tester.md`) sau mỗi lần sửa game.** Hoặc tự chạy:
 
 1. `npm run build`: bắt lỗi cú pháp và lỗi import.
-2. `npm test`: build bản test (`vite build --mode test` → `dist-test/`, có hook `window.__dv` khai báo cuối `src/main.js`) rồi chạy `tests/playtest.py`: kiểm tra cân bằng điểm, đi lại bằng phím, chạy thật lụt 1270 và đêm 1285, chơi ngẫu nhiên hết chương 3 lượt, bắt `pageerror`. Cần `pip install playwright`. Chromium có sẵn trong `/opt/pw-browsers`, script tự tìm, đừng chạy `playwright install`.
+2. `npm test` (khoảng 20 giây): build bản test (`vite build --mode test` → `dist-test/`, có hook `window.__dv` khai báo cuối `src/main.js`) rồi chạy `tests/playtest.py`. Cần `pip install playwright`. Chromium có sẵn trong `/opt/pw-browsers`, script tự tìm, đừng chạy `playwright install`. Các phần:
+   - **Cân bằng điểm:** đến lớp phải gấp ít nhất 3 lần tự học, tự học không vượt trần.
+   - **Cơ chế** (`tests/checks.js`): BFS từ nhà tới mọi NPC (nhiều năm, nhiều nhánh truyện), cửa nhà, biển, chuồng trâu, đống đất và chỗ đê vỡ, người và thóc năm 1285, rừng trú ẩn, chỗ giấu trâu; giữ hai phím không đi chéo; trâu lạc để lại dấu chân, chạy lại gần thì trâu giật mình, đi chậm thì nắm được thừng.
+   - **Bot dịch chuyển** (`tests/bots.js`): đặt nhân vật cạnh mục tiêu rồi gọi tương tác của minigame. Dùng trong lượt chơi ngẫu nhiên; có bài riêng kiểm tra thắng/thua lụt, cứu đủ/bỏ dở đêm 1285 và kết quả hiện trong biên niên.
+   - **Độ khó** (`tests/bots.js`): bot bấm phím thật (gửi KeyboardEvent, đi theo đường BFS) chơi lụt 1270 và đêm 1285 với ba mức tay nghề (giỏi: chạy, không chần chừ; khá; kém) và vài kiểu nhân vật, in bảng. Bot gọi `__dv.step(dt)` từng nhịp nên chạy nhanh hơn thời gian thật. Test chỉ báo lỗi khi bot giỏi với nhân vật mạnh nhất vẫn thua; còn lại là số liệu để cân bằng. `--no-bots` để bỏ phần này.
+   - **Chạy thật** vài giây đi lại, lụt, đêm giặc để kiểm tra phần vẽ; **chơi ngẫu nhiên** hết chương 3 lượt; bắt mọi `pageerror`.
+   - `Math.random` trong trang có seed (`--seed`), nên kết quả gần như lặp lại được.
 3. Xem lại ảnh chụp (`--shots DIR`).
-4. Cần điều khiển thêm hàm nào từ test thì thêm vào `window.__dv` trong `src/main.js`. Hook chỉ có trong bản test, bản phát hành tự loại bỏ.
-5. Các bài test cũ từng viết tay (chưa đưa vào `playtest.py`): BFS kiểm tra mọi NPC, cửa nhà, biển, chỗ đê vỡ, nơi trú ẩn, chỗ giấu trâu đều đi tới được; không đi chéo; trâu giật mình chạy.
+4. Cần điều khiển thêm hàm nào từ test thì thêm vào `window.__dv` trong `src/main.js`. Hook chỉ có trong bản test, bản phát hành tự loại bỏ. Thêm minigame mới thì viết thêm bot cho nó trong `tests/bots.js`.
 
 ### Cân bằng điểm
 
@@ -143,5 +148,6 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 
 - **Chương hai (1285–1288):** cứu người bị bắt; Chương Dương, Hàm Tử, giải phóng Thăng Long (1285); cuộc kháng chiến lần ba; **trận Bạch Đằng 1288** với cơ chế canh thủy triều, cắm cọc (ý tưởng gốc của chủ dự án). Đối chiếu Toàn thư năm Ất Dậu 1285 đến Mậu Tý 1288 trước khi viết.
 - Cân bằng độ khó (tốc độ nước lũ, lượng giặc) cần người chơi thật thử.
-- Đưa các bài test BFS, đi chéo, trâu vào `tests/playtest.py`.
+- Giặc trong đêm 1285 đi thẳng, xuyên sông, cây, nhà (`clUpdate` không xét địa hình), trái với biên niên "vét sông thì giặc chỉ qua được bằng hai cây cầu". Chủ dự án chưa quyết có sửa không (sửa sẽ đổi độ khó).
+- Đường văn đi một mình rất khó: bot cả ba mức đều ngã xuống, mà ngã xuống khi không có đồng minh thì mất hết người chưa cứu.
 - Chương hai nên nằm trong thư mục riêng (ví dụ `src/chapter2/`), tách dữ liệu sự kiện khỏi logic.

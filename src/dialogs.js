@@ -100,14 +100,14 @@ export function talkNgu(){
   say('Chàng trai đọc sách',first?'Một chàng trai to khỏe ngồi bên vệ đường đọc sách, thỉnh thoảng lại ngâm nga mấy câu thơ. Anh tên Ngũ, người làng Phù Ủng. Anh bảo làm trai mà chưa lập được công danh thì còn thẹn lắm.':'Anh Ngũ vẫn ngồi đọc sách, miệng ngâm: "Hoành sáo giang sơn cáp kỷ thu..."',
     first?[{label:'Ngồi nghe anh bàn chuyện binh pháp',fn:()=>{gain('vo',2);gain('van',1);toast('Bạn thấy trong lòng sục sôi chí lớn. Anh Ngũ sẽ nhớ mặt bạn.')}}]:[]);
 }
-const PEN={x:44.5,y:58.6};
+export const PEN={x:44.5,y:58.6};
 let reachOK=null,hintT=0;
-function walkable(x,y){return x>=0&&y>=0&&x<W&&y<H&&![WA,WR,MO,TR,WL].includes(map[y*W+x])&&!bsolid[y*W+x]}
-function bfs(sx,sy){const prev=new Int32Array(W*H).fill(-2),s=sy*W+sx;prev[s]=-1;const q=[s];let h=0;while(h<q.length){const i=q[h++],x=i%W,y=(i/W)|0;for(const[a,c]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+a,ny=y+c,j=ny*W+nx;if(walkable(nx,ny)&&prev[j]===-2){prev[j]=i;q.push(j)}}}return prev}
-function hideSpots(){if(!reachOK)reachOK=bfs(43,50);const c=[];
+export function walkable(x,y){return x>=0&&y>=0&&x<W&&y<H&&![WA,WR,MO,TR,WL].includes(map[y*W+x])&&!bsolid[y*W+x]}
+export function bfs(sx,sy){const prev=new Int32Array(W*H).fill(-2),s=sy*W+sx;prev[s]=-1;const q=[s];let h=0;while(h<q.length){const i=q[h++],x=i%W,y=(i/W)|0;for(const[a,c]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+a,ny=y+c,j=ny*W+nx;if(walkable(nx,ny)&&prev[j]===-2){prev[j]=i;q.push(j)}}}return prev}
+export function hideSpots(){if(!reachOK)reachOK=bfs(43,50);const c=[];
   for(let y=32;y<70;y++)for(let x=6;x<23;x++){if(reachOK[y*W+x]===-2||get(x,y)===PA)continue;let tr=0,road=false;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const t=get(x+dx,y+dy);if(t===TR)tr++;else if(t===PA)road=true}if(tr>=11&&!road)c.push([x,y])}
   if(c.length<3)for(let y=32;y<70;y++)for(let x=6;x<23;x++)if(reachOK[y*W+x]!==-2&&get(x,y)!==PA)c.push([x,y]);return c}
-function pathTo(sx,sy,tx,ty){const prev=bfs(sx,sy),t=ty*W+tx;if(prev[t]===-2)return[];const out=[];for(let i=t;i!==-1;i=prev[i])out.push(i);return out.reverse()}
+export function pathTo(sx,sy,tx,ty){const prev=bfs(sx,sy),t=ty*W+tx;if(prev[t]===-2)return[];const out=[];for(let i=t;i!==-1;i=prev[i])out.push(i);return out.reverse()}
 function sendBuffalo(fx,fy,minD,maxD){const b=S.buffalo,sp=hideSpots();let pool=sp.filter(([x,y])=>{const d=Math.hypot(x-fx,y-fy);return d>=minD&&d<=maxD});if(!pool.length)pool=sp;
   const[hx,hy]=pool[Math.floor(Math.random()*pool.length)],path=pathTo(Math.floor(fx),Math.floor(fy),hx,hy);
   b.run=path;b.ri=0;b.st='run';b.tracks=(b.tracks||[]).concat(path.filter((_,i)=>i%2===1).map(i=>[i%W,(i/W)|0]))}
