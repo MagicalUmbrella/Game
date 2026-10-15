@@ -26,7 +26,7 @@ const pDmg=()=>1+(S.vo>=50?1:0)+(has('Kiếm sắt')?1:0);
 
 export function startCuop(){
   const en=[{lead:true,x:54.5,y:55.5},{x:53.5,y:54.5},{x:53.5,y:56.5}].map((e,i)=>({...e,id:i,hp:CUOP.HP,cd:0,stun:0,dir:'right',walk:0,swing:0,dead:false,flash:0}));
-  const hp=Math.max(2,3+voHp()+theHp());
+  const hp=Math.max(2,4+voHp()+theHp());
   setMG({type:'cuop',t:0,en,hp,maxhp:hp,inv:0,cd:0,swing:0,trau:{x:52.5,y:55.5,dir:'right',trail:[]},hideNPC:true,
     update:cUpdate,findTarget:()=>null,draw:cDraw,hud:cHud,post:cPost,key:cKey,goal:cGoal,speedMul:()=>1});
   S.x=START.x;S.y=START.y;P.dir='down';document.body.classList.add('mg');
