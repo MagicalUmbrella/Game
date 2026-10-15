@@ -34,8 +34,10 @@ export function suggestions(){
   const ngheNext={ren:()=>a>=14&&S.renAt!==now()&&'Phụ bác thợ rèn quai búa (lò rèn trong kinh thành), mỗi mùa một lần.',
     cheo:()=>a>=12&&S.cheoAt!==now()&&'Gặp ông lái đò ở bến sông Hồng, phía đông làng, cầm chèo một chuyến.',
     thuoc:()=>a>=12&&S.chua!==now()&&'Hỏi sư cụ ở chùa làng (phía tây bắc) cách dùng cây thuốc, hoặc hái lá thuốc trong rừng.'};
-  if(a>=12&&!((S.nghe||{}).cheo)&&S.cheoAt!==now())add('Ra bến đò sông Hồng','Ông lái đò ngồi ở bến dưới chân đê, phía đông làng. Xin ông cho cầm chèo một chuyến.');
-  for(const id of Object.keys(ngheNext)){const p=(S.nghe||{})[id]||0;if(p>0&&!knows(id)){const h=ngheNext[id]();if(h)add(`Học nghề ${NGHE[id].name.toLowerCase()} (${p}/${NGHE[id].need})`,h)}}
+  // nghề: chỉ một dòng, nghề gần xong nhất, đặt cuối khung (tiến độ mọi nghề xem ở bảng phím C)
+  let ng=null;
+  for(const id of Object.keys(ngheNext)){const p=(S.nghe||{})[id]||0;if(p>0&&!knows(id)){const h=ngheNext[id]();if(h&&(!ng||p/NGHE[id].need>ng.r))ng={r:p/NGHE[id].need,t:`Học nghề ${NGHE[id].name.toLowerCase()} (${p}/${NGHE[id].need})`,h}}}
+  if(!ng&&a>=12&&!((S.nghe||{}).cheo)&&S.cheoAt!==now())ng={t:'Ra bến đò sông Hồng',h:'Ông lái đò ngồi ở bến dưới chân đê, phía đông làng. Xin ông cho cầm chèo một chuyến.'};
   // mốc chỉ số sắp tới
   for(const st of STATS){if(st.k==='the')continue;const v=S[st.k],nx=st.marks.find(([m])=>v<m);if(nx&&nx[0]-v<=6&&nx[0]<=statCap(st.k))add(`Sắp tới mốc ${st.name} ${nx[0]}`,`Còn ${nx[0]-v} nữa: ${nx[1].charAt(0).toLowerCase()+nx[1].slice(1)}.`)}
   // bạn bè
@@ -43,4 +45,5 @@ export function suggestions(){
   if(S.co==='village'&&!S.coPlayed&&a<26)add(a<14?'Đi chơi với Cò':'Ngồi uống nước với Cò','Cò hay ở quanh gốc đa đầu làng.');
   // khám phá
   const left=spotTotal()-foundCount();if(a>=8&&left>0)add('Khám phá quanh làng',`Còn ${left} nơi chưa tới. Thấy lấp lánh thì lại gần bấm E.`);
+  if(ng)add(ng.t,ng.h);
   return out}
