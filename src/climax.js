@@ -43,12 +43,14 @@ export const ACT2=125,ACT3=45;
 const ACTS=['','Trống làng','Làng cháy','Tên đầu toán'];
 const NGU_HORN=80,NGU_AT=22;                        // tù và quân ta vọng lại; quân Phạm Ngũ Lão tới
 const DINH=[34.5,37.6];                             // sân đình, nơi tên đầu toán giữ con tin
-/* máu tên đầu toán: gặp người đánh mạnh thì hắn càng lì đòn (đánh 1 → 9 máu, đánh 3 → 14, đánh 4 → 16) */
-const bossHp=()=>{const d=pDmg();return d>1?8+2*d:9};
+/* máu tên đầu toán: gặp người đánh mạnh thì hắn càng lì đòn (đánh 1 → 11 máu, đánh 3 → 16, đánh 4 → 18) */
+const bossHp=()=>{const d=pDmg();return d>1?10+2*d:11};
 /* Độ khó (chỉnh bằng bảng bot trong npm test): số giặc tụ ở bờ bắc hồi 1 (STAGE_MAX, cứ STAGE_GAP giây một tên),
    số giặc tối đa hồi 2 (RAID_MAX), khoảng cách giữa hai lần thêm giặc (raidGap), tỉ lệ lính kỵ (KY), tốc độ giặc,
    thời gian bạn không bị đánh tiếp sau một đòn (HIT_INV). */
-const STAGE_MAX=5,STAGE_GAP=4,RAID_MAX=10,KY=.3,FOOT_SP=2.35,KY_SP=3.1,HIT_INV=.9;
+const STAGE_MAX=5,STAGE_GAP=4,RAID_MAX=10,EN_HP=3,KY=.3,FOOT_SP=2.35,KY_SP=3.1,HIT_INV=.9;
+/* càng nhiều người đứng ra đánh cùng bạn, giặc kéo đến càng đông: cứ hai người thêm một tên */
+const raidMax=M=>RAID_MAX+Math.floor(M.al.filter(a=>!a.quan).length/2);
 const raidGap=t=>Math.max(1.9,3.8-(ACT2-t)*.022);
 /* Nhà bốc cháy ở hồi 2, theo thứ tự; cách nhau FIRE_GAP giây. Lửa trước cửa chặn lối FIRE_T giây. */
 const BURN=['nha2','nha1','batu','home','truong','vo'],FIRE_GAP=11,FIRE_T=30;
@@ -164,7 +166,7 @@ function spawnEnemy(stage){const M=MG,pts=[[53.5,21.8],[24.5,20.4]];
   if(S.flags.tolich!=='done')for(let k=0;k<10;k++){const x=30+Math.floor(Math.random()*30),y=tolichY(x)-2.4;if(walkable(x,Math.floor(y))){pts.push([x+.5,y]);break}}
   if(M.T-M.t>40)pts.push([79.5,31.5]);
   const p=stage?stagePos():pts[Math.floor(Math.random()*pts.length)],ky=Math.random()<KY;
-  const e={x:p[0],y:p[1],home:stage?[53.5,21.8]:p,hp:ky?3:2,sp:ky?KY_SP:FOOT_SP,ky,st:stage?'stage':'hunt',cap:null,walk:0,dir:'down',flash:0,dead:false};
+  const e={x:p[0],y:p[1],home:stage?[53.5,21.8]:p,hp:ky?EN_HP+1:EN_HP,sp:ky?KY_SP:FOOT_SP,ky,st:stage?'stage':'hunt',cap:null,walk:0,dir:'down',flash:0,dead:false};
   if(stage)e.tgt={x:e.x,y:e.y};M.en.push(e);return e}
 export const dirOf=(dx,dy)=>Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
 
@@ -220,7 +222,7 @@ function bossUpdate(b,dt){const M=MG,now=M.T-M.t;b.flash=Math.max(0,b.flash-dt);
       if(M.carry){M.carry.st='wait';M.carry.x=S.x;M.carry.y=S.y;M.carry=null}}
     else if(b.st!=='flee')for(const a of M.al)if(!a.down&&!a.quan&&a.inv<=0&&Math.hypot(a.x-b.x,a.y-b.y)<.9){a.hp-=1;a.inv=1;b.swing=.3;b.cd=b.rage?1.1:1.8;b.dir=dirOf(a.x-b.x,a.y-b.y);if(a.hp<=0){a.down=true;toast(a.name+' bị tên đầu toán chém ngã!',3800)}break}}}
 /* Đường văn: lừa tên đầu toán (hư cấu). Thành thì hắn bỏ con tin mà chạy; hỏng thì bạn bị bắt. Chỉ một lần. */
-const trickChance=()=>Math.min(.9,.35+S.van/100+(S.dothi?.1:0));
+const trickChance=()=>Math.min(.7,.3+S.van/150+(S.dothi?.1:0));
 function trick(b){const M=MG;b.tricked=true;
   if(Math.random()<trickChance()){const h=b.cap;h.st='wait';h.x=b.x;h.y=b.y;b.cap=null;b.st='flee';M.bossOut='tricked';M.shake=.4;
     say(b,'Quân Trần? Rút! Rút mau!',3);say(h,'Chú ơi!',2.5);toast('Tên đầu toán tin là quân Trần đã vây làng, bỏ con tin mà chạy về phía sông!',4600)}
@@ -240,7 +242,7 @@ function clUpdate(dt){
     if(M.t<=ACT2||allIn()){M.act=2;M.act2At=M.T-M.t;M.banner={act:2,t:3.4};M.shake=.8;M.fireT=5;if(M.spawnT<1e8)M.spawnT=2.5;
       for(const e of M.en)if(e.st==='stage')e.wake=.3+Math.random()*4;   // ào qua cầu, tên trước tên sau
       toast('Tù và giặc rúc lên! Toán giặc bên kia sông ào qua cầu.',4200);sayMe('Chúng sang rồi!',2.6)}}
-  else if(M.act===2&&!M.ngu&&M.spawnT<1e8){M.spawnT-=dt;if(M.spawnT<=0){if(M.en.length<RAID_MAX)spawnEnemy(false);M.spawnT=raidGap(M.t)}}   // hồi 3 không thêm giặc mới
+  else if(M.act===2&&!M.ngu&&M.spawnT<1e8){M.spawnT-=dt;if(M.spawnT<=0){if(M.en.length<raidMax(M))spawnEnemy(false);M.spawnT=raidGap(M.t)}}   // hồi 3 không thêm giặc mới
   if(M.act>=2&&M.burnI<BURN.length&&(M.fireT-=dt)<=0){const id=BURN[M.burnI++],b=BUILDINGS.find(x=>x.id===id);if(b)ignite(b);M.fireT=FIRE_GAP}
   if(M.act===2&&(M.t<=ACT3||(allIn()&&M.T-M.t-M.act2At>=12)))startAct3();
   if(S.nguMet&&!M.horn&&M.t<=NGU_HORN){M.horn=true;toast('Xa xa, phía sông Hồng, có tiếng tù và quân ta vọng lại. Cầm cự thêm chút nữa!',5200)}
@@ -314,7 +316,7 @@ function clUpdate(dt){
     if(!tg){const fx=S.x+(a.id==='co'?-1.3:1.3),fy=S.y+.7;if(!a.fol||Math.hypot(a.fol[0]-fx,a.fol[1]-fy)>1)a.fol=[fx,fy]}
     const tx=tg?tg.x:a.fol[0],ty=tg?tg.y:a.fol[1],dx=tx-a.x,dy=ty-a.y,d=Math.hypot(dx,dy);
     a.moving=false;if(d>(tg?.7:1)){const st=nextStep(a,tx,ty,okAlly,M.T-M.t);if(st){const fin=st[0]===tx&&st[1]===ty,sd=Math.hypot(st[0]-a.x,st[1]-a.y),m=Math.min(sd-(fin?.6:0),a.sp*dt);if(m>0){const [mx,my]=stepTo(a,st,m,okAlly);a.x+=mx;a.y+=my;a.moving=true;a.walk+=dt*9;a.dir=dirOf(mx,my)}}}
-    if(tg&&d<1.1&&a.cd<=0){a.cd=a.quan?.5:(a.id.startsWith('trai')&&(S.flags.doi||0)>=3)?.65:.9;a.slash=.15;a.swing=.24;a.dir=dirOf(dx,dy);hitEnemy(tg,a.dmg,a.x,a.y)}}
+    if(tg&&d<1.1&&a.cd<=0){a.cd=(a.quan?.5:(a.id.startsWith('trai')&&(S.flags.doi||0)>=3)?.65:.9)*(a.giao?.67:1);a.slash=.15;a.swing=.24;a.dir=dirOf(dx,dy);hitEnemy(tg,a.dmg,a.x,a.y)}}
   M.en=M.en.filter(e=>!e.dead);
   if(M.hp<=0){const boss=M.boss&&!M.boss.dead&&M.boss.st!=='flee';M.captureHow=boss?'fight':'down';return finishClimax(boss||!M.al.some(a=>!a.down)?'captured':'down')}
   if(M.t<=0)return finishClimax('dawn');

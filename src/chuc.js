@@ -70,9 +70,9 @@ export function lyChoices(){const c=C(),ch=[],now=S.year*4+S.season;
     ch.push({label:`Mua thêm một thửa ruộng (đang có ${c.ruong})`,note:c.mua===now?'mùa này đã mua':S.tien>=cost?`${cost} quan · mùa thu thu hoạch thêm`:`cần ${cost} quan`,disabled:S.tien<cost||c.mua===now,fn:()=>{S.tien-=cost;c.ruong++;c.mua=now;renderHUD();
       toast(c.ruong===4?'Nhà bạn đã có bốn thửa ruộng. Mùa gặt phải thuê thêm người gặt.':c.ruong===RUONG_MAX?'Sáu thửa ruộng, nhà bạn thành nhà nhiều ruộng nhất xóm.':'Cụ xã ghi tên bạn vào sổ ruộng của làng.',5000)}})}
   return ch}
-/* thu hoạch mùa thu (gọi khi sang đông): mỗi thửa ngoài hai thửa đầu được 2 quan; từ thửa thứ tư phải thuê người gặt */
+/* thu hoạch mùa thu (gọi khi sang đông): mỗi thửa ngoài hai thửa đầu được 1,5 quan; từ thửa thứ tư phải thuê người gặt */
 export function harvest(){const c=C();if(S.path!=='nong'||c.ruong<=2)return;
-  const r=Math.random(),k=r<.2?.5:r>.8?1.5:1,extra=c.ruong-2,hire=Math.max(0,c.ruong-3),n=Math.max(0,Math.round(extra*2*k)-hire);
+  const r=Math.random(),k=r<.2?.5:r>.8?1.5:1,extra=c.ruong-2,hire=Math.max(0,c.ruong-3),n=Math.max(0,Math.round(extra*1.5*k)-hire);
   S.tien+=n;
   toast((k<1?'Mùa thu sâu bệnh, ruộng nhà kém. ':k>1?'Được mùa! Lúa trĩu bông. ':'Mùa gặt xong. ')+`Ruộng nhà thu thêm ${n} quan`+(hire?` (đã trả ${hire} quan thuê người gặt).`:'.'),5200)}
 
@@ -84,7 +84,7 @@ export function xaEvent(K){if(age()<20)return;const sc=xaScore();
     ${src('năm 1242 triều đình đặt chức đại tư xã, tiểu tư xã ở các xã; cùng với xã chính, xã sử, xã giám, gọi chung là xã quan.')}
     <p class="note">Hư cấu: việc làng An Phú chọn người, ông Cả Lợi. Làng xét theo Tiếng, Đức; nhà nông được làng tin hơn.</p>`,choices:[
     {label:'Ra nhận việc làng',note:sc>=XA_RIVAL?'nhiều cụ ủng hộ bạn':'ông Cả có vẻ được lòng hơn',fn:()=>{
-      if(sc>=XA_RIVAL){C().xa='win';gain('tieng',3);showModal({kicker:'Ở đình làng',title:'Xã chính làng An Phú',body:'<p>Các cụ giơ tay gần hết. Cụ xã trao cho bạn sổ đinh, sổ ruộng của làng: "Từ nay cháu lo việc chung. Ta chỉ ngồi uống nước thôi."</p><p class="note">Hư cấu. Từ nay góp dựng lán trong rừng chỉ còn 6 quan (lấy quỹ làng), đêm giặc đến thêm một trai làng theo bạn.</p>'})}
+      if(sc>=XA_RIVAL){C().xa='win';gain('tieng',3);showModal({kicker:'Ở đình làng',title:'Xã chính làng An Phú',body:'<p>Các cụ giơ tay gần hết. Cụ xã trao cho bạn sổ đinh, sổ ruộng của làng: "Từ nay cháu lo việc chung. Ta chỉ ngồi uống nước thôi."</p><p class="note">Hư cấu. Từ nay góp dựng lán trong rừng chỉ còn 10 quan (lấy quỹ làng), đêm giặc đến thêm một trai làng theo bạn.</p>'})}
       else{C().xa='lose';gain('tieng',-1);showModal({kicker:'Ở đình làng',title:'Ông Cả Lợi được chọn',body:'<p>Ông Cả mổ lợn đãi cả làng từ hôm trước. Lúc giơ tay, phần đông giơ cho ông. Mấy cụ quen nhìn bạn, lắc đầu: "Còn trẻ, để năm khác."</p>'})}}},
     {label:'Nhường cho người khác',note:'không ra tranh',fn:()=>{C().xa='no';toast('Bạn xin để các cụ chọn người lớn tuổi hơn. Ông Cả Lợi được chọn.',4600)}}]})}
 
@@ -93,7 +93,7 @@ export function xaEvent(K){if(age()<20)return;const sc=xaScore();
 export const careerTrai=()=>{const c=C();return(c.doi?1:0)+(c.xa==='win'?1:0)+(c.van==='day'&&c.hoctro>=HOCTRO_NEED?1:0)};
 // lại viên chép sổ đinh, biết mặt từng nhà: dân làng tin và đi theo nhanh hơn
 export const laiFollow=()=>C().van==='lai'&&C().laiN>=4;
-export const lanCut=()=>C().xa==='win'?6:0;
+export const lanCut=()=>C().xa==='win'?10:0;
 
 /* ---------- biên niên ---------- */
 export function careerChronicle(){const c=C(),L=[];

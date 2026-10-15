@@ -12,7 +12,7 @@ export const QUESTS={
   trau:{title:'Con trâu lạc',hint:'Lần theo dấu chân trâu từ ruộng vào rừng phía tây. Nghe tiếng mõ trâu để biết gần hay xa. Lại gần thì đi chậm, đừng giữ Shift kẻo trâu giật mình chạy mất. Dắt về thì trâu hay dừng gặm cỏ, bấm E để kéo thừng.'},
   ca:{title:'Bát canh cá',hint:'Đứng sát mép sông, quay mặt ra nước, bấm E để câu cá, rồi mang cho bà Tư.'},
   sach:{title:'Bộ Tứ thư cho thầy',hint:'Lên kinh thành Thăng Long (phía bắc, qua cầu), mua ở Hàng sách. Biếu thầy thì kỳ thi sau này dễ hơn.'},
-  lo:{title:'Lo trước ngày giặc đến',hint:'Từ nay đến hết năm 1284, có tiền thì lo trước cho đêm giặc đến: góp tiền dựng lán trong rừng (cụ xã, 12 quan), rèn giáo cho trai làng (bác thợ rèn, 10 quan), cất bớt thóc vào rừng (cha, hoặc mẹ nếu cha đã mất; 6 quan).'},
+  lo:{title:'Lo trước ngày giặc đến',hint:'Từ nay đến hết năm 1284, có tiền thì lo trước cho đêm giặc đến: góp tiền dựng lán trong rừng (cụ xã, 20 quan), rèn giáo cho trai làng (bác thợ rèn, 16 quan), cất bớt thóc vào rừng (cha, hoặc mẹ nếu cha đã mất; 10 quan). Ít ai đủ tiền làm cả ba, phải chọn.'},
   cco:{title:'Dạy Cò biết chữ',hint:()=>chainHint('co')},
   cthao:{title:'Mái nhà bà Tư',hint:()=>chainHint('thao')},
   cthay:{title:'Chép sách cho thầy',hint:()=>chainHint('thay')},

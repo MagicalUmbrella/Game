@@ -17,7 +17,7 @@ export const NGHE={
   ngua:{name:'Cưỡi ngựa',need:3,how:'luyện ở Giảng võ đường, tập trận năm 1283 (đường võ)',
     effect:'Chương hai: đi ngựa đưa tin, đánh trận. Ở trại giặc: nhìn bãi ngựa biết quân số kỵ binh.'},
   ren:{name:'Nghề rèn',need:4,how:'phụ bác thợ rèn quai búa (từ 14 tuổi)',
-    effect:'Rèn giáo cho trai làng (lo trước ngày giặc đến) chỉ mất 4 quan thay vì 10; tự rèn lại kiếm gỉ.'},
+    effect:'Rèn giáo cho trai làng (lo trước ngày giặc đến) chỉ mất 7 quan thay vì 16; tự rèn lại kiếm gỉ.'},
 };
 export const knows=id=>((S.nghe||{})[id]||0)>=NGHE[id].need;
 export const ngheList=()=>Object.keys(NGHE).filter(knows);

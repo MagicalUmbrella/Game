@@ -1,18 +1,18 @@
 /* ================= lo trước ngày giặc đến (1282–1284) ================= */
 /* Hư cấu cấp làng. Từ khi có tin Toa Đô (thu 1282) đến hết năm 1284, có ba việc tốn tiền để lo trước.
    Mỗi việc ghi một cờ S.flags[id], có hậu quả trong đêm 1285 (prepClimax, gọi từ startClimax) và một
-   dòng trong biên niên (prepChronicle). Người chơi thường chỉ đủ tiền cho một, hai việc. */
+   dòng trong biên niên (prepChronicle). Người chơi thường chỉ đủ tiền cho một, hai việc (cả ba khoảng 46 quan). */
 import {lanCut} from './chuc.js';
 import {S} from './state.js';
 import {doneQuest,renderHUD,toast} from './ui.js';
 import {knows} from './nghe.js';
 
 export const PREP={
-  lan:{cost:()=>lanCut()||12,label:'Góp tiền dựng lán trong rừng',note:'bà Tư, bé Sen lánh vào rừng trước',
+  lan:{cost:()=>lanCut()||20,label:'Góp tiền dựng lán trong rừng',note:'bà Tư, bé Sen lánh vào rừng trước',
     done:'Trai làng dựng mấy gian lán ở bìa rừng tây nam. Có biến thì người già, trẻ nhỏ lánh vào trước.'},
-  giao:{cost:()=>knows('ren')?4:10,label:'Rèn giáo cho trai làng',note:'trai làng đứng ra sẽ có giáo, đánh mạnh hơn',
+  giao:{cost:()=>knows('ren')?7:16,label:'Rèn giáo cho trai làng',note:'trai làng đứng ra sẽ có giáo, đánh mạnh hơn',
     done:'Bác thợ rèn rèn một bó giáo. Đêm giặc đến, trai làng nào đứng ra sẽ có giáo trong tay.'},
-  catThoc:{cost:6,label:'Cất bớt thóc vào rừng',note:'thuê người gánh · một bao thóc giấu sẵn',
+  catThoc:{cost:10,label:'Cất bớt thóc vào rừng',note:'thuê người gánh · một bao thóc giấu sẵn',
     done:'Mấy đêm liền, nhà bạn thuê người gánh thóc vào rừng, chôn dưới gốc cây lớn.'},
 };
 
@@ -30,7 +30,7 @@ export function prepChoice(id){
 export function prepClimax(v,sk,al,putSafe){
   if(S.flags.lan)for(const p of v)if(p.id==='batu'||p.id==='sen')putSafe(p);
   if(S.flags.catThoc&&sk.length)putSafe(sk[0]);
-  if(S.flags.giao)for(const a of al)if(a.id.startsWith('trai')){a.hp+=1;a.dmg=2;a.look={id:'trai_giao'}}
+  if(S.flags.giao)for(const a of al)if(a.id.startsWith('trai')){a.hp+=1;a.giao=true;a.look={id:'trai_giao'}}
 }
 
 /* Dòng biên niên. nLang: số trai làng đứng ra đêm 1285. */
