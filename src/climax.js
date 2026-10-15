@@ -50,7 +50,7 @@ const bossHp=()=>{const d=pDmg();return d>1?10+2*d:11};
 /* Độ khó (chỉnh bằng bảng bot trong npm test): số giặc tụ ở bờ bắc hồi 1 (STAGE_MAX, cứ STAGE_GAP giây một tên),
    số giặc tối đa hồi 2 (RAID_MAX), khoảng cách giữa hai lần thêm giặc (raidGap), tỉ lệ lính kỵ (KY), tốc độ giặc,
    thời gian bạn không bị đánh tiếp sau một đòn (HIT_INV). */
-const STAGE_MAX=5,STAGE_GAP=4,RAID_MAX=10,EN_HP=3,GUARD_MAX=6,KY=.3,FOOT_SP=2.35,KY_SP=3.1,HIT_INV=.9;
+const STAGE_MAX=5,STAGE_GAP=4,RAID_MAX=10,EN_HP=3,GUARD_MAX=4,KY=.3,FOOT_SP=2.35,KY_SP=3.1,HIT_INV=.9;
 /* càng nhiều người đứng ra đánh cùng bạn, giặc kéo đến càng đông: cứ hai người thêm một tên */
 const raidMax=M=>RAID_MAX+Math.floor(M.al.filter(a=>!a.quan).length/2);
 const raidGap=t=>Math.max(1.9,3.8-(ACT2-t)*.022);
@@ -200,8 +200,8 @@ function startAct3(){const M=MG;M.act=3;M.banner={act:3,t:3.4};M.shake=Math.max(
   M.boss=b;M.en.push(b);
   if(outside)say(ti,'Cứu cháu với! Mẹ ơi!',4);
   else{ti.st='hostage';b.cap=ti;b.st='toDinh';ti.x=b.x+.45;ti.y=b.y+.15}   // mọi người đã vào rừng: hắn lôi được cu Tí từ nhà cháy
-  // đám lính đi kèm tên đầu toán: 2, đường võ thêm 2, cứ hai người cùng đánh với bạn thêm 1, tối đa GUARD_MAX
-  const nG=Math.min(GUARD_MAX,2+(S.path==='vo'?2:0)+Math.floor(M.al.filter(a=>!a.quan).length/2));
+  // đám lính đi kèm tên đầu toán: 2, đường võ thêm 1, cứ hai người cùng đánh với bạn thêm 1, tối đa GUARD_MAX (4)
+  const nG=Math.min(GUARD_MAX,2+(S.path==='vo'?1:0)+Math.floor(M.al.filter(a=>!a.quan).length/2));
   for(let i=0;i<nG;i++){const g=spawnEnemy(false);g.x=53.5+(i%3-1)*.7;g.y=21.4-Math.floor(i/3)*.7;g.home=[53.5,21.8];g.guard=true;g.slot=i*Math.PI*2/nG;g.hp=Math.max(g.hp,EN_HP+1)}   // lính thân tín: lì đòn như lính kỵ
   if(outside){say(b,'Bắt lấy một đứa! Ta sẽ bắt cả làng này phải ra nộp mình!',4);toast('Tù và giặc gọi quân rút. Nhưng tên đầu toán vượt sông, đi tìm người làm con tin! Cu Tí nhà bên còn kẹt trong xóm.',5600)}
   else{say(ti,'Chú ơi! Cứu cháu!',4);toast('Tù và giặc gọi quân rút. Nhưng tên đầu toán vượt sông, tay lôi theo cu Tí nhà bên vừa bắt được trong xóm cháy!',5600)}}

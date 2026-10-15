@@ -42,11 +42,11 @@ export function thayMatCareer(){if(C().van!=='day')return;
   showModal({kicker:'Sau đám tang',title:'Trường làng không thể bỏ',body:'<p>Lũ trẻ vẫn ngồi chờ trên chiếu, khay cát còn nguyên nét chữ thầy viết dở. Cụ xã đến nhà bạn: "Làng trông vào cháu. Từ nay cháu là thầy đồ của làng."</p><p class="note">Hư cấu. Bạn thành thầy đồ làng An Phú. Dạy học từ nay mỗi buổi được các nhà biếu một quan.</p>'})}
 /* cửa trường làng */
 export function truongChoices(){const c=C();if(S.path!=='van'||c.van!=='day')return[];
-  return[{label:'Dạy lũ trẻ trong làng',note:`−1 Sức · +1 Văn · +2 Tiếng${S.thay?'':' · +1 quan'} · đã dạy ${c.hoctro} buổi`,fn:()=>{if(!spend())return;c.hoctro++;gain('van',1,true);gain('tieng',2,true);if(!S.thay)gain('tien',1);
+  return[{label:'Dạy lũ trẻ trong làng',note:`−1 Sức · +Văn · +Tiếng${S.thay?'':' · +1 quan'} · đã dạy ${c.hoctro} buổi`,fn:()=>{if(!spend())return;c.hoctro++;gain('van',1,true);gain('tieng',2,true);if(!S.thay)gain('tien',1);
     toast(c.hoctro===HOCTRO_NEED?'Thằng Mõ, học trò lớn nhất của bạn, nay đã biết viết thư cho cả xóm. Nó bảo: "Thầy có việc gì, con đi ngay."':['Bạn dạy lũ trẻ đọc Tam tự kinh, tiếng đọc vang ra tận ngõ.','Bạn cầm tay một đứa nhỏ viết chữ "nhân" trên khay cát.','Bạn kể lũ trẻ nghe chuyện Lý Thường Kiệt đánh Tống.','Bạn chữa bài cho mấy đứa lớn, đứa nào cũng muốn đi thi.'][c.hoctro%4],5000)}}]}
 /* cửa nhà: lại viên lên huyện làm việc */
 export function homeChoices(){const c=C(),ch=[];
-  if(S.path==='van'&&c.van==='lai')ch.push({label:'Lên huyện làm việc giấy tờ',note:'−1 Sức · +2 quan · +1 Văn',fn:()=>{if(!spend())return;c.laiN++;gain('tien',2);gain('van',1,true);
+  if(S.path==='van'&&c.van==='lai')ch.push({label:'Lên huyện làm việc giấy tờ',note:'−1 Sức · +2 quan · +Văn',fn:()=>{if(!spend())return;c.laiN++;gain('tien',2);gain('van',1,true);
     toast(['Bạn chép sổ đinh cả buổi, tên từng nhà trong huyện thuộc làu.','Bạn tính thóc thuế cho mấy xã, bàn tính lách cách đến chiều.','Bạn viết hộ đơn cho một bà cụ kiện đất, không lấy tiền.','Bạn thảo công văn gửi lên lộ, quan huyện khen chữ đẹp.'][c.laiN%4],4600)}});
   if(vanFailOpen())ch.push({label:'Nghĩ xem trượt thi rồi thì đi đường nào',fn:vanFailChoice});
   return ch}

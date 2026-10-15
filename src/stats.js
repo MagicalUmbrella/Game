@@ -39,15 +39,22 @@ export const DUC_CHUA_CAP=20;
    - và không vượt trần theo tuổi (statCap): trẻ con học giỏi mấy cũng có hạn.
    Mức nhắm (chơi chăm, dồn một chỉ số): 7 tuổi khoảng 5, 12 tuổi khoảng 20, 16 tuổi khoảng 35, đêm 1285 (27 tuổi)
    khoảng 70; chơi lơ là thì khoảng một nửa. Bảng "nhịp chỉ số" trong npm test canh việc này. */
-export const GROW_RATE=.12;
-export const dim=v=>v<25?1:v<45?.7:v<65?.5:.3;
+/* GROW: rate (điểm thật mỗi điểm thô của việc lặp lại), budget (điểm thô mỗi mùa mỗi chỉ số được đủ rate, khoảng hai buổi
+   học), late (hệ số cho phần vượt budget: cày hết Sức vẫn hơn nhưng không bỏ xa người chơi chia Sức đi khám phá). */
+export const GROW={rate:.17,budget:8,late:.6};
+export const GROW_RATE=GROW.rate;
+export const dim=v=>v<30?1:v<50?.85:v<70?.7:.5;
 export function statCap(k){const a=S.year-1258;
-  // trẻ con tiến chậm (3 điểm mỗi năm tuổi), từ 16 tuổi nhanh hơn (5 điểm): 7 tuổi 8, 12 tuổi 23, 16 tuổi 35, 20 tuổi 55
-  const kid=(base,per)=>a<16?base+3*(a-6):base+30+5*(a-16);
+  // trẻ con tiến chậm (3 điểm mỗi năm tuổi), từ 16 tuổi 4,5 điểm: 7 tuổi 8, 12 tuổi 23, 16 tuổi 35, 20 tuổi 53, 27 tuổi 84
+  const kid=(base,per)=>a<16?base+3*(a-6):base+30+Math.floor(4.5*(a-16));
   return Math.min(100,k==='van'||k==='vo'?kid(5,3):k==='tieng'?Math.max(2,kid(-1,3)):k==='duc'?kid(8,3):100)}
-/* tính phần tăng thật của n điểm (lap: việc lặp lại); trả {d: số nguyên cộng vào, eff: phần tăng kể cả lẻ, capped} */
+/* điểm thô việc lặp lại đã nhận mùa này của chỉ số k (S.lapPts, đặt lại khi sang mùa) */
+function lapRate(k,n,mul=1){const now=S.year*4+S.season;if(S.lapAt!==now){S.lapAt=now;S.lapPts={}}
+  const used=S.lapPts[k]||0,full=Math.max(0,Math.min(n,GROW.budget-used));S.lapPts[k]=used+n;
+  return (n>0?(full+(n-full)*GROW.late)/n*GROW.rate:GROW.rate)*mul}
+/* tính phần tăng thật của n điểm (lap: việc lặp lại; true, hoặc một số là hệ số, như học trong kinh thành 1,5); trả {d: số nguyên cộng vào, eff: phần tăng kể cả lẻ, capped} */
 export function growth(k,n,lap){const v=S[k]||0,cap=statCap(k);if(v>=cap)return{d:0,eff:0,capped:true};
-  const eff=n*(lap?GROW_RATE:1)*dim(v),fr=S.frac||(S.frac={}),f=(fr[k]||0)+eff,d=Math.min(Math.floor(f),cap-v);
+  const eff=n*(lap?lapRate(k,n,lap===true?1:lap):1)*dim(v),fr=S.frac||(S.frac={}),f=(fr[k]||0)+eff,d=Math.min(Math.floor(f),cap-v);
   fr[k]=d<Math.floor(f)?0:f-Math.floor(f);return{d,eff,capped:false}}
 /* Sức tối đa mỗi mùa theo thể trạng */
 export const sucMax=()=>3+(S.the>=40?1:0)+(S.the>=75?1:0);

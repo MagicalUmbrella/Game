@@ -82,7 +82,8 @@ export function startEscort(res){
   setKeys('<span>Tay bị trói, bị giải đi giữa toán giặc</span><span>Giữ <kbd>Space</kbd> cho đoàn đi nhanh</span>');
   $('toast').hidden=true;
   say(lead,BRANCH[how].lead,4.2);
-  if(caps.length){const c=caps.find(p=>p.look&&p.look.id==='me_gia')||caps[0];setTimeout(()=>{if(MG&&MG.type==='escort')say(c,c.look&&c.look.id==='me_gia'?'Con ơi... mẹ đây!':c.look&&c.look.id==='sen'?'Cha ơi!':'Đừng sợ, có nhau cả đây.',3.6)},2200)}
+  if(caps.length){const c=caps.find(p=>p.look&&p.look.id==='me_gia')||caps[0];setTimeout(()=>{if(MG&&MG.type==='escort'){const id=c.look&&c.look.id,kid=id==='ti'||id==='sen'||(c.look&&c.look.kid);say(c,id==='me_gia'?'Con ơi... mẹ đây!':id==='sen'?'Cha ơi!':kid?'Chú ơi... cháu sợ lắm!':'Có nhau cả đây.',3.6);
+      if(kid)setTimeout(()=>{if(MG&&MG.type==='escort')sayMe(id==='sen'?'Cha đây. Đừng sợ, có cha đây.':'Đừng sợ, có chú đây. Chú không bỏ cháu đâu.',3.6)},2600)}},2200)}
   toast('Tay bị trói giật cánh khuỷu, bạn bị lôi đi giữa toán giặc cầm đuốc, về phía bến Đông Bộ Đầu.',5200);
   save();
 }
@@ -213,8 +214,13 @@ function campUpdate(dt){const M=MG;M.clock+=dt;M.c+=dt;const c=M.c;
 }
 function endCamp(){const res=MG.res;setMG(null);setKeys();document.body.classList.remove('mg');$('toast').hidden=true;save();endChapter(res)}
 function campTarget(){const M=MG;let best=1.5,t=null;
-  for(const o of M.caps){const d=Math.hypot(o.x-S.x,o.y-S.y);if(d<best){best=d;t={label:'Nói chuyện với '+o.name,act:()=>say(o,captiveLine(o),3.6)}}}
+  for(const o of M.caps){const d=Math.hypot(o.x-S.x,o.y-S.y);if(d<best){best=d;t={label:'Nói chuyện với '+o.name,act:()=>{say(o,captiveLine(o),3.6);const r=meReply(o);if(r)setTimeout(()=>{if(MG&&MG.type==='camp')sayMe(r,3.6)},2400)}}}}
   return t}
+/* bạn đáp lại người trong chuồng; trẻ con thì bạn là người dỗ */
+function meReply(o){const id=o.look&&o.look.id;
+  if(id==='ti')return 'Mẹ cháu chạy nhanh lắm. Sáng ra chú tính đường đưa cháu về.';
+  if(id==='sen')return 'Con nép vào cha này. Trời sắp sáng rồi.';
+  return ''}
 function captiveLine(o){const id=o.look&&o.look.id;
   if(id==='me_gia')return S.cha?'Cha con còn ở trong rừng... mong ông ấy đừng liều đi tìm mẹ con mình.':'Mẹ không sao. Con còn sống là mẹ yên lòng rồi.';
   if(id==='sen')return 'Cha ơi, con lạnh...';

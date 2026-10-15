@@ -128,9 +128,10 @@ def balance(page, fails):
               n=D.S.year*4+D.S.season-y0; return [(D.S.{k}-v0)/n, D.S.{k}, n] }}""")
             name = f"{path or 'chưa chọn đường'} · {k}"
             out[name] = (cls, home[0], home[1])
-            if cls < 3 * home[0]:
-                fails.append(f'cân bằng {name}: đến lớp {cls:.2f}/mùa, tự học {home[0]:.2f}/mùa (cần đến lớp ≥ 3×)')
-            cap = 45 if path == k else 25
+            # tự học ở nhà (tua) gần bằng đến lớp: đến lớp hơn, nhưng không quá 1,1 lần (chủ dự án muốn tua đỡ thiệt)
+            if not (home[0] * 0.98 <= cls <= 1.1 * home[0]):
+                fails.append(f'cân bằng {name}: đến lớp {cls:.2f}/mùa, tự học {home[0]:.2f}/mùa (cần đến lớp từ 1 tới 1,1×)')
+            cap = 50 if path == k else 30
             if home[1] > cap:
                 fails.append(f'cân bằng {name}: tự học vượt trần {cap} ({home[1]})')
     return out
@@ -153,15 +154,16 @@ CURVE_JS = """(([k,mode,path,q])=>{const D=__dv;D.setS(Object.assign(D.newState(
  out[27]=D.S[k];return JSON.stringify(out)})"""
 # (chỉ số, cách chơi, đường, tay nghề) -> {tuổi: (thấp nhất, cao nhất)}
 CURVE = [
-    (('van', 'cham', 'van', 'giỏi'), {7: (2, 10), 16: (28, 42), 27: (60, 85)}),
-    (('van', 'vua', 'van', 'khá'), {16: (4, 18), 27: (15, 35)}),
-    (('vo', 'cham', 'vo', 'giỏi'), {16: (28, 42), 27: (60, 85)}),
-    (('tieng', 'cham', 'nong', 'khá'), {16: (20, 38), 27: (50, 75)}),
+    (('van', 'cham', 'van', 'giỏi'), {7: (2, 10), 16: (28, 42), 27: (70, 88)}),
+    (('van', 'nua', 'van', 'khá'), {16: (22, 40), 27: (58, 80)}),
+    (('van', 'vua', 'van', 'khá'), {16: (8, 22), 27: (28, 50)}),
+    (('vo', 'cham', 'vo', 'giỏi'), {16: (28, 42), 27: (70, 88)}),
+    (('tieng', 'nua', 'nong', 'khá'), {16: (18, 38), 27: (50, 72)}),
 ]
 
 
 def stat_curve(page, fails):
-    """Nhịp chỉ số theo tuổi: chơi chăm (dồn hết Sức) và chơi lơ là (1 Sức mỗi mùa), từ 1264 đến hết 1284."""
+    """Nhịp chỉ số theo tuổi: chơi chăm (dồn hết Sức), cân bằng (2 Sức mỗi mùa), lơ là (1 Sức mỗi mùa), từ 1264 đến hết 1284."""
     for args, want in CURVE:
         fresh(page)
         got = json.loads(page.evaluate(CURVE_JS, list(args)))
@@ -375,7 +377,7 @@ def main():
         print('== Cân bằng (điểm mỗi mùa: đến lớp | tự học ở nhà | giá trị sau khi tự học) ==')
         for k, (c, h, v) in balance(page, fails).items():
             print(f'  {k:28s} {c:5.2f} | {h:5.2f} | {v}')
-        print('== Nhịp chỉ số theo tuổi (chơi chăm | lơ là) ==')
+        print('== Nhịp chỉ số theo tuổi (chơi chăm | cân bằng | lơ là) ==')
         stat_curve(page, fails)
         print('== Cơ chế ==')
         mechanics(page, fails)

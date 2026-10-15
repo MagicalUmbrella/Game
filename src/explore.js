@@ -9,7 +9,7 @@ import {gain,renderHUD,showModal,toast} from './ui.js';
 import {tre} from './chains.js';
 import {TREES} from './map.js';
 import {knows,practice} from './nghe.js';
-import {sucMax} from './stats.js';
+import {gainThe,sucMax} from './stats.js';
 
 const src=t=>`<p class="src">Toàn thư chép: ${t}</p>`;
 const now=()=>S.year*4+S.season;
@@ -19,28 +19,28 @@ const give=(it,msg)=>{S.items.push(it);renderHUD();return msg};
    act(): áp hậu quả, trả về đoạn kể. once: false là chỗ quay lại được. */
 export const SPOTS=[
   {id:'tien',x:15.5,y:37.5,name:'Gốc tre già',when:()=>age()>=8,
-    act:()=>{gain('tien',5);return'Dưới gốc tre có một cái hũ sành vỡ miệng, bên trong còn mấy xâu tiền đồng đã xỉn màu. Chẳng biết ai chôn từ bao giờ. Bạn được 5 quan.'}},
+    act:()=>{gain('tien',8);gain('van',2);return'Dưới gốc tre có một cái hũ sành vỡ miệng, bên trong còn mấy xâu tiền đồng đã xỉn màu. Chẳng biết ai chôn từ bao giờ. Bạn được 5 quan.'}},
   {id:'thuoc',x:10.5,y:59.5,name:'Bụi lá thuốc',once:false,when:()=>age()>=8,ready:()=>S.found.thuoc!==S.year&&!has('Lá thuốc'),
-    act:()=>{S.found.thuoc=S.year;practice('thuoc');return give('Lá thuốc','Bụi lá thuốc sư cụ vẫn hay hái mọc um tùm dưới tán cây. Bạn hái một nắm mang về. Mỗi năm cây lại ra lá mới.')}},
+    act:()=>{S.found.thuoc=S.year;practice('thuoc');gain('van',1);gain('duc',1);return give('Lá thuốc','Bụi lá thuốc sư cụ vẫn hay hái mọc um tùm dưới tán cây. Bạn hái một nắm mang về. Mỗi năm cây lại ra lá mới.')}},
   {id:'de',x:29.5,y:55.5,name:'Hang dế bờ ruộng',when:()=>age()<=14,
-    act:()=>give('Dế chọi','Bạn đổ nước vào hang, một con dế than cánh bóng nhảy vọt ra. Cò mà thấy con này chắc mê lắm.')},
+    act:()=>(gain('vo',3),give('Dế chọi','Bạn đổ nước vào hang, một con dế than cánh bóng nhảy vọt ra. Cò mà thấy con này chắc mê lắm.'))},
   {id:'bia',x:19.5,y:12.5,name:'Tấm bia đá',ready:()=>!S.found.bia,
     act:()=>{if(S.van<30)return{text:'Chữ khắc trên bia đã mờ, nét chữ cổ khó đọc. Học thêm đã (cần 30 Văn) rồi quay lại.',keep:true};
-      gain('van',2);return'Bia ghi công dân làng đời trước góp sức đắp đê, dặn con cháu năm nào cũng phải giữ đê cho chắc. Đọc xong, bạn đứng lặng một lúc lâu.'}},
+      gain('van',8);gain('tieng',4);return'Bia ghi công dân làng đời trước góp sức đắp đê, dặn con cháu năm nào cũng phải giữ đê cho chắc. Đọc xong, bạn đứng lặng một lúc lâu.'}},
   {id:'kiem',x:10.5,y:40.5,name:'Bụi rậm chân núi',when:()=>age()>=10,
-    act:()=>give('Kiếm gỉ','Trong bụi rậm có một thanh kiếm gỉ sét, chuôi đã mục. Mang ra lò rèn, có khi rèn lại được.')},
+    act:()=>(gain('vo',4),give('Kiếm gỉ','Trong bụi rậm có một thanh kiếm gỉ sét, chuôi đã mục. Mang ra lò rèn, có khi rèn lại được.'))},
   {id:'thuyen',x:79.5,y:46.5,name:'Thuyền nan trên bãi',once:false,ready:()=>S.found.thuyen!==now()&&S.suc<sucMax(),
-    act:()=>{S.found.thuyen=now();S.suc=Math.min(sucMax(),S.suc+1);renderHUD();return'Bạn nằm trên chiếc thuyền nan ai bỏ lại trên bãi, nghe sóng sông Hồng vỗ mạn. Mệt mỏi tan dần. (+1 Sức, mỗi mùa một lần)'}},
+    act:()=>{S.found.thuyen=now();gain('van',1);S.suc=Math.min(sucMax(),S.suc+1);renderHUD();return'Bạn nằm trên chiếc thuyền nan ai bỏ lại trên bãi, nghe sóng sông Hồng vỗ mạn. Mệt mỏi tan dần. (+1 Sức, mỗi mùa một lần)'}},
   {id:'to',x:37.5,y:43.6,name:'Tổ chim trên cây đa',when:()=>age()<=12,
-    act:()=>{gain('duc',1);return'Bạn trèo lên cây đa, thấy tổ chim có ba quả trứng lốm đốm. Bạn chỉ nhìn rồi trèo xuống, không động vào.'}},
+    act:()=>{gain('duc',4);gain('vo',2);return'Bạn trèo lên cây đa, thấy tổ chim có ba quả trứng lốm đốm. Bạn chỉ nhìn rồi trèo xuống, không động vào.'}},
   {id:'soi',x:51.5,y:27.5,name:'Bãi sỏi ven sông',
-    act:()=>give('Sỏi trắng','Giữa bãi sỏi có một hòn sỏi trắng tròn, nhẵn như quả trứng. Bạn bỏ vào túi, nghĩ bụng sẽ tặng ai đó.')},
+    act:()=>(gain('duc',3),give('Sỏi trắng','Giữa bãi sỏi có một hòn sỏi trắng tròn, nhẵn như quả trứng. Bạn bỏ vào túi, nghĩ bụng sẽ tặng ai đó.'))},
   // bước chặt tre của chuỗi "Mái nhà bà Tư" (chains.js); không tính vào số nơi khám phá
   {id:'tre',x:17.5,y:49.5,name:'Bụi tre',quest:true,once:false,when:()=>tre().st==='on'&&tre().n<3,ready:()=>tre().last!==now(),
     act:()=>{if(S.suc<1)return{text:'Bạn mệt rồi, về nghỉ đã rồi hãy chặt.',keep:true};const c=tre();S.suc--;c.n++;c.last=now();renderHUD();
       return c.n<3?`Bạn chặt được một bó tre thẳng, vác về đầu ngõ nhà bà Tư. Đã có ${c.n}/3 bó (mỗi mùa chặt một bó).`:'Đủ ba bó tre rồi. Sang nhà bà Tư cùng Thảo lợp mái thôi.'}},
   {id:'do',x:55.5,y:27.5,name:'Bến đò cũ',when:()=>age()>=8,
-    act:()=>{practice('boi');return'Bến đò nhỏ trên sông Tô Lịch giờ vắng khách, chỉ còn lũ trẻ tắm sông. Chúng bảo ông lái đò già đã ra mở bến bên sông Hồng, phía đông làng, ngay dưới chân đê. Bạn lội xuống tắm cùng một lúc.'}},
+    act:()=>{practice('boi');gain('vo',3);gainThe(1,90);return'Bến đò nhỏ trên sông Tô Lịch giờ vắng khách, chỉ còn lũ trẻ tắm sông. Chúng bảo ông lái đò già đã ra mở bến bên sông Hồng, phía đông làng, ngay dưới chân đê. Bạn lội xuống tắm cùng một lúc.'}},
 ];
 
 const visible=p=>(!p.when||p.when())&&(p.ready?p.ready():!S.found[p.id]);
