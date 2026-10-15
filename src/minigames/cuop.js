@@ -19,8 +19,10 @@ import {darkPost,endMG,goalArrow} from './chung.js';
 
 /* Độ khó (chỉnh bằng bot): tốc độ tên dắt trâu, tốc độ hai tên chặn, máu mỗi tên, khoảng cách bắt đầu chặn,
    nhịp đánh của cướp. */
-export const CUOP={LEAD_SP:1.35,GUARD_SP:2.6,HP:5,AGGRO:4.5,HIT_CD:1.05,MY_CD:.36};   // 10/2026: khó hơn (trước LEAD_SP 1.25, HP 4, HIT_CD 1.15)
+export const CUOP={LEAD_SP:1.35,GUARD_SP:2.6,HP:5,AGGRO:4.5,HIT_CD:1.15,MY_CD:.36};   // 10/2026: khó hơn (trước LEAD_SP 1.25, HP 4; đường ra thuyền dài hơn qua WAYS)
 const BOAT={x:81.2,y:57.5},START={x:43.5,y:49.8};
+/* tên dắt trâu đi vòng xuống bờ ruộng phía nam rồi mới ra thuyền (WAYS), đường dài hơn để người chơi có thời gian đuổi */
+const WAYS=[[60.5,66.5],[74.5,66.5]];
 const okW=(x,y)=>!solidAt(x+.5,y+.5);
 const pDmg=()=>1+(S.vo>=50?1:0)+(has('Kiếm sắt')?1:0);
 
@@ -42,7 +44,7 @@ function hit(e){const M=MG;e.hp-=pDmg();e.flash=.2;e.stun=.5;
 function cUpdate(dt){const M=MG;M.t+=dt;M.cd=Math.max(0,M.cd-dt);M.swing=Math.max(0,M.swing-dt);M.inv=Math.max(0,M.inv-dt);
   for(const e of live()){e.cd=Math.max(0,e.cd-dt);e.stun=Math.max(0,e.stun-dt);e.flash=Math.max(0,e.flash-dt);e.swing=Math.max(0,e.swing-dt);if(e.stun>0)continue;
     const dp=Math.hypot(S.x-e.x,S.y-e.y);let tx,ty,sp;
-    if(e.lead&&dp>1.3){tx=BOAT.x;ty=BOAT.y;sp=CUOP.LEAD_SP}             // dắt trâu ra thuyền; bị áp sát thì buông thừng đánh lại
+    if(e.lead&&dp>1.3){e.wi=e.wi||0;while(e.wi<WAYS.length&&Math.hypot(WAYS[e.wi][0]-e.x,WAYS[e.wi][1]-e.y)<.7)e.wi++;const w=e.wi<WAYS.length?WAYS[e.wi]:[BOAT.x,BOAT.y];tx=w[0];ty=w[1];sp=CUOP.LEAD_SP}             // dắt trâu ra thuyền; bị áp sát thì buông thừng đánh lại
     else if(e.lead||dp<CUOP.AGGRO||M.t>6){tx=S.x;ty=S.y;sp=CUOP.GUARD_SP}
     else{const l=M.en[0];tx=l.x-1;ty=l.y+(e.id===1?-1:1);sp=CUOP.LEAD_SP*1.1}
     if(dp<.95&&!(e.lead&&dp>1.3)){e.dir=dirOf(S.x-e.x,S.y-e.y);if(e.cd<=0&&M.inv<=0){e.cd=CUOP.HIT_CD;e.swing=.3;M.hp--;M.inv=.9;M.shake=.5;floatText('−1 máu','#e07f6b');
