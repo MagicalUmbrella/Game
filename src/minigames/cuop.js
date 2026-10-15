@@ -57,7 +57,7 @@ function cDraw(list){const M=MG,T=M.trau;
   // thuyền cướp đợi ở mép nước
   list.push({y:BOAT.y-.3,f:()=>{const sx=Math.round((BOAT.x+1)*TS),sy=Math.round(BOAT.y*TS);ctx.fillStyle='#0b0d0c';ctx.fillRect((sx-14)*Z-camX,(sy-4)*Z-camY,30*Z,8*Z);ctx.fillStyle='#4a3020';ctx.fillRect((sx-13)*Z-camX,(sy-3)*Z-camY,28*Z,6*Z)}});
   for(const e of live()){const fr=e.swing>0?(e.swing>.17?'a0':'a1'):[1,0,2,0][Math.floor(e.walk)%4];
-    list.push({y:e.y,f:()=>{shadow(e.x,e.y,10);if(e.flash>0&&Math.floor(clock*30)%2)return;drawSprite(personSprite({id:'dan1'},e.dir,fr),e.x,e.y);if(e.lead)torchFx(e.x+.3,e.y-.2,false)},
+    list.push({y:e.y,f:()=>{shadow(e.x,e.y,10);if(e.flash>0&&Math.floor(clock*30)%2)return;drawSprite(personSprite({id:'cuop'},e.dir,fr),e.x,e.y);if(e.lead)torchFx(e.x+.3,e.y-.2,false)},
       lab:Math.hypot(e.x-S.x,e.y-S.y)<5?[e.lead?'Tên dắt trâu':'Kẻ cướp',e.x,e.y-2]:null})}}
 function cPost(){const M=MG,h=[[S.x,S.y,230],[BOAT.x,BOAT.y,120]];for(const e of live())if(e.lead)h.push([e.x,e.y,170]);darkPost(h,.66)}
 function cHud(){const M=MG,w=Math.min(440,VW-32),x=Math.round(VW/2-w/2);hudBox(x,16,w,64);

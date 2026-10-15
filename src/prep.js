@@ -30,7 +30,7 @@ export function prepChoice(id){
 export function prepClimax(v,sk,al,putSafe){
   if(S.flags.lan)for(const p of v)if(p.id==='batu'||p.id==='sen')putSafe(p);
   if(S.flags.catThoc&&sk.length)putSafe(sk[0]);
-  if(S.flags.giao)for(const a of al)if(a.id.startsWith('trai')){a.hp+=1;a.giao=true;a.look={id:'trai_giao'}}
+  if(S.flags.giao)for(const a of al)if(a.id.startsWith('trai')){a.hp+=1;a.giao=true;a.look={id:a.look.id+'_giao'}}
 }
 
 /* Dòng biên niên. nLang: số trai làng đứng ra đêm 1285. */

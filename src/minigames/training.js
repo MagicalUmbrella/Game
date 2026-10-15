@@ -24,8 +24,9 @@ import {hudBox} from './flood.js';
 /* bãi tập: bạn đứng ở ME đâm hình nộm DUMMY; hai hàng bên có hương binh làng khác */
 const ME={x:74.5,y:12.6},DUMMY={x:76.3,y:12.6},LANES=[10.4,14.8],JUDGE={x:75.4,y:7.6};
 const NGU_FROM={x:77.5,y:2.6},NGU_TO={x:77.6,y:12.7};
-const CROWD=[[71.6,9.4,'trai'],[71.5,10.9,'dan1'],[71.7,12.4,'gom'],[71.5,13.9,'khach'],[71.6,15.4,'trai'],[71.6,16.9,'dan1'],
-  [73.2,17.8,'gom'],[74.6,17.9,'trai'],[76,17.8,'khach'],[77.4,17.9,'dan1'],[78.6,17.6,'trai']];
+// người xem: đủ kiểu người làng, già trẻ gái trai (tools/ve_nguoi.py), không ai đội khăn đỏ như bạn
+const CROWD=[[71.6,9.4,'dan_nam1'],[71.5,10.9,'dan_nu1'],[71.7,12.4,'ong_gia'],[71.5,13.9,'dan_nu3'],[71.6,15.4,'trai3'],[71.6,16.9,'tre1'],
+  [73.2,17.8,'dan_nam2'],[74.6,17.9,'dan_nu2'],[76,17.8,'trai2'],[77.4,17.9,'tre2'],[78.6,17.6,'trai4']];
 const CHEER=['Hay!','Giỏi quá!','Trúng rồi!','Đâm thế mới gọi là đâm!','Làng An Phú đấy!'],OOH=['Ối...','Tiếc quá!','Run tay rồi.'];
 const dummySprite=()=>simple('hinh_nom',18,30,s=>{s(8,8,2,22,'#6e4a2a');s(2,11,14,2,'#6e4a2a');s(4,6,10,13,'#c9a36a');s(5,7,8,11,'#d9b47a');s(6,1,6,6,'#c9a36a');s(7,2,4,4,'#d9b47a');
   for(let y=8;y<18;y+=3)s(4,y,10,1,'#a8844a');s(7,12,4,3,'#b8322a')},9,29);
@@ -35,7 +36,7 @@ const flagSprite=c=>simple('co_tap'+c,18,40,s=>{s(1,0,2,40,'#4a311b');s(3,2,13,9
 export function startTraining(){
   const back={x:S.x,y:S.y};
   setMG({type:'timing',round:0,score:0,pos:10,dir:1,speed:300,t:0,res:[],flash:0,phase:'vao',pt:2.6,swing:0,bub:[],floats:[],back,
-    ngu:null,lanes:LANES.map((y,i)=>({x:ME.x,y,look:{id:'trai_giao'},swing:0,cd:1+i*.7})),crowd:CROWD.map(([x,y,id])=>({x,y,look:{id}})),
+    ngu:null,lanes:LANES.map((y,i)=>({x:ME.x,y,look:{id:i?'huong_binh2':'huong_binh'},swing:0,cd:1+i*.7})),crowd:CROWD.map(([x,y,id])=>({x,y,look:{id}})),
     judges:[{x:JUDGE.x-.8,y:JUDGE.y-.5,look:{id:'quan'}},{x:JUDGE.x,y:JUDGE.y-.6,look:{id:'voquan'}},{x:JUDGE.x+.8,y:JUDGE.y-.5,look:{id:'quan'}}],
     hideNPC:true,speedMul:()=>0,hideTree:t=>t.x>=71&&t.x<=79&&t.y>=5&&t.y<=18,hideProp:p=>p.x>=71&&p.x<=79&&p.y>=5&&p.y<=18,   // dọn bãi tập
     cam:()=>[75.2,12.2],update:tmUpdate,draw:tmDraw,hud:tmHud,key:k=>{if(k===' '||k==='e'){tmHit();return true}return false},findTarget:()=>null});

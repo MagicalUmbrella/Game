@@ -12,7 +12,7 @@ import {MG,S,save,setMG} from '../state.js';
 import {gain,nextModal,showModal,toast} from '../ui.js';
 
 const CW=480,CH=96;
-export const VAT_OPP=[{name:'Trai xóm Đông',push:.3,gap:3.2},{name:'Đô Hảo làng bên',push:.42,gap:3.6},{name:'Đô Mạnh ở kinh thành',push:.55,gap:4.2}];
+export const VAT_OPP=[{name:'Trai xóm Đông',push:.3,gap:3.2,look:'trai2'},{name:'Đô Hảo làng bên',push:.42,gap:3.6,look:'trai4'},{name:'Đô Mạnh ở kinh thành',push:.55,gap:4.2,look:'cuop'}];
 export const VAT_T=18,OPEN_T=.55;
 export const vatState=()=>S.vat||(S.vat={lv:0,last:0,won:0,lost:0,do:false});
 export const vatPush=()=>.055*(1+S.vo/120+(S.the-50)/250);   // mỗi lần đẩy đúng nhịp (luân phiên hai phím)
@@ -51,7 +51,7 @@ function draw(c){const M=MG;if(!c||!M||M.type!=='vat')return;const g=c.getContex
   g.fillStyle=open?'#f2e6a8':M.flash<0?'#e07f6b':M.flash>0?'#9fcaa9':'#efe8d4';g.fillRect(x-4,12,8,CH-24);
   // hai đô (hình người như ngoài bản đồ, phóng 2 lần): bạn bên trái vạch, đối thủ bên phải, chúi vào nhau
   const me={id:S.path==='van'?'ban_van':S.path==='vo'?'ban_vo':'ban_nong'},f=Math.floor(M.t*8)%2?1:2;
-  g.drawImage(personSprite(me,'right',f),x-58,6,64,80);g.drawImage(personSprite({id:'trai'},'left',f),x-6,6,64,80);
+  g.drawImage(personSprite(me,'right',f),x-58,6,64,80);g.drawImage(personSprite({id:M.o.look||'trai'},'left',f),x-6,6,64,80);
   g.fillStyle='#efe8d4';g.font='12px sans-serif';g.textBaseline='top';g.fillText('Bạn',30,4);g.textAlign='right';g.fillText(M.o.name,CW-30,4);g.textAlign='left'}
 
 /* ---------- vào hội (cửa đình, mùa xuân) ---------- */

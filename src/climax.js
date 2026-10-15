@@ -131,7 +131,7 @@ export function startClimax(){
   if(S.co==='village')al.push({id:'co',name:'Cò',x:38.5,y:45.2,look:{id:'co_do'},hp:S.rel.co>=4?6:4,dmg:1,cd:0,sp:4,inv:0,dir:'down',walk:0});
   // trai làng: theo Tiếng (src/stats.js), thêm một nếu giữ được đê 1270, một nếu theo đường nông; nói "hòa" thì bớt một; tối đa 4
   const nLang=Math.min(4,traiFromTieng()+careerTrai()+(S.flags.de==='saved'?1:0)+(S.path==='nong'?1:0)-(S.flags.dh==='hoa'?1:0));
-  for(let i=0;i<Math.max(0,nLang);i++)al.push({id:'trai'+i,name:'Trai làng',x:39+i*2,y:44.6,look:{id:'trai'},hp:4,dmg:1,cd:0,sp:3.6,inv:0,dir:'down',walk:0});
+  for(let i=0;i<Math.max(0,nLang);i++)al.push({id:'trai'+i,name:'Trai làng',x:39+i*2,y:44.6,look:{id:['trai','trai2','trai3','trai4'][i%4]},hp:4,dmg:1,cd:0,sp:3.6,inv:0,dir:'down',walk:0});
   const maxhp=Math.max(2,4+(S.path==='vo'?2:0)+(S.flags.train==='top'?1:0)+voHp()+theHp()+(S.vat&&S.vat.do?1:0));   // đô vật làng chịu đòn tốt hơn
   setMG({type:'climax',T:150,t:150,act:1,hp:maxhp,maxhp,v,sk:sk.map(([x,y])=>({x,y,st:'wait'})),carry:null,en:[],al,spawnT:2,decoy:null,decoys:torches(),cd:0,inv:0,slash:0,kills:0,ngu:false,horn:false,nLang:Math.max(0,nLang),
     fire:new Map(),burn:[],burnI:0,fireT:0,bub:[],banner:{act:1,t:3.2},shake:0,boss:null,bossOut:null,
