@@ -49,7 +49,7 @@ STEP = """(r) => {
   const D=__dv, S=D.S, rnd=n=>Math.floor(r*n);
   if(S && S.ended) return 'ended';
   const M=D.MG;
-  if(M && M.type==='timing'){ if(M.round<6) D.tmHit(); return 'train'; }
+  if(M && M.type==='timing'){ for(let i=0;i<4000&&D.MG===M;i++){ if(M.phase==='aim'&&Math.random()<.04) D.tmHit(); D.step(1/30); } return 'train'; }   // buổi tập trận diễn trên bản đồ: chạy từng nhịp, thỉnh thoảng đâm
   if(M && M.type==='vat'){ const win=r<.5; for(let i=0;i<1500&&D.MG===M&&!M.over;i++){ if(win&&i%4===0) window.dispatchEvent(new KeyboardEvent('keydown',{key:i%8?'a':'d'})); M.tick(1/60); } D.vatFlush(); return 'vat'; }
   if(M && M.type==='daily'){ __bots.dailyAuto(['giỏi','khá','kém','qua'][rnd(4)]); D.dailyFlush(); return 'daily'; }
   if(D.modalOpen){

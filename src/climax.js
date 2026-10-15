@@ -400,11 +400,13 @@ function nightPost(){const M=MG;if(!darkC)darkC=document.createElement('canvas')
   // sắp hết máu: viền đỏ
   if(M.hp<=2){const a=(M.hp<=1?.5:.3)*(.75+.25*Math.sin(clock*6)),gr=ctx.createRadialGradient(VW/2,VH/2,Math.min(VW,VH)*.35,VW/2,VH/2,Math.max(VW,VH)*.7);gr.addColorStop(0,'rgba(160,20,20,0)');gr.addColorStop(1,`rgba(160,20,20,${a})`);ctx.fillStyle=gr;ctx.fillRect(0,0,VW,VH)}}
 /* Bong bóng lời nói, vẽ trên lớp bóng đêm. */
-function bubbles(){if(MG.banner)return;ctx.font='600 12px "Be Vietnam Pro", system-ui, sans-serif';ctx.textBaseline='middle';
-  for(const b of MG.bub){const o=b.o.me?{x:S.x,y:S.y}:b.o,kid=!b.o.me&&isKid(b.o.look);const words=b.text.split(' '),lines=[];let cur='';
+function bubbles(){if(MG.banner)return;drawBubbles(MG.bub)}
+/* lời nói trên đầu người: bub = [{o (người, có x, y, look; o.me là bạn), text, t (giây còn lại)}]; tập trận 1283 dùng chung */
+export function drawBubbles(bub,top=90){ctx.font='600 12px "Be Vietnam Pro", system-ui, sans-serif';ctx.textBaseline='middle';
+  for(const b of bub){const o=b.o.me?{x:S.x,y:S.y}:b.o,kid=!b.o.me&&isKid(b.o.look);const words=b.text.split(' '),lines=[];let cur='';
     for(const w of words){const t=cur?cur+' '+w:w;if(ctx.measureText(t).width>210&&cur){lines.push(cur);cur=w}else cur=t}if(cur)lines.push(cur);
     const w=Math.ceil(Math.max(...lines.map(l=>ctx.measureText(l).width)))+16,h=lines.length*16+10;
-    let x=Math.round(o.x*T-camX-w/2),y=Math.round((o.y-(kid?1.9:2.45))*T-camY-h);x=Math.max(8,Math.min(VW-w-8,x));y=Math.max(90,y);
+    let x=Math.round(o.x*T-camX-w/2),y=Math.round((o.y-(kid?1.9:2.45))*T-camY-h);x=Math.max(8,Math.min(VW-w-8,x));y=Math.max(top,y);
     ctx.globalAlpha=Math.min(1,b.t*3);ctx.fillStyle='#0b0d0c';ctx.fillRect(x-2,y-2,w+4,h+4);ctx.fillStyle='#efe8d4';ctx.fillRect(x,y,w,h);
     const tx=Math.max(x+8,Math.min(x+w-14,Math.round(o.x*T-camX)-3));ctx.fillStyle='#0b0d0c';ctx.fillRect(tx-2,y+h,10,4);ctx.fillStyle='#efe8d4';ctx.fillRect(tx,y+h,6,3);
     ctx.fillStyle='#1d221f';ctx.textAlign='left';lines.forEach((l,i)=>ctx.fillText(l,x+8,y+13+i*16));ctx.globalAlpha=1}}

@@ -170,7 +170,7 @@ export function drawCamp(list){const x0=Math.floor(camX/T)-1,y0=Math.floor(camY/
   for(const jy of JETTY_Y)for(let x=Math.floor(hongX(jy)+hongEW(jy)-4);x<THUY.x0+2;x++)if(vis(x,jy))for(const dy of [-.08,.98])list.push({y:jy+dy,f:()=>drawSprite(jettyPost(),x+.5,jy+dy+.3)});
   SHIPS.forEach(([x,y],i)=>{if(vis(x,y,5))list.push({y:y-.5,f:()=>{const bob=reduce?0:Math.round(Math.sin(clock*1.2+i*2));drawSprite(shipSprite(),x,y+bob/TS)}})});
 }
-const flips={};function horseDir(c,fr,dir){const sp=horseSprite(c,fr);if(dir!=='right')return sp;const k=c+'_'+fr;return flips[k]||(flips[k]=flip(sp))}
+const flips={};export function horseDir(c,fr,dir){const sp=horseSprite(c,fr);if(dir!=='right')return sp;const k=c+'_'+fr;return flips[k]||(flips[k]=flip(sp))}
 /* cờ lớn, đuốc giặc ở bến Đông Bộ Đầu (đêm 12) */
 export const BEN_FIRES=[[80.5,11.2],[81,14.6]];
 
