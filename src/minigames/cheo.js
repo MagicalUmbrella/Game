@@ -7,6 +7,7 @@
    lệch bến quá CHEO.TOL ô thì thuyền mắc bãi, phải men bờ (W, S) về đúng bến. Hai chuyến trong CHEO.TMAX giây.
    Kết quả: q = 2 (đúng bến cả hai lần, nhanh), 1 (xong trong giờ), 0 (hết giờ, ông lái đò cầm chèo thay). Chỉ q ≥ 1
    mới thêm một bước nghề chèo thuyền (nghe.js, cần NGHE.cheo.need chuyến). Khách trả tiền đò. */
+import {voice} from '../loi.js';
 import {TS,Z,ctx} from '../constants.js';
 import {MG,P,S,age,save,setMG} from '../state.js';
 import {gain,say,setKeys,showModal,spend,toast} from '../ui.js';
@@ -34,7 +35,7 @@ export function talkLaiDo(){
     return showModal({kicker:'Bến đò sông Hồng',title:'Ông lái đò',body:`<p>Ông lái đò già ngồi hút thuốc lào trên mũi thuyền, kể chuyện năm bạn ra đời: vua Thái Tông cùng Thái tử ngự lâu thuyền xuôi dòng, đánh tan quân Mông Cổ ở bến Đông Bộ Đầu, ngay mạn trên kia. "Thuyền của ta khi ấy cũng chở quân đấy," ông cười.</p>${src('ngày 24 tháng chạp năm Đinh Tỵ (đầu năm 1258), vua cùng Thái tử ngự lâu thuyền tiến quân đến Đông Bộ Đầu, đón đánh, phá tan quân giặc.')}<p class="note">Ông lái đò là hư cấu.</p>`})}
   const ch=[];
   if(age()>=12)ch.push({label:knows('cheo')?'Chở một chuyến khách sang sông':'Xin ông cho cầm chèo một chuyến',note:S.cheoAt===now()?'mùa này đã chèo':'−1 Sức · mỗi mùa một lần'+(knows('cheo')?'':' · học nghề chèo thuyền'),disabled:S.cheoAt===now(),fn:()=>{if(!spend())return;startCheo()}});
-  say('Ông lái đò',age()<12?'Sông Hồng xiết lắm, trẻ con đừng ra mép nước. Lớn thêm vài tuổi ta cho cầm chèo.':knows('cheo')?'Tay chèo của cậu giờ hơn cả ta hồi trẻ.':'Chèo đò sông Hồng không như sông Tô Lịch đâu. Nước chảy xiết, mắt phải nhìn bến bên kia, chứ đừng nhìn mái chèo.',ch)}
+  say('Ông lái đò',voice('laido',age()<12?'Sông Hồng xiết lắm, trẻ con đừng ra mép nước. Lớn thêm vài tuổi ta cho cầm chèo.':knows('cheo')?'Tay chèo của cậu giờ hơn cả ta hồi trẻ.':'Chèo đò sông Hồng không như sông Tô Lịch đâu. Nước chảy xiết, mắt phải nhìn bến bên kia, chứ đừng nhìn mái chèo.'),ch)}
 
 /* thuyền đậu ở bến khi không chèo (render.js gọi khi không có màn chơi) */
 const MOOR={big:false,x:WX,y:BEN,sx:WX,dir:'right',wake:[],moving:false};

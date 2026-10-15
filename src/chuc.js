@@ -70,9 +70,9 @@ export function lyChoices(){const c=C(),ch=[],now=S.year*4+S.season;
     ch.push({label:`Mua thêm một thửa ruộng (đang có ${c.ruong})`,note:c.mua===now?'mùa này đã mua':S.tien>=cost?`${cost} quan · mùa thu thu hoạch thêm`:`cần ${cost} quan`,disabled:S.tien<cost||c.mua===now,fn:()=>{S.tien-=cost;c.ruong++;c.mua=now;renderHUD();
       toast(c.ruong===4?'Nhà bạn đã có bốn thửa ruộng. Mùa gặt phải thuê thêm người gặt.':c.ruong===RUONG_MAX?'Sáu thửa ruộng, nhà bạn thành nhà nhiều ruộng nhất xóm.':'Cụ xã ghi tên bạn vào sổ ruộng của làng.',5000)}})}
   return ch}
-/* thu hoạch mùa thu (gọi khi sang đông): mỗi thửa ngoài hai thửa đầu được 1,5 quan; từ thửa thứ tư phải thuê người gặt */
+/* thu hoạch mùa thu (gọi khi sang đông): mỗi thửa ngoài hai thửa đầu được 1,5 quan; từ thửa thứ tư phải thuê người gặt (cứ hai thửa thêm một quan) */
 export function harvest(){const c=C();if(S.path!=='nong'||c.ruong<=2)return;
-  const r=Math.random(),k=S.year===1280&&S.flags.sau?{giu:1.5,vua:1,mat:.5,bo:.5}[S.flags.sau]:r<.2?.5:r>.8?1.5:1,extra=c.ruong-2,hire=Math.max(0,c.ruong-3),n=Math.max(0,Math.round(extra*1.5*k)-hire);
+  const r=Math.random(),k=S.year===1280&&S.flags.sau?{giu:1.5,vua:1,mat:.5,bo:.5}[S.flags.sau]:r<.2?.5:r>.8?1.5:1,extra=c.ruong-2,hire=Math.floor(Math.max(0,c.ruong-3)/2),n=Math.max(0,Math.round(extra*1.5*k)-hire);
   S.tien+=n;
   toast((k<1?'Mùa thu sâu bệnh, ruộng nhà kém. ':k>1?'Được mùa! Lúa trĩu bông. ':'Mùa gặt xong. ')+`Ruộng nhà thu thêm ${n} quan`+(hire?` (đã trả ${hire} quan thuê người gặt).`:'.'),5200)}
 
