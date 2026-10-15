@@ -11,6 +11,8 @@ const ICONS={
     '....m.....','...mM.....','...mM.....','...mM.....','...mM.....','...mM.....','.ggggg....','....h.....','....h.....','...ggg....']},
   duc:{p:{p:'#e58fa0',P:'#f8cdd6',g:'#5b8f4f'},r:[ // hoa sen
     '....pp....','...pPPp...','.p.pPPp.p.','pPppPPppPp','pPPpPPpPPp','.pPPPPPPp.','..pPPPPp..','...gggg...','....gg....','....g.....']},
+  tieng:{p:{d:'#8a5a2a',D:'#c98a4a',s:'#e8d4a2',S:'#f6ecd0',r:'#b8322a'},r:[ // trống làng
+    '..ssssss..','.sSSSSSSs.','.ssssssss.','dDDrDDrDDd','dDDDDDDDDd','dDDrDDrDDd','dDDDDDDDDd','.dddddddd.','.d......d.']},
   tien:{p:{c:'#8a6a2a',C:'#d9b25a',Y:'#f4e2a0'},r:[ // đồng xu lỗ vuông
     '...cccc...','..cCCCCc..','.cCYCCCCc.','cCYCCCCCCc','cCCC..CCCc','cCCC..CCCc','cCCCCCCCCc','.cCCCCCCc.','..cCCCCc..','...cccc...']},
   suc:{p:{W:'#fbf7ea',w:'#dcd4bd',b:'#6d9cc0',B:'#2f4f62'},r:[ // bát cơm đầy
@@ -45,7 +47,7 @@ export function ico(name,px=2,cls=''){
 
 /* Ghi chú lựa chọn ("−1 Sức · +2 Văn") thành nhãn màu có biểu tượng. Chữ được thoát HTML trước. */
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const KIND={'Văn':'van','Võ':'vo','Đức':'duc','Sức':'suc','quan':'tien'};
+const KIND={'Văn':'van','Võ':'vo','Đức':'duc','Tiếng':'tieng','Sức':'suc','quan':'tien'};
 export function chips(note){
-  return esc(note).replace(/([+−-])\s?(\d+)\s(Văn|Võ|Đức|Sức|quan)/g,(m,sg,n,k)=>`<span class="chip ${KIND[k]} ${sg==='+'?'up':'down'}">${ico(KIND[k],1)}${sg==='+'?'+':'−'}${n} ${k}</span>`);
+  return esc(note).replace(/([+−-])\s?(\d+)\s(Văn|Võ|Đức|Tiếng|Sức|quan)/g,(m,sg,n,k)=>`<span class="chip ${KIND[k]} ${sg==='+'?'up':'down'}">${ico(KIND[k],1)}${sg==='+'?'+':'−'}${n} ${k}</span>`);
 }

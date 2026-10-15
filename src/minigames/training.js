@@ -2,6 +2,7 @@
 import {MG,S,save,setMG} from '../state.js';
 import {gain,nextModal,showModal} from '../ui.js';
 import {K} from '../events.js';
+import {practice} from '../nghe.js';
 
 export function startTraining(){
   setMG({type:'timing',round:0,score:0,pos:0,dir:1,speed:240,res:[],flash:0,tick:tmTick,modalKey:k=>{if(k===' '||k==='e'){tmHit();return true}return false}});tmZone();
@@ -19,6 +20,7 @@ export function tmHit(){const M=MG;if(!M||M.type!=='timing'||M.round>=6)return;c
   const info=document.getElementById('tmInfo');if(info)info.textContent=(pts===2?'Trúng hiểm!':pts?'Trúng!':'Trượt!')+`  ·  Điểm ${M.score}  ·  `+(M.round<6?`Lượt ${M.round+1}/6`:'Xong');
   if(M.round>=6)setTimeout(tmEnd,500)}
 function tmEnd(){const sc=MG.score;setMG(null);S.pending=null;let title,body;
+  practice('ngua');
   if(sc>=9){S.flags.train='top';gain('vo',5);title='Xuất sắc nhất đội';body='<p>Đường giáo của bạn nhanh và chuẩn đến mức cả bãi tập phải dừng lại xem.</p>'+(S.nguMet?'<p>Một viên tướng trẻ cưỡi ngựa đi qua, dừng lại nhìn bạn rất lâu. Bạn nhận ra anh Ngũ đứng đọc sách bên đường năm nào, nay đã là tướng dưới trướng Hưng Đạo Vương. Anh gật đầu: "Ta nhớ cậu."</p>':'')+'<p class="note">Khi có biến, bạn sẽ khỏe hơn trong chiến đấu.</p>';if(S.nguMet)S.flags.nguKnows=true}
   else if(sc>=5){S.flags.train='ok';gain('vo',3);title='Đạt yêu cầu';body='<p>Bạn hoàn thành buổi tập, được võ quan khen một câu.</p>'}
   else{S.flags.train='low';gain('vo',1);title='Cần luyện thêm';body='<p>Mấy lần bạn đâm trượt hình nộm, bị đội trưởng mắng trước hàng quân.</p>'}

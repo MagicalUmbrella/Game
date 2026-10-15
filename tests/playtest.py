@@ -139,6 +139,7 @@ def mechanics(page, fails):
                      ('ba hồi đêm 1285: lửa, tên đầu toán, đổi mình', 'acts'),
                      ('bị bắt: luật, giải sang trại giặc, cảnh trong trại', 'captivity'),
                      ('bản đồ thế giới: khóa vùng, đi tới mọi nơi, doanh trại', 'world'),
+                     ('chỉ số: Đức / Tiếng, thể trạng, nghề, mốc mở việc, bản lưu cũ', 'statsV2'),
                      ('giặc không đứng dàn hàng ở bìa rừng', 'noCamping'),
                      ('giấy bút, thuốc bổ mỗi mùa một lần', 'shopLimit'), ('lo trước ngày giặc đến', 'prep'),
                      ('mốc chỉ số, phím C', 'statTiers'), ('chuyện đời thường: mọi lựa chọn', 'lifeAll'),
@@ -206,12 +207,12 @@ def flood_table(page, fails, n):
 
 # Các kiểu nhân vật cho đêm 1285 (mã JS chạy trên S trước startClimax). Mọi kiểu đều có cha, vợ Thảo, bé Sen.
 CLIMAX_BUILDS = {  # chỉ số sát với người chơi thật theo từng đường
-    'võ (Võ 70), có Cò, Đức 40': "S.path='vo';S.vo=70;S.duc=40;S.co='village';S.rel.co=4;S.flags.de='saved';S.flags.tolich='done';",
-    'võ (Võ 70), một mình': "S.path='vo';S.vo=70;S.duc=10;S.co='army';S.flags.tolich='done';",
-    'văn đỗ (Văn 55), có Cò': "S.path='van';S.van=55;S.vo=10;S.duc=25;S.dothi=true;S.co='village';S.rel.co=4;S.flags.tolich='done';",
-    'văn đỗ (Văn 55), một mình': "S.path='van';S.van=55;S.vo=10;S.duc=10;S.dothi=true;S.co='army';S.flags.tolich='done';",
-    'nông (Võ 25, Đức 30), có Cò': "S.path='nong';S.vo=25;S.duc=30;S.co='village';S.rel.co=2;S.flags.tolich='skip';",
-    'như trên, lo đủ 3 việc': "S.path='nong';S.vo=25;S.duc=30;S.co='village';S.rel.co=2;S.flags.tolich='skip';S.flags.lan=S.flags.giao=S.flags.catThoc=true;",
+    'võ (Võ 70), có Cò, Tiếng 40': "S.path='vo';S.vo=70;S.tieng=40;S.co='village';S.rel.co=4;S.flags.de='saved';S.flags.tolich='done';",
+    'võ (Võ 70), một mình': "S.path='vo';S.vo=70;S.tieng=10;S.co='army';S.flags.tolich='done';",
+    'văn đỗ (Văn 55), có Cò': "S.path='van';S.van=55;S.vo=10;S.tieng=25;S.dothi=true;S.co='village';S.rel.co=4;S.flags.tolich='done';",
+    'văn đỗ (Văn 55), một mình': "S.path='van';S.van=55;S.vo=10;S.tieng=10;S.dothi=true;S.co='army';S.flags.tolich='done';",
+    'nông (Võ 25, Tiếng 30), có Cò': "S.path='nong';S.vo=25;S.tieng=30;S.co='village';S.rel.co=2;S.flags.tolich='skip';",
+    'như trên, lo đủ 3 việc': "S.path='nong';S.vo=25;S.tieng=30;S.co='village';S.rel.co=2;S.flags.tolich='skip';S.flags.lan=S.flags.giao=S.flags.catThoc=true;",
 }
 REASON = {'done': 'đủ người', 'dawn': 'trời sáng', 'down': 'ngã xuống', 'captured': 'bị bắt'}
 BOSS = {'killed': 'hạ', 'tricked': 'lừa', 'took': 'mất con tin', 'alive': 'không kịp bắt ai'}
@@ -237,7 +238,7 @@ def climax_table(page, fails, n):
             bad = sum(r['saved'] < total - 1 for r in rs)  # lượt mất từ hai người trở lên
             out[(name, sk)] = (saved, total, down, bad)
             print(f"  {name:30s} {sk:9s} {saved:4.1f}/{total:<2d} {sum(r['thoc'] for r in rs) / n:4.1f}/{rs[0]['thocT']:<2d} {down:>5d}/{n:<3d}  {ends} · {boss or '–'}")
-    saved, total, down, bad = out[('võ (Võ 70), có Cò, Đức 40', 'giỏi')]
+    saved, total, down, bad = out[('võ (Võ 70), có Cò, Tiếng 40', 'giỏi')]
     # Bot chạy theo thời gian thực của trình duyệt nên kết quả dao động; một lượt xấu chưa coi là lỗi,
     # từ hai lượt xấu trở lên (hoặc có lượt ngã xuống) mới báo quá khó.
     if down or bad > 1:
@@ -280,7 +281,7 @@ def playthrough(page, rng):
             break
         if st == 'train':
             page.wait_for_timeout(rng.randint(5, 40))
-    S = page.evaluate("""() => {const S=__dv.S; return {year:S.year, ended:!!S.ended, van:S.van, vo:S.vo, duc:S.duc, tien:S.tien,
+    S = page.evaluate("""() => {const S=__dv.S; return {year:S.year, ended:!!S.ended, van:S.van, vo:S.vo, duc:S.duc, tieng:S.tieng, the:S.the, nghe:Object.keys(S.nghe||{}).filter(k=>__dv.nghe.knows(k)).join(','), tien:S.tien,
       path:S.path, de:S.flags.de, res:S.res && S.res.reason, saved:S.res && S.res.saved.length, lost:S.res && S.res.lost.length}}""")
     S['steps'] = len(log)
     return S

@@ -199,7 +199,7 @@
   function downRule() {
     const d = D(), S = d.S, errs = [];
     Object.assign(S, {year: 1285, season: 0, path: 'vo', co: 'army', cha: true, thao: 'wife', child: true});
-    S.ev.thao = 1; S.flags.de = 'lost'; S.duc = 0;
+    S.ev.thao = 1; S.flags.de = 'lost'; S.duc = 0; S.tieng = 0;
     d.startClimax();
     const M = d.MG, [a, b, c] = M.v;
     if (M.al.length) errs.push('kiểu nhân vật thử không được có đồng minh');
@@ -358,7 +358,7 @@
   function prep() {
     const d = D(), S = d.S, errs = [];
     Object.assign(S, {year: 1281, season: 0, tien: 100, path: 'nong', cha: true, thao: 'wife', child: true});
-    S.ev.thao = 1; S.duc = 40; S.flags.de = 'saved'; S.quests.trau = 'done';
+    S.ev.thao = 1; S.tieng = 40; S.flags.de = 'saved'; S.quests.trau = 'done';
     d.talkLy(); if (choose('dựng lán')) errs.push('năm 1281 (chưa có tin Toa Đô) đã góp được tiền dựng lán'); closeDialog();
     S.year = 1283;
     for (const [talk, text] of [['talkLy', 'dựng lán'], ['talkRen', 'Rèn giáo'], ['talkCha', 'Cất bớt thóc']]) {
@@ -381,7 +381,7 @@
     return {errs};
   }
 
-  /* Mốc chỉ số: Đức quyết định số trai làng, Võ thêm máu và sát thương cho mọi đường; phím C mở bảng chỉ số. */
+  /* Mốc chỉ số: Tiếng quyết định số trai làng, Võ thêm máu và sát thương cho mọi đường; phím C mở bảng chỉ số. */
   function statTiers() {
     const d = D(), S = d.S, errs = [];
     const night = (setup) => {
@@ -390,23 +390,25 @@
       const M = d.MG, r = {trai: M.al.filter(a => a.id.startsWith('trai')).length, hp: M.maxhp};
       d.setMG(null); document.body.classList.remove('mg'); return r;
     };
-    for (const [duc, want] of [[0, 0], [19, 0], [20, 1], [40, 2], [60, 3], [100, 3]]) {
-      const r = night({duc});
-      if (r.trai !== want) errs.push(`Đức ${duc}: ${r.trai} trai làng, mong ${want}`);
+    for (const [tieng, want] of [[0, 0], [19, 0], [20, 1], [40, 2], [60, 3], [100, 3]]) {
+      const r = night({tieng});
+      if (r.trai !== want) errs.push(`Tiếng ${tieng}: ${r.trai} trai làng, mong ${want}`);
     }
-    if (night({duc: 60, path: 'nong', flags: {de: 'saved'}}).trai !== 4) errs.push('Đức 60 + giữ đê + đường nông phải ra 4 trai làng (tối đa)');
-    if (night({duc: 40, flags: {dh: 'hoa'}}).trai !== 1) errs.push('nói "hòa" ở Diên Hồng phải bớt một trai làng');
+    if (night({duc: 100, tieng: 0}).trai !== 0) errs.push('Đức cao mà Tiếng 0 vẫn có trai làng (trai làng phải theo Tiếng)');
+    if (night({tieng: 60, path: 'nong', flags: {de: 'saved'}}).trai !== 4) errs.push('Tiếng 60 + giữ đê + đường nông phải ra 4 trai làng (tối đa)');
+    if (night({tieng: 40, flags: {dh: 'hoa'}}).trai !== 1) errs.push('nói "hòa" ở Diên Hồng phải bớt một trai làng');
+    for (const [the, want] of [[20, 3], [55, 4], [80, 5]]) { const r = night({the}); if (r.hp !== want) errs.push(`Thể trạng ${the} (đường văn): ${r.hp} máu, mong ${want}`); }
     for (const [vo, want] of [[0, 4], [25, 5], [74, 5], [75, 6]]) {
       const r = night({vo});
       if (r.hp !== want) errs.push(`Võ ${vo} (đường văn): ${r.hp} máu, mong ${want}`);
     }
     // phím C
     d.setS(d.newState('Thử')); d.startPlay(false); while (d.modalOpen) d.nextModal();
-    S.duc = 0;
+    S.duc = 0; S.tieng = 0;
     window.dispatchEvent(new KeyboardEvent('keydown', {key: 'c'})); window.dispatchEvent(new KeyboardEvent('keyup', {key: 'c'}));
     const txt = d.modalOpen ? document.querySelector('#modal').innerText : '';
     if (!/Bảng chỉ số/i.test(txt)) errs.push('bấm C không mở bảng chỉ số');
-    else for (const t of ['Văn', 'Võ', 'Đức', 'trai làng']) if (!txt.includes(t)) errs.push(`bảng chỉ số thiếu "${t}"`);
+    else for (const t of ['Văn', 'Võ', 'Đức', 'Tiếng', 'Thể trạng', 'Nghề', 'Chèo thuyền', 'trai làng']) if (!txt.includes(t)) errs.push(`bảng chỉ số thiếu "${t}"`);
     while (d.modalOpen) d.nextModal();
     return {errs};
   }
@@ -553,7 +555,7 @@
      khi giặc đứng cạnh (dù đang quay mặt hướng khác) vẫn chém trúng. Bot giỏi chơi cả đường võ lẫn đường văn (có đuốc). */
   function combat() {
     const d = D(), errs = [], out = {};
-    for (const [name, build] of [['võ', {path: 'vo', vo: 70, co: 'village', duc: 40}], ['văn', {path: 'van', van: 55, co: 'army', duc: 5, dothi: true}]]) {
+    for (const [name, build] of [['võ', {path: 'vo', vo: 70, co: 'village', tieng: 40}], ['văn', {path: 'van', van: 55, co: 'army', tieng: 5, dothi: true}]]) {
       d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, cha: true, thao: 'wife', child: true, quests: {trau: 'done'}}, build));
       d.S.ev.thao = 1; d.S.flags.tolich = 'done'; d.startClimax();
       const M = d.MG, Z = d.ZONE, inZ = (x, y) => x >= Z.x0 && x <= Z.x1 + 1 && y >= Z.y0 && y <= Z.y1 + 1;
@@ -597,7 +599,7 @@
      lựa chọn, rạng sáng, hết chương với biên niên đúng nhánh. */
   function captivity() {
     const d = D(), errs = [], out = {};
-    const night = (build) => { d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, cha: true, thao: 'wife', child: true, co: 'village', rel: {co: 5, thao: 0}, duc: 45, quests: {trau: 'done'}}, build));
+    const night = (build) => { d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, cha: true, thao: 'wife', child: true, co: 'village', rel: {co: 5, thao: 0}, tieng: 45, quests: {trau: 'done'}}, build));
       d.S.ev.thao = 1; d.S.flags.tolich = 'done'; d.S.flags.de = 'saved'; d.startClimax(); const M = d.MG; M.spawnT = 1e9; M.t = 45.01; d.step(DT);
       for (let i = 0; i < 60 * 60 && d.MG === M && !(M.boss && M.boss.cap); i++) d.step(DT); return M; };
     // 1. đánh thua tên đầu toán khi Cò, trai làng còn đứng: vẫn bị bắt
@@ -689,5 +691,53 @@
     return {errs, out};
   }
 
-  window.__checks = {world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  /* Hệ chỉ số mới: Đức / Tiếng tách nhau; Sức mỗi mùa theo thể trạng; nghề học qua việc thật; mốc mở việc;
+     Đức 25 cho chỉ đường người nhà; thuốc nam tự băng bó; bản lưu cũ được chuyển đổi. */
+  function statsV2() {
+    const d = D(), errs = [], out = {};
+    const fresh = (o) => { d.setS(Object.assign(d.newState('Thử'), {year: 1276, season: 0, quests: {hoc: 'done', trau: 'done'}}, o)); d.startPlay(false); while (d.modalOpen) d.nextModal(); d.closeDialog(); };
+    const season = () => { d.advanceOne(); while (d.modalOpen) d.nextModal(); d.closeDialog(); };
+    // giúp việc làng: Tiếng tăng, Đức không
+    fresh({}); d.talkLy(); choose('Giúp việc làng'); closeDialog();
+    if (d.S.tieng !== 3 || d.S.duc !== 0) errs.push(`giúp việc làng: Tiếng ${d.S.tieng}, Đức ${d.S.duc} (mong Tiếng 3, Đức 0)`);
+    // nghe kinh: mỗi mùa một lần
+    fresh({}); for (let i = 0; i < 3; i++) { d.talkSu(); choose('Thắp hương'); closeDialog(); }
+    if (d.S.duc !== 1) errs.push(`nghe kinh ba lần một mùa được ${d.S.duc} Đức (mong 1)`);
+    // lo việc làng ở nhà: Tiếng có trần
+    fresh({year: 1268}); d.fastForward('lang'); while (d.modalOpen) d.nextModal(); d.closeDialog();
+    if (d.S.tieng > d.stats.TIENG_FF_CAP) errs.push(`ở nhà lo việc làng mà Tiếng lên ${d.S.tieng}`);
+    // Sức theo thể trạng
+    for (const [the, want] of [[30, 3], [55, 4], [80, 5]]) { fresh({the}); season(); if (d.S.suc !== want) errs.push(`thể trạng ${the}: mỗi mùa ${d.S.suc} Sức, mong ${want}`); }
+    // nghề rèn: phụ bác thợ rèn 4 mùa thì biết nghề, giáo rẻ hơn
+    fresh({year: 1279, tien: 50});
+    for (let i = 0; i < 4; i++) { d.talkRen(); if (!choose('Phụ bác quai búa')) errs.push(`mùa ${i + 1}: không phụ được thợ rèn`); closeDialog(); season(); }
+    if (!d.nghe.knows('ren')) errs.push('phụ thợ rèn bốn mùa mà chưa biết nghề rèn');
+    d.S.year = 1283; const t0 = d.S.tien; d.talkRen(); choose('Rèn giáo'); closeDialog();
+    if (t0 - d.S.tien !== 4) errs.push(`biết nghề rèn mà rèn giáo mất ${t0 - d.S.tien} quan (mong 4)`);
+    // chèo thuyền: giúp ông lái đò mỗi mùa một lần
+    fresh({year: 1272, found: {do: 1270}}); const spot = d.SPOTS.find(p => p.id === 'cheo');
+    for (let i = 0; i < 4; i++) { d.S.x = spot.x; d.S.y = spot.y; d.step(DT); ev('e', true); ev('e', false); while (d.modalOpen) d.nextModal(); d.closeDialog(); season(); }
+    if (!d.nghe.knows('cheo')) errs.push(`giúp ông lái đò bốn mùa mà chưa biết chèo thuyền (tiến độ ${(d.S.nghe || {}).cheo})`);
+    // Văn 50: viết đơn cho làng
+    fresh({van: 50, year: 1276}); d.talkLy(); if (!choose('Viết đơn')) errs.push('Văn 50 mà cụ lý không cho viết đơn'); closeDialog();
+    if (!d.S.flags.don || d.S.tieng < 5) errs.push('viết đơn mà không ghi cờ hoặc không thêm Tiếng');
+    fresh({van: 49, year: 1276}); d.talkLy(); if (choose('Viết đơn')) errs.push('Văn 49 mà vẫn viết đơn được'); closeDialog();
+    // đêm 1285: Đức 25 chỉ đường cho người nhà; thuốc nam tự băng bó; Võ 40 cõng người
+    const night = (o) => { d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, path: 'nong', co: 'army', cha: true, quests: {trau: 'done'}}, o)); d.startClimax(); return d.MG; };
+    let M = night({duc: 25}); d.S.x = M.v.find(p => p.id === 'me').x + .4; d.S.y = M.v.find(p => p.id === 'me').y; d.step(DT);
+    if (!/Chỉ đường/.test(document.getElementById('prompt').innerText)) errs.push(`Đức 25: đứng cạnh mẹ mà không chỉ đường được ("${document.getElementById('prompt').innerText}")`);
+    d.setMG(null); M = night({duc: 0}); d.S.x = M.v.find(p => p.id === 'me').x + .4; d.S.y = M.v.find(p => p.id === 'me').y; d.step(DT);
+    if (/Chỉ đường/.test(document.getElementById('prompt').innerText)) errs.push('Đức 0 (đường nông) mà vẫn chỉ đường được');
+    d.setMG(null); M = night({nghe: {thuoc: 5}}); M.spawnT = 1e9; M.hp = 1; d.S.x = 20; d.S.y = 60; run(4);
+    if (M.hp !== 2) errs.push(`biết thuốc nam mà còn 1 máu không tự băng bó (máu ${M.hp})`);
+    d.setMG(null); document.body.classList.remove('mg');
+    // bản lưu cũ (chưa tách Đức, Tiếng)
+    try { const old = Object.assign(d.newState('Cũ'), {duc: 50, year: 1280}); delete old.statsV; delete old.tieng; delete old.the; delete old.nghe;
+      localStorage.setItem('dvmd-save', JSON.stringify(old)); const r = d.loadSave();
+      if (!r || r.tieng !== 50 || r.duc !== 25 || r.the !== 55 || r.statsV !== 2) errs.push(`chuyển bản lưu cũ sai: Tiếng ${r && r.tieng}, Đức ${r && r.duc}, thể trạng ${r && r.the}`);
+      localStorage.removeItem('dvmd-save'); } catch (e) { errs.push('lỗi khi đọc bản lưu cũ: ' + e.message); }
+    return {errs, out};
+  }
+
+  window.__checks = {statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();

@@ -4,23 +4,25 @@
    dòng trong biên niên (prepChronicle). Người chơi thường chỉ đủ tiền cho một, hai việc. */
 import {S} from './state.js';
 import {doneQuest,renderHUD,toast} from './ui.js';
+import {knows} from './nghe.js';
 
 export const PREP={
   lan:{cost:12,label:'Góp tiền dựng lán trong rừng',note:'bà Tư, bé Sen lánh vào rừng trước',
     done:'Trai làng dựng mấy gian lán ở bìa rừng tây nam. Có biến thì người già, trẻ nhỏ lánh vào trước.'},
-  giao:{cost:10,label:'Rèn giáo cho trai làng',note:'trai làng đứng ra sẽ có giáo, đánh mạnh hơn',
+  giao:{cost:()=>knows('ren')?4:10,label:'Rèn giáo cho trai làng',note:'trai làng đứng ra sẽ có giáo, đánh mạnh hơn',
     done:'Bác thợ rèn rèn một bó giáo. Đêm giặc đến, trai làng nào đứng ra sẽ có giáo trong tay.'},
   catThoc:{cost:6,label:'Cất bớt thóc vào rừng',note:'thuê người gánh · một bao thóc giấu sẵn',
     done:'Mấy đêm liền, nhà bạn thuê người gánh thóc vào rừng, chôn dưới gốc cây lớn.'},
 };
 
+export const prepCost=id=>{const c=PREP[id].cost;return typeof c==='function'?c():c};
 export const prepOpen=()=>(S.year===1282&&S.season>=2)||S.year===1283||S.year===1284;
 
 /* Lựa chọn trong hội thoại cho việc id, hoặc null nếu đã làm hay chưa tới lúc. */
 export function prepChoice(id){
-  const p=PREP[id];if(!prepOpen()||S.flags[id])return null;
-  return{label:p.label,note:S.tien>=p.cost?`${p.cost} quan · ${p.note}`:`cần ${p.cost} quan`,disabled:S.tien<p.cost,
-    fn:()=>{S.tien-=p.cost;S.flags[id]=true;renderHUD();toast(p.done,5200);if(Object.keys(PREP).every(k=>S.flags[k]))doneQuest('lo')}};
+  const p=PREP[id];if(!prepOpen()||S.flags[id])return null;const cost=prepCost(id);
+  return{label:p.label,note:(S.tien>=cost?`${cost} quan · ${p.note}`:`cần ${cost} quan`)+(id==='giao'&&knows('ren')?' · bạn tự rèn cùng bác thợ':''),disabled:S.tien<cost,
+    fn:()=>{S.tien-=cost;S.flags[id]=true;renderHUD();toast(p.done,5200);if(Object.keys(PREP).every(k=>S.flags[k]))doneQuest('lo')}};
 }
 
 /* Áp vào đêm 1285. v: người cần cứu, sk: bao thóc, al: người cùng đánh. putSafe(o) đưa vào rừng. */

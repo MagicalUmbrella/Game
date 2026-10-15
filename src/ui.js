@@ -4,7 +4,7 @@ import {QUESTS,S,age} from './state.js';
 import {REGIONS,regionId} from './world.js';
 import {chips,ico} from './icons.js';
 import {banner,portrait} from './portrait.js';
-import {statProgress} from './stats.js';
+import {statProgress,sucMax} from './stats.js';
 
 export let dialogOpen=false,modalOpen=false,curOpts=[],modalQueue=[];
 export const floats=[];
@@ -13,7 +13,7 @@ export function setKeys(html){$('keys').innerHTML=html||KEYS_DEFAULT}
 export function toast(msg,ms=3600){const t=$('toast');t.textContent=msg;t.hidden=false;t.style.opacity=1;clearTimeout(toast._t);toast._t=setTimeout(()=>{t.style.opacity=0;setTimeout(()=>t.hidden=true,300)},ms)}
 export function floatAt(txt,x,y,color){const k=floats.filter(f=>f.t<1&&Math.abs(f.x-x)<.6&&Math.abs(f.y-y)<.6).length;floats.push({txt,color:color||'#ece6d4',x,y,t:0,dy:k*22})}   // nhiều chữ cùng chỗ thì xếp lệch dòng
 export function floatText(txt,color){floatAt(txt,S.x,S.y,color)}
-export function gain(k,n){const lab={van:'Văn',vo:'Võ',duc:'Đức',tien:'quan'}[k];S[k]=Math.max(0,Math.min(k==='tien'?999:100,S[k]+n));floatText((n>0?'+':'')+n+' '+lab,{van:'#9cc7e0',vo:'#f0a27f',duc:'#e2bf72',tien:'#c9e0a0'}[k]);renderHUD()}
+export function gain(k,n){const lab={van:'Văn',vo:'Võ',duc:'Đức',tieng:'Tiếng',tien:'quan'}[k];S[k]=Math.max(0,Math.min(k==='tien'?999:100,(S[k]||0)+n));floatText((n>0?'+':'')+n+' '+lab,{van:'#9cc7e0',vo:'#f0a27f',duc:'#f2a7b5',tieng:'#e2bf72',tien:'#c9e0a0'}[k]);renderHUD()}
 export function spend(n=1){if(S.suc<n){toast('Bạn đã mệt. Về nhà ngủ để sang mùa mới.');return false}S.suc-=n;renderHUD();return true}
 export function startQuest(id){if(S.quests[id])return;S.quests[id]='active';toast('Việc mới: '+QUESTS[id].title);renderHUD()}
 export function doneQuest(id){S.quests[id]='done';toast('Hoàn thành: '+QUESTS[id].title);renderHUD()}
@@ -57,8 +57,8 @@ export function renderHUD(){
   const stat=(k,lab,val)=>{const p=statProgress(k);return`<div class="stat">${ico(k,1)}<span>${lab}</span><b>${val}</b>${p?`<i class="bar" title="${p.next?'mốc kế tiếp: '+p.next:'đã qua mọi mốc'}"><i style="width:${p.pct}%"></i></i>`:''}</div>`};
   $('status').innerHTML=`<div><div class="name"></div><div class="sub"><span>${a} tuổi</span><span>${REGIONS[regionId(Math.floor(S.x),Math.floor(S.y))].short}</span></div></div>
    <div class="date">${ico('s'+S.season,2)}<span>${SEASONS[S.season]} · ${canchi(S.year)} ${S.year}</span></div>
-   <div class="suc"><span>Sức</span>${[0,1,2,3].map(i=>ico(i<S.suc?'suc':'sucEmpty',2)).join('')}</div>
-   <div class="stats">${stat('van','Văn',S.van)}${stat('vo','Võ',S.vo)}${stat('duc','Đức',S.duc)}${stat('tien','Tiền',S.tien+' quan')}</div>
+   <div class="suc"><span>Sức</span>${Array.from({length:sucMax()},(_,i)=>ico(i<S.suc?'suc':'sucEmpty',2)).join('')}</div>
+   <div class="stats">${stat('van','Văn',S.van)}${stat('vo','Võ',S.vo)}${stat('duc','Đức',S.duc)}${stat('tieng','Tiếng',S.tieng)}${stat('tien','Tiền',S.tien+' quan')}</div>
    ${pathName?`<div class="path">${pathName}</div>`:''}${rels?`<div class="rels">${rels}</div>`:''}${S.items.length?`<div class="items">${S.items.map(x=>`<span>${x}</span>`).join('')}</div>`:''}`;
   $('status').querySelector('.name').textContent=S.name;
   const qs=Object.entries(S.quests);

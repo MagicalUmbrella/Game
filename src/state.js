@@ -18,13 +18,16 @@ export const QUESTS={
   cthay:{title:'Chép sách cho thầy',hint:()=>chainHint('thay')},
   lua:{title:'Tấm lụa cho mẹ',hint:'Mua lụa của lái buôn người Tống ở phường Nhai Tuân, mang về biếu mẹ. (Cũng có thể tặng Thảo.)'},
 };
-export function newState(name){return{name,year:1264,season:0,suc:4,van:0,vo:0,duc:0,tien:3,items:[],quests:{},path:null,ev:{},x:43.5,y:50.4,ate:false,
+export function newState(name){return{name,year:1264,season:0,suc:4,van:0,vo:0,duc:0,tieng:0,the:55,nghe:{},statsV:2,tien:3,items:[],quests:{},path:null,ev:{},x:43.5,y:50.4,ate:false,
   buffalo:{x:44.5,y:58.6,st:'pen',tracks:[],bolts:0},nguMet:false,thayBonus:false,dothi:false,ended:false,
   rel:{co:2,thao:0},flags:{},ducMerged:true,cha:true,thay:true,co:'village',thao:'none',married:false,child:false,thaoHelped:false,coPlayed:false,paper:false,tonic:false,life:{},lifeWait:2,found:{},chains:{},toi:'',pending:null}}
 export function save(){try{localStorage.setItem('dvmd-save',JSON.stringify(S))}catch(e){}}
 export function loadSave(){try{const s=localStorage.getItem('dvmd-save');if(!s)return null;const o=JSON.parse(s),b=newState('');const r=Object.assign(b,o);r.rel=Object.assign(newState('').rel,o.rel||{});r.flags=Object.assign({},o.flags||{});if(!r.buffalo||!r.buffalo.st){r.buffalo={x:44.5,y:58.6,st:'pen',tracks:[],bolts:0};if(r.quests&&r.quests.trau==='active')r._reLose=true}
   // bản lưu cũ còn uy tín làng riêng (flags.lang): quy sang Đức, mỗi điểm uy tín bằng 3 Đức
   if(!o.ducMerged){r.duc=Math.max(0,Math.min(100,r.duc+3*(r.flags.lang||0)));r.ducMerged=true}delete r.flags.lang;
+  // bản lưu trước khi tách Đức (lòng mình) với Tiếng (uy tín với làng): Đức cũ phần lớn là việc làng nên chuyển sang Tiếng,
+  // giữ lại một nửa làm Đức; thể trạng mặc định; nghề đoán theo việc đã làm
+  if(!o.statsV){r.tieng=r.duc;r.duc=Math.round(r.duc*.5);r.the=r.flags.daumua==='cham'?50:55;r.nghe={};if(r.found&&r.found.thuoc)r.nghe.thuoc=1;if(r.path==='vo'&&r.year>=1276)r.nghe.ngua=1;r.statsV=2}
   // bản lưu cũ đã qua tin Toa Đô mà chưa có việc "Lo trước ngày giặc đến"
   if(r.ev&&r.ev.toado&&!r.quests.lo&&r.year<1285)r.quests.lo='active';
   // bản lưu cũ: việc Tứ thư còn dở khi thầy đã mất, việc lo trước còn dở khi đã sang 1285
