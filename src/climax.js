@@ -86,6 +86,8 @@ function pickLoot(e){let p;do p=LOOT[Math.floor(Math.random()*LOOT.length)];whil
    spin: đi vòng quanh điểm ấy (quanh đuốc: dáo dác tìm quân mai phục). */
 function around(p,e,r,spin=0){if(e.slot==null)e.slot=Math.random()*Math.PI*2;const a=e.slot+spin*(MG.T-MG.t),x=p.x+Math.cos(a)*r,y=p.y+Math.sin(a)*r;
   return okEnemy(Math.floor(x),Math.floor(y))&&!inZone(x,y)?{x,y}:p}
+/* các phía vây: null là đi thẳng tới, còn lại là chỗ đứng chặn phía đông, tây, nam, bắc của người bị đuổi */
+const FLANK=[null,[1.6,0],[-1.6,0],[0,1.6],[0,-1.6]];
 /* Giặc đứng gần nhau quá thì đẩy nhau ra (không vào ô cấm, không vào rừng). */
 function separate(en){const R=.7;
   for(let i=0;i<en.length;i++)for(let j=i+1;j<en.length;j++){const a=en[i],b=en[j];let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);if(d>=R)continue;
@@ -295,7 +297,12 @@ function clUpdate(dt){
         else if(Math.hypot(e.loot[0]-e.x,e.loot[1]-e.y)<.6&&(e.lootT-=dt)<=0)e.loot=pickLoot(e);
         tg=around({x:e.loot[0],y:e.loot[1]},e,.9)}
       else e.loot=null;
-      e.tgt=tg;tx=tg.x;ty=tg.y}
+      e.tgt=tg;tx=tg.x;ty=tg.y;
+      // vây: đuổi bạn hay dân làng thì mỗi tên nhắm một phía (FLANK theo e.side), tới gần mới áp vào, nên không dồn một cục
+      // đi cùng một đường; phía ấy là ô cấm hay trong rừng thì đi thẳng tới
+      const prey=M.v.includes(tg)||(Math.abs(tg.x-S.x)<1e-6&&Math.abs(tg.y-S.y)<1e-6);
+      if(prey){if(e.side==null)e.side=(M.sideN=(M.sideN||0)+1)%FLANK.length;const o=FLANK[e.side];
+        if(o&&Math.hypot(tg.x-e.x,tg.y-e.y)>1.7){const fx=tg.x+o[0],fy=tg.y+o[1];if(okEnemy(Math.floor(fx),Math.floor(fy))&&!inZone(fx,fy)){tx=fx;ty=fy}}}}
     // kẹt nhiều lần liền (bị người khác chắn lối hẹp): đi vòng sang một chỗ trống gần đó một lúc rồi mới quay lại đích
     if(e.detour){if((e.detourT-=dt)>0){tx=e.detour[0];ty=e.detour[1]}else e.detour=null}
     const dx=tx-e.x,dy=ty-e.y,d=Math.hypot(dx,dy);

@@ -225,6 +225,7 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 - Màn chơi trong khung (luyện võ…) từng có lúc không ăn phím khi bật bộ gõ tiếng Việt (e.key là 'Process' hoặc chữ có dấu): `input.js` đọc phím theo vị trí (`keyName`, dùng `e.code`); giữ phím (`e.repeat`) không tính là bấm nhiều lần.
 - Thuyền (chèo đò, bị giải qua sông) và người chơi từng rung lệch nhau một điểm ảnh mỗi khung: camera lấy gốc theo điểm ảnh của người chơi (`render.js`), thân thuyền và chỗ ngồi cùng làm tròn theo `snap` (`thuyen.js`).
 - Lúc bị giải đi, cu Tí từng là người dỗ "Đừng sợ, có nhau cả đây"; nay trẻ con sợ, bạn là người dỗ (`camp.js`, `meReply` trong chuồng).
+- Giặc đông từng dính thành một cục, cùng đi một đường tới bạn: nay đuổi bạn hay dân làng thì mỗi tên nhắm một phía (`FLANK`, `e.side` trong `climax.js`: thẳng tới, đông, tây, nam, bắc, cách 1,6 ô), còn 1,7 ô mới áp vào, nên vây quanh.
 - Bản đồ thế giới: vẽ cả nền một lần từng làm khựng hình (mỗi mảnh 0,1 giây, xếp hàng 36 mảnh); nay vẽ trước chia nhỏ 6 ms một lần. Lời nhắc chạm ranh vùng từng không hiện trong 5 giây đầu (đồng hồ `performance.now()` bắt đầu từ 0, nên mốc chờ đặt `-1e9`).
 
 ## Hướng phát triển tiếp
