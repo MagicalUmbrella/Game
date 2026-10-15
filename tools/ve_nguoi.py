@@ -303,6 +303,8 @@ PEOPLE = [
     ('giac_ky', 'Giặc kỵ', dict(hair='knot', hat='mugiac', plume=True, beard='full', torso='armor', legs='boots', weapon='dao', pal={**C('#6a4a2e'), **B2('#3a2a1e'), **P2('#2a2826')})),
     # đêm 1285, hồi ba (hư cấu): tên đầu toán giặc áo đỏ thẫm, đai vàng; cu Tí con nhà hàng xóm
     ('giac_dau', 'Tên đầu toán', dict(hair='knot', hat='mugiac', plume=True, beard='full', torso='armor', legs='boots', weapon='dao', pal={**C('#7a2622'), **B2('#d9b25a'), **P2('#241f1e')})),
+    ('laido', 'Ông lái đò', dict(hair='knot', hat='nonla', beard='long', torso='shirt', legs='bare', pal={**GREY, **C('#4f6a74'), **B2('#2e3e44'), **P2('#3e3a34'), 'T': '#e6c98a', 'U': '#fbe8b8', 't': '#b08f52'})),
+    ('khach', 'Khách qua đò', dict(hair='bun', hat='nonla', face='w', torso='dress', legs='feet', pal={**C('#9a6a4a'), **B2('#4a3020'), 'T': '#e6c98a', 'U': '#fbe8b8', 't': '#b08f52'})),
     ('ti', 'Cu Tí nhà bên', dict(hair='kid', torso='shirt', legs='bare', kid=True, pal={**C('#5a7890'), **B2('#33404e'), **P2('#4a4440')})),
     # trại giặc đêm 12 tháng giêng 1285: tướng Nguyên Ô Mã Nhi (giáp xanh thẫm, đai vàng), Đỗ Khắc Chung (quan văn nước ta)
     ('o_ma_nhi', 'Ô Mã Nhi', dict(hair='knot', hat='mugiac', plume=True, beard='full', torso='armor', legs='boots', pal={**C('#283652'), **B2('#e9b93a'), **P2('#1e1c22')})),

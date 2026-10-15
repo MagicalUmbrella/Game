@@ -1,4 +1,5 @@
 /* ================= render ================= */
+import {drawMoored} from './minigames/cheo.js';
 import {$,H,T,TS,W,Z,ctx,cv} from './constants.js';
 import {Hs} from './pixel.js';
 import {BUILDINGS,DECOR,SIGNS,TREES,isW,map} from './map.js';
@@ -53,7 +54,7 @@ function render(){
   for(const sg of near(SIGNS,x0-1,y0-1,x1+1,y1+2))list.push({y:sg.y+1,f:()=>drawSprite(signSprite(),sg.x+.5,sg.y+1)});
   if(S){
     const a=age();
-    if(!MG)exploreDraw(list,clock,camX,camY);
+    if(!MG){exploreDraw(list,clock,camX,camY);drawMoored(list)}   // thuyền ông lái đò đậu ở bến sông Hồng
     for(const n of NPCS){if(!npcOn(n))continue;if(S.res&&S.res.lost&&S.res.lost.includes(n.name))continue;   // người đã bị giặc bắt đi thì không còn ở làng
       if(n.x<x0-2||n.x>x1+2||n.y<y0-2||n.y>y1+2)continue;
       const look=npcLook(n),dpx=S.x-n.x,dpy=S.y-n.y;let dir=n.moving?n.face:'down';

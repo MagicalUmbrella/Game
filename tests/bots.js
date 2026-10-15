@@ -258,5 +258,20 @@
     return +t.toFixed(1);
   }
 
-  window.__bots = {goalBot, SKILL, makeWalker, floodBot, floodTeleport, climaxBot, climaxTeleport, dailyAuto, DT};
+  /* ---------- Chèo đò sông Hồng: bấm luân phiên A D theo nhịp tay nghề, giữ W/S để thuyền thẳng bến ---------- */
+  function cheoBot(skillName, maxT = 120) {
+    const d = D(), M0 = d.MG, gap = {'giỏi': .12, 'khá': .2, 'kém': .32}[skillName], slack = {'giỏi': .2, 'khá': .45, 'kém': .8}[skillName];
+    let t = 0, k = 0, nextT = .3, held = null, M;
+    const hold = key => { if (held === key) return; if (held) ev(held, false); held = key; if (key) ev(key, true); };
+    while ((M = d.MG) === M0 && M && t < maxT) {
+      if (M.phase === 'row') {
+        if (t >= nextT) { ev(k++ % 2 ? 'a' : 'd', true); nextT = t + gap; }
+        const off = M.B.y - d.cheo.BEN; hold(off > slack ? 'w' : off < -slack ? 's' : null);
+      } else hold(null);
+      d.step(DT); t += DT;
+    }
+    hold(null); return +t.toFixed(1);
+  }
+
+  window.__bots = {cheoBot, goalBot, SKILL, makeWalker, floodBot, floodTeleport, climaxBot, climaxTeleport, dailyAuto, DT};
 })();

@@ -225,20 +225,32 @@
    "kid": false,
    "fight": true
   },
-  "ti": {
+  "laido": {
    "row": 34,
+   "name": "Ông lái đò",
+   "kid": false,
+   "fight": false
+  },
+  "khach": {
+   "row": 35,
+   "name": "Khách qua đò",
+   "kid": false,
+   "fight": false
+  },
+  "ti": {
+   "row": 36,
    "name": "Cu Tí nhà bên",
    "kid": true,
    "fight": false
   },
   "o_ma_nhi": {
-   "row": 35,
+   "row": 37,
    "name": "Ô Mã Nhi",
    "kid": false,
    "fight": false
   },
   "khac_chung": {
-   "row": 36,
+   "row": 38,
    "name": "Đỗ Khắc Chung",
    "kid": false,
    "fight": false

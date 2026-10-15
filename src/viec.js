@@ -30,8 +30,9 @@ export function suggestions(){
   if(vatOpen())add('Hội xuân: sới vật ở đình','Vào cửa đình bấm E. Mỗi năm được vào sới một keo.');
   // nghề đang học dở, mùa này còn học được
   const ngheNext={ren:()=>a>=14&&S.renAt!==now()&&'Phụ bác thợ rèn quai búa (lò rèn trong kinh thành), mỗi mùa một lần.',
-    cheo:()=>a>=12&&S.found&&S.found.do!=null&&S.cheoAt!==now()&&'Giúp ông lái đò ở bến sông Tô Lịch chèo đò, mỗi mùa một lần.',
+    cheo:()=>a>=12&&S.cheoAt!==now()&&'Gặp ông lái đò ở bến sông Hồng, phía đông làng, cầm chèo một chuyến.',
     thuoc:()=>a>=12&&S.chua!==now()&&'Hỏi sư cụ ở chùa làng (phía tây bắc) cách dùng cây thuốc, hoặc hái lá thuốc trong rừng.'};
+  if(a>=12&&!((S.nghe||{}).cheo)&&S.cheoAt!==now())add('Ra bến đò sông Hồng','Ông lái đò ngồi ở bến dưới chân đê, phía đông làng. Xin ông cho cầm chèo một chuyến.');
   for(const id of Object.keys(ngheNext)){const p=(S.nghe||{})[id]||0;if(p>0&&!knows(id)){const h=ngheNext[id]();if(h)add(`Học nghề ${NGHE[id].name.toLowerCase()} (${p}/${NGHE[id].need})`,h)}}
   // mốc chỉ số sắp tới
   for(const st of STATS){if(st.k==='the')continue;const v=S[st.k],nx=st.marks.find(([m])=>v<m);if(nx&&nx[0]-v<=6)add(`Sắp tới mốc ${st.name} ${nx[0]}`,`Còn ${nx[0]-v} nữa: ${nx[1].charAt(0).toLowerCase()+nx[1].slice(1)}.`)}

@@ -13,9 +13,9 @@ const DIRS={w:'up',arrowup:'up',s:'down',arrowdown:'down',a:'left',arrowleft:'le
 /* Phần thưởng chung: chơi khá (q ≥ 0.5) được đúng mức cũ, giỏi (q ≥ hi) thêm 1, kém hoặc làm qua loa bớt 1. */
 export const dailyReward=(base,q,hi=1)=>q==null||q<.5?Math.max(1,base-1):q>=hi?base+1:base;
 
-function start(kind,title,intro,state,done,quick){
+function start(kind,title,intro,state,done,quick,kicker){
   setMG({type:'daily',kind,t:0,over:false,flash:0,...state,done,tick,modalKey:key});
-  showModal({kicker:'Việc hằng ngày · tốn 1 Sức',title,body:`<p>${intro}</p><canvas id="dl" width="${CW}" height="${CH}" style="width:100%;max-width:${CW}px;image-rendering:pixelated;border:2px solid #0b0d0c"></canvas><p class="note" id="dlInfo">&nbsp;</p>`,
+  showModal({kicker:kicker||'Việc hằng ngày · tốn 1 Sức',title,body:`<p>${intro}</p><canvas id="dl" width="${CW}" height="${CH}" style="width:100%;max-width:${CW}px;image-rendering:pixelated;border:2px solid #0b0d0c"></canvas><p class="note" id="dlInfo">&nbsp;</p>`,
     choices:[{label:quick||'Làm qua loa',note:'ít kết quả hơn',fn:()=>{finish(null);return false}}]});
 }
 function info(t){const e=document.getElementById('dlInfo');if(e)e.textContent=t}
@@ -26,18 +26,19 @@ function finish(q,delay=0){const M=MG;if(!M||M.type!=='daily'||M.over)return;M.o
 export function dailyFlush(){if(pending)pending()}
 
 /* ---------- học chữ: nhớ nét ---------- */
-export function startWriting(done){
+/* opt: {title, intro, kicker} để dùng lại màn này cho việc khác (nhận mặt cây thuốc) */
+export function startWriting(done,opt={}){
   const n=Math.min(7,3+Math.floor(S.van/25)),pool=['up','down','left','right'];
   const seq=Array.from({length:n},()=>pool[Math.floor(Math.random()*4)]);
-  start('viet','Tập viết','Nhớ thứ tự các nét bút thầy viết mẫu, rồi viết lại bằng <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> (hoặc phím mũi tên). Văn càng cao, bài càng dài.',
-    {seq,inp:[],phase:'show',showT:1.1+.35*n,limit:2.2+1.1*n},done);
+  start('viet',opt.title||'Tập viết',opt.intro||'Nhớ thứ tự các nét bút thầy viết mẫu, rồi viết lại bằng <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> (hoặc phím mũi tên). Văn càng cao, bài càng dài.',
+    {seq,inp:[],phase:'show',showT:1.1+.35*n,limit:2.2+1.1*n},done,null,opt.kicker);
   info(`Nhớ ${n} nét…`);
 }
 /* ---------- luyện võ: ba đòn canh nhịp ---------- */
-export function startDrill(done){
+export function startDrill(done,opt={}){
   const zw=Math.max(26,Math.min(100,24+S.vo*.7));
-  start('vo','Luyện võ','Bấm <kbd>Space</kbd> hoặc <kbd>E</kbd> khi mũi côn ở vùng sáng của cọc gỗ. Ba đòn, đòn sau nhanh hơn. Võ càng cao, vùng sáng càng rộng.',
-    {pos:10,dir:1,speed:270,round:0,pts:0,zw,zc:0},done);
+  start('vo',opt.title||'Luyện võ',opt.intro||'Bấm <kbd>Space</kbd> hoặc <kbd>E</kbd> khi mũi côn ở vùng sáng của cọc gỗ. Ba đòn, đòn sau nhanh hơn. Võ càng cao, vùng sáng càng rộng.',
+    {pos:10,dir:1,speed:270,round:0,pts:0,zw:opt.zw||zw,zc:0},done,null,opt.kicker);
   zone();info('Đòn 1/3');
 }
 function zone(){const M=MG;M.zc=60+M.zw/2+Math.random()*(CW-120-M.zw)}

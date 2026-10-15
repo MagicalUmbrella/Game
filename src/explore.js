@@ -39,12 +39,8 @@ export const SPOTS=[
   {id:'tre',x:17.5,y:49.5,name:'Bụi tre',quest:true,once:false,when:()=>tre().st==='on'&&tre().n<3,ready:()=>tre().last!==now(),
     act:()=>{if(S.suc<1)return{text:'Bạn mệt rồi, về nghỉ đã rồi hãy chặt.',keep:true};const c=tre();S.suc--;c.n++;c.last=now();renderHUD();
       return c.n<3?`Bạn chặt được một bó tre thẳng, vác về đầu ngõ nhà bà Tư. Đã có ${c.n}/3 bó (mỗi mùa chặt một bó).`:'Đủ ba bó tre rồi. Sang nhà bà Tư cùng Thảo lợp mái thôi.'}},
-  // giúp ông lái đò chèo đò (học nghề chèo thuyền), mỗi mùa một lần, sau khi đã nghe ông kể chuyện; không tính vào số nơi khám phá
-  {id:'cheo',x:55.5,y:27.5,name:'Bến đò',quest:true,once:false,when:()=>S.found.do!=null&&age()>=12&&!knows('cheo'),ready:()=>S.cheoAt!==now(),
-    act:()=>{if(S.suc<1)return{text:'Bạn mệt rồi, hôm khác hãy giúp ông chèo đò.',keep:true};S.suc--;S.cheoAt=now();renderHUD();practice('cheo');const n=S.nghe.cheo;
-      return['Ông lái đò đưa mái chèo cho bạn: "Đứng vững, đẩy bằng cả người chứ đừng bằng tay." Con đò chòng chành, lượn vòng giữa sông.','Bạn chèo một chuyến khách sang sông. Đò còn lệch, nhưng không ai phải ướt chân.','Ông chỉ cho bạn cách nhìn sóng mà biết chỗ nước xiết, chỗ có cọc ngầm.','Bạn tự chèo một mạch sang bờ bên kia rồi quay về. Ông lái đò gật gù: "Được rồi đấy. Sông nào cũng là sông."'][Math.min(3,n-1)]}},
-  {id:'do',x:55.5,y:27.5,name:'Bến đò',when:()=>age()>=8,
-    act:()=>{gain('van',1);gain('vo',1);return'Ông lái đò già ngồi hút thuốc lào, kể chuyện năm bạn ra đời: vua Thái Tông cùng Thái tử ngự lâu thuyền xuôi dòng, đánh tan quân Mông Cổ ở bến Đông Bộ Đầu. "Thuyền của ta khi ấy cũng chở quân đấy," ông cười.'+src('vua Trần Thái Tông cùng Thái tử ngự lâu thuyền tiến đến bến Đông Bộ Đầu, phá tan quân Mông Cổ.')}},
+  {id:'do',x:55.5,y:27.5,name:'Bến đò cũ',when:()=>age()>=8,
+    act:()=>{practice('boi');return'Bến đò nhỏ trên sông Tô Lịch giờ vắng khách, chỉ còn lũ trẻ tắm sông. Chúng bảo ông lái đò già đã ra mở bến bên sông Hồng, phía đông làng, ngay dưới chân đê. Bạn lội xuống tắm cùng một lúc.'}},
 ];
 
 const visible=p=>(!p.when||p.when())&&(p.ready?p.ready():!S.found[p.id]);

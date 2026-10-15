@@ -496,7 +496,7 @@
     const fresh = (o) => { d.setS(Object.assign(d.newState('Thử'), {year: 1268, season: 1, quests: {hoc: 'done', trau: 'done'}}, o)); d.startPlay(false); while (d.modalOpen) d.nextModal(); d.closeDialog(); };
     const press = (p) => { d.S.x = p.x; d.S.y = p.y; d.step(DT); ev('e', true); ev('e', false); const ok = d.modalOpen; const txt = ok ? document.querySelector('#modal').innerText : ''; while (d.modalOpen) d.nextModal(); d.closeDialog(); return txt; };
     const want = {tien: S => S.tien >= 8, thuoc: S => S.items.includes('Lá thuốc'), de: S => S.items.includes('Dế chọi'), bia: S => S.van === 32,
-      kiem: S => S.items.includes('Kiếm gỉ'), thuyen: S => S.suc === 3, to: S => S.duc === 1, soi: S => S.items.includes('Sỏi trắng'), do: S => S.van === 31 && S.vo === 1};
+      kiem: S => S.items.includes('Kiếm gỉ'), thuyen: S => S.suc === 3, to: S => S.duc === 1, soi: S => S.items.includes('Sỏi trắng'), do: S => (S.nghe || {}).boi === 1};   // bến đò cũ: tắm sông với lũ trẻ (ông lái đò ra sông Hồng, xem cheo.js)
     for (const p of d.SPOTS) {
       if (p.quest) continue;
       fresh({van: p.id === 'bia' || p.id === 'do' ? 30 : 0, suc: p.id === 'thuyen' ? 2 : 4, year: p.id === 'kiem' ? 1270 : 1268});
@@ -719,16 +719,24 @@
     if (d.S.tieng > d.stats.TIENG_FF_CAP) errs.push(`ở nhà lo việc làng mà Tiếng lên ${d.S.tieng}`);
     // Sức theo thể trạng
     for (const [the, want] of [[30, 3], [55, 4], [80, 5]]) { fresh({the}); season(); if (d.S.suc !== want) errs.push(`thể trạng ${the}: mỗi mùa ${d.S.suc} Sức, mong ${want}`); }
-    // nghề rèn: phụ bác thợ rèn 4 mùa thì biết nghề, giáo rẻ hơn
-    fresh({year: 1279, tien: 50});
-    for (let i = 0; i < 4; i++) { d.talkRen(); if (!choose('Phụ bác quai búa')) errs.push(`mùa ${i + 1}: không phụ được thợ rèn`); closeDialog(); season(); }
-    if (!d.nghe.knows('ren')) errs.push('phụ thợ rèn bốn mùa mà chưa biết nghề rèn');
+    // nghề rèn: quai búa đúng nhịp sáu mùa thì biết nghề, giáo rẻ hơn; quai lệch nhịp thì không tính
+    const ren = (lv) => { d.talkRen(); const ok = choose('Phụ bác quai búa'); window.__bots.dailyAuto(lv); d.dailyFlush(); while (d.modalOpen) d.nextModal(); d.closeDialog(); season(); return ok; };
+    fresh({year: 1279, tien: 50}); ren('kém'); ren('kém');
+    if ((d.S.nghe || {}).ren) errs.push(`quai búa lệch nhịp mà vẫn tính vào nghề rèn (${d.S.nghe.ren})`);
+    for (let i = 0; i < d.nghe.NGHE.ren.need; i++) if (!ren('giỏi')) errs.push(`mùa ${i + 1}: không phụ được thợ rèn`);
+    if (!d.nghe.knows('ren')) errs.push(`phụ thợ rèn ${d.nghe.NGHE.ren.need} mùa đúng nhịp mà chưa biết nghề rèn (${(d.S.nghe || {}).ren})`);
     d.S.year = 1283; const t0 = d.S.tien; d.talkRen(); choose('Rèn giáo'); closeDialog();
     if (t0 - d.S.tien !== 7) errs.push(`biết nghề rèn mà rèn giáo mất ${t0 - d.S.tien} quan (mong 7)`);
-    // chèo thuyền: giúp ông lái đò mỗi mùa một lần
-    fresh({year: 1272, found: {do: 1270}}); const spot = d.SPOTS.find(p => p.id === 'cheo');
-    for (let i = 0; i < 4; i++) { d.S.x = spot.x; d.S.y = spot.y; d.step(DT); ev('e', true); ev('e', false); while (d.modalOpen) d.nextModal(); d.closeDialog(); season(); }
-    if (!d.nghe.knows('cheo')) errs.push(`giúp ông lái đò bốn mùa mà chưa biết chèo thuyền (tiến độ ${(d.S.nghe || {}).cheo})`);
+    // chèo thuyền: cầm chèo cho ông lái đò sông Hồng mỗi mùa một chuyến; buông chèo (hết giờ) thì không tính
+    const cheo = (bot) => { d.cheo.talkLaiDo(); while (d.modalOpen) d.nextModal(); if (!d.dialogOpen) d.cheo.talkLaiDo(); if (!choose('chèo')) { errs.push('ông lái đò không cho cầm chèo'); return; }
+      if (!d.MG || d.MG.type !== 'cheo') { errs.push('không vào được màn chèo đò'); return; }
+      if (bot) window.__bots.cheoBot(bot); else { const M = d.MG; for (let t = 0; t < 120 && d.MG === M; t += DT) d.step(DT); }
+      while (d.modalOpen) d.nextModal(); d.closeDialog(); season(); };
+    fresh({year: 1272}); cheo(null);
+    if ((d.S.nghe || {}).cheo) errs.push('buông chèo cả chuyến mà vẫn tính vào nghề chèo thuyền');
+    for (let i = 0; i < 4; i++) cheo('khá');
+    if (!d.nghe.knows('cheo')) errs.push(`chèo bốn chuyến (bot khá) mà chưa biết chèo thuyền (tiến độ ${(d.S.nghe || {}).cheo})`);
+    if (Math.abs(d.S.x - d.cheo.SHORE_W[0]) > 2) errs.push(`chèo xong mà không về bến làng (${d.S.x.toFixed(1)}, ${d.S.y.toFixed(1)})`);
     // Văn 50: viết đơn cho làng
     fresh({van: 50, year: 1276}); d.talkLy(); if (!choose('Viết đơn')) errs.push('Văn 50 mà cụ xã không cho viết đơn'); closeDialog();
     if (!d.S.flags.don || d.S.tieng < 5) errs.push('viết đơn mà không ghi cờ hoặc không thêm Tiếng');
@@ -739,7 +747,7 @@
     if (!/Chỉ đường/.test(document.getElementById('prompt').innerText)) errs.push(`Đức 25: đứng cạnh mẹ mà không chỉ đường được ("${document.getElementById('prompt').innerText}")`);
     d.setMG(null); M = night({duc: 0}); d.S.x = M.v.find(p => p.id === 'me').x + .4; d.S.y = M.v.find(p => p.id === 'me').y; d.step(DT);
     if (/Chỉ đường/.test(document.getElementById('prompt').innerText)) errs.push('Đức 0 (đường nông) mà vẫn chỉ đường được');
-    d.setMG(null); M = night({nghe: {thuoc: 5}}); M.spawnT = 1e9; M.hp = 1; d.S.x = 20; d.S.y = 60; run(4);
+    d.setMG(null); M = night({nghe: {thuoc: d.nghe.NGHE.thuoc.need}}); M.spawnT = 1e9; M.hp = 1; d.S.x = 20; d.S.y = 60; run(4);
     if (M.hp !== 2) errs.push(`biết thuốc nam mà còn 1 máu không tự băng bó (máu ${M.hp})`);
     d.setMG(null); document.body.classList.remove('mg');
     // bản lưu cũ (chưa tách Đức, Tiếng)

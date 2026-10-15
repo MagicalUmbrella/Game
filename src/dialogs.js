@@ -71,7 +71,10 @@ export function talkVo(){
   say('Lão võ sư Hoàng',dv>=3?'Trò luyện trai làng thành đội ra dáng lắm. Võ truyền đi được thì làng mới vững.':S.path==='vo'?'Hương binh thì phải luyện mỗi ngày. Người phương bắc chưa bao giờ thôi dòm ngó nước ta.':'Võ không phải để bắt nạt người. Võ để giữ làng, giữ nước.',ch);
 }
 export function talkSu(){const now=S.year*4+S.season,done=S.chua===now;say('Sư cụ','A Di Đà Phật. Chùa nhỏ nhưng cửa luôn mở. Con có muốn ngồi nghe kinh một lát không?',[{label:'Thắp hương, nghe giảng',note:done?'mùa này đã đến':S.duc>=DUC_CHUA_CAP?'−1 Sức · lòng nhẹ nhõm':'−1 Sức · +1 Đức · mỗi mùa một lần',disabled:done,fn:()=>{if(!spend())return;S.chua=now;if(S.duc<DUC_CHUA_CAP)gain('duc',1);toast(pickR(['Sư cụ giảng về lòng từ bi.','Bạn quét sân chùa, lòng nhẹ nhõm.','Tiếng chuông chiều vang khắp xóm.']))}},
-  ...(age()>=12&&!knows('thuoc')?[{label:'Học sư cụ cách dùng cây thuốc',note:done?'mùa này đã đến':'−1 Sức · học nghề thuốc nam',disabled:done,fn:()=>{if(!spend())return;S.chua=now;practice('thuoc');toast(pickR(['Sư cụ chỉ cho bạn lá ngải cứu, lá tía tô, cách sắc thuốc giải cảm.','Sư cụ dạy bạn đắp lá giã nát lên vết thương cho cầm máu.','Bạn theo sư cụ ra vườn chùa nhận mặt từng loại lá.']),4600)}}]:[])])}
+  ...(age()>=12&&!knows('thuoc')?[{label:'Học sư cụ cách dùng cây thuốc',note:done?'mùa này đã đến':'−1 Sức · học nghề thuốc nam',disabled:done,fn:()=>{if(!spend())return;S.chua=now;
+    // nhớ đúng thứ tự cây sư cụ chỉ mới tính một bước nghề
+    startWriting(q=>{if(q>=1){practice('thuoc');toast(pickR(['Sư cụ chỉ cho bạn lá ngải cứu, lá tía tô, cách sắc thuốc giải cảm.','Sư cụ dạy bạn đắp lá giã nát lên vết thương cho cầm máu.','Bạn theo sư cụ ra vườn chùa nhận mặt từng loại lá.']),4600)}else toast('Bạn nhầm lá ngải với lá cúc tần. Sư cụ cười: "Mai lại ra vườn." (chưa tính vào nghề)',4600)},
+      {title:'Nhận mặt cây thuốc',kicker:'Vườn thuốc nhà chùa',intro:'Sư cụ chỉ lần lượt từng luống cây thuốc. Nhớ thứ tự hướng sư cụ chỉ, rồi đi lại đúng thứ tự bằng <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>. Đạt từ khá trở lên mới tính vào nghề.'})}}]:[])])}
 export function talkBaTu(){
   if(!S.quests.ca){startQuest('ca');return say('Bà Tư',age()<14?'Cháu ngoan. Bà già rồi, không ra sông được, thèm bát canh cá quá. Cháu câu giúp bà một con nhé.':'Anh ơi, bà già rồi, không ra sông được, thèm bát canh cá quá. Anh câu giúp bà một con nhé.')}
   if(S.quests.ca==='active'&&has('Cá')){S.items.splice(S.items.indexOf('Cá'),1);doneQuest('ca');gain('duc',2);gain('tien',1);S.rel.thao++;return say('Bà Tư','Ôi con cá rô to quá! Bà nấu canh chua ngay. '+(age()<14?'Cầm quan tiền này mua kẹo nhé.':'Bà gửi quan tiền, anh cầm lấy cho bà vui.'))}
@@ -116,8 +119,10 @@ export function talkSach(){
 }
 export function talkRen(){if(age()<14)return say('Bác thợ rèn','Lò rèn nóng lắm, nhóc đứng xa ra! Lớn lên rồi hãy quay lại.');
   const pc=prepChoice('giao'),rk=has('Kiếm gỉ')&&!has('Kiếm sắt')?[{label:knows('ren')?'Tự rèn lại thanh kiếm gỉ':'Rèn lại thanh kiếm gỉ',note:knows('ren')?'biết nghề rèn · không mất tiền':'3 quan · thành kiếm sắt',disabled:!knows('ren')&&S.tien<3,fn:()=>{if(!knows('ren'))S.tien-=3;S.items.splice(S.items.indexOf('Kiếm gỉ'),1);S.items.push('Kiếm sắt');S.flags.kiemRen=true;renderHUD();toast('Bác thợ rèn nung đỏ, quai búa cả buổi. Thanh kiếm gỉ sáng loáng trở lại.')}}]:[];say('Bác thợ rèn',pc?'Nghe tin giặc, làng nào cũng đặt rèn giáo. Làng mình có góp không, cậu?':'Thanh kiếm này rèn từ sắt tốt, tôi đi tôi lại cả tháng trời.',[{label:'Mua kiếm sắt',note:'8 quan · đánh mạnh hơn',disabled:S.tien<8||has('Kiếm sắt'),fn:()=>{S.tien-=8;S.items.push('Kiếm sắt');renderHUD();toast('Mỗi lần luyện võ được thêm 1 Võ, và khi đánh nhau ra đòn mạnh hơn.')}},...rk,...(pc?[pc]:[]),
-    ...(!knows('ren')?[{label:'Phụ bác quai búa',note:S.renAt===S.year*4+S.season?'mùa này đã phụ':'−1 Sức · +1 quan · học nghề rèn',disabled:S.renAt===S.year*4+S.season,fn:()=>{if(!spend())return;S.renAt=S.year*4+S.season;gain('tien',1);practice('ren');
-      toast(['Bạn kéo bễ cả buổi, mồ hôi chảy ròng ròng.','Bác thợ rèn cho bạn cầm búa con, gõ theo nhịp búa tạ.','Bạn học cách nhìn màu sắt nung mà biết lúc nào đem tôi.','Bác khen: "Tay cậu chắc rồi đấy. Nghề này cậu theo được."'][Math.min(3,(S.nghe.ren||1)-1)],4200)}}]:[])])}
+    ...(!knows('ren')?[{label:'Phụ bác quai búa',note:S.renAt===S.year*4+S.season?'mùa này đã phụ':'−1 Sức · +1 quan · học nghề rèn',disabled:S.renAt===S.year*4+S.season,fn:()=>{if(!spend())return;S.renAt=S.year*4+S.season;gain('tien',1);
+      // quai búa đúng nhịp búa tạ của bác thợ mới tính một bước nghề (vùng sáng hẹp, không theo Võ)
+      startDrill(q=>{if(q>=1){practice('ren');toast(['Bạn gõ búa con theo nhịp búa tạ, không lệch nhát nào.','Bác thợ rèn gật đầu: "Nghe tiếng búa là biết tay có nghề."','Bạn học cách nhìn màu sắt nung mà biết lúc nào đem tôi.','Bác khen: "Tay cậu chắc rồi đấy. Nghề này cậu theo được."','Bạn tự tay tôi một lưỡi liềm.','Bác giao cho bạn rèn nguyên một lưỡi cuốc.'][Math.min(5,(S.nghe.ren||1)-1)],4200)}else toast('Búa lệch nhịp, tóe lửa ra ngoài. Bác thợ rèn lắc đầu: "Hôm nay kéo bễ thôi." (chưa tính vào nghề)',4600)},
+        {title:'Quai búa',kicker:'Phụ bác thợ rèn',zw:40,intro:'Bác thợ rèn nện búa tạ, bạn gõ búa con theo. Bấm <kbd>Space</kbd> hoặc <kbd>E</kbd> khi đầu búa ở vùng sáng trên đe. Đạt từ khá trở lên mới tính vào nghề.'})}}]:[])])}
 export function talkTong(){
   say('Lái buôn người Tống','Nhà tôi vượt biển sang đây, được vua cho ở phường Nhai Tuân này. Tôi bán vải lụa và thuốc bắc.',[
     {label:'Mua thuốc bổ',note:S.tonic?'mùa này đã mua':'5 quan · +2 Sức · khỏe lên · mỗi mùa một lần',disabled:S.tien<5||S.tonic,fn:()=>{S.tien-=5;S.tonic=true;gainThe(2,85);S.suc=Math.min(sucMax(),S.suc+2);renderHUD();floatText('+2 Sức','#9fcaa9')}},
@@ -129,7 +134,7 @@ export function talkHocQuan(){
   say('Học quan','Quốc học viện lập từ năm Quý Sửu (1253), thờ Khổng Tử, Chu Công, Mạnh Tử, giảng Tứ thư, Lục kinh. Muốn vào học phải giỏi chữ trước đã.');
 }
 export function talkVoQuan(){
-  if(S.path==='vo')return say('Võ quan','Giảng võ đường lập cùng năm với Quốc học viện. Hương binh giỏi thì được luyện ở đây.',(()=>{const luyen=k=>startDrill(q=>{gain('vo',k*dailyReward(4+(has('Kiếm sắt')?1:0),q,5/6));practice('ngua',k);toast(voLesson())});return[{label:'Luyện tại Giảng võ đường',note:'−1 Sức · +4 Võ · học cưỡi ngựa',fn:()=>{if(!spend())return;luyen(1)}},...allSuc('Luyện',luyen)]})());
+  if(S.path==='vo')return say('Võ quan','Giảng võ đường lập cùng năm với Quốc học viện. Hương binh giỏi thì được luyện ở đây.',(()=>{const luyen=k=>startDrill(q=>{gain('vo',k*dailyReward(4+(has('Kiếm sắt')?1:0),q,5/6));if(q>=1)practice('ngua',k);toast(voLesson())});return[{label:'Luyện tại Giảng võ đường',note:'−1 Sức · +4 Võ · học cưỡi ngựa',fn:()=>{if(!spend())return;luyen(1)}},...allSuc('Luyện',luyen)]})());
   say('Võ quan','Giảng võ đường lập mùa thu năm Quý Sửu (1253). Chỉ người đã vào quân mới được luyện ở đây.');
 }
 export function talkNgu(){
@@ -196,8 +201,8 @@ export function fastForward(k){let n=0;
     else if(k==='tien')S.tien+=Math.round((S.path==='nong'?3+fieldBonus():2)*part);else if(S.tieng<TIENG_FF_CAP&&Math.random()<part)S.tieng=Math.min(TIENG_FF_CAP,S.tieng+2)
     n++;advanceOne();if(modalOpen||S.ended)break}
   toast(`${n} mùa trôi qua. Bây giờ là ${SEASONS[S.season].toLowerCase()} năm ${canchi(S.year)} (${S.year}), bạn ${age()} tuổi.`,4600);save();renderHUD()}
-export function fishAction(){if(!spend())return;practice('boi');
-  startFishing(q=>{const ok=q==null?Math.random()<.5:q>=1;
+export function fishAction(){if(!spend())return;
+  startFishing(q=>{const ok=q==null?Math.random()<.5:q>=1;if(ok)practice('boi');   // lội xuống gỡ cá mới tính vào nghề bơi
     if(!ok)return toast(q==null?'Ngồi cả buổi mà cá không cắn câu.':'Lần sau canh phao kỹ hơn.');
     if(S.quests.ca==='active'&&!has('Cá')){S.items.push('Cá');renderHUD();toast('Bạn câu được một con cá rô. Mang cho bà Tư thôi!')}
     else if(q===1&&Math.random()<.25){gain('tien',2);toast('Một con cá chép to! Đem bán được hai quan.')}

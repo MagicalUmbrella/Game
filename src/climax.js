@@ -49,7 +49,7 @@ const bossHp=()=>{const d=pDmg();return d>1?10+2*d:11};
 /* Độ khó (chỉnh bằng bảng bot trong npm test): số giặc tụ ở bờ bắc hồi 1 (STAGE_MAX, cứ STAGE_GAP giây một tên),
    số giặc tối đa hồi 2 (RAID_MAX), khoảng cách giữa hai lần thêm giặc (raidGap), tỉ lệ lính kỵ (KY), tốc độ giặc,
    thời gian bạn không bị đánh tiếp sau một đòn (HIT_INV). */
-const STAGE_MAX=5,STAGE_GAP=4,RAID_MAX=10,EN_HP=3,KY=.3,FOOT_SP=2.35,KY_SP=3.1,HIT_INV=.9;
+const STAGE_MAX=5,STAGE_GAP=4,RAID_MAX=10,EN_HP=3,GUARD_MAX=6,KY=.3,FOOT_SP=2.35,KY_SP=3.1,HIT_INV=.9;
 /* càng nhiều người đứng ra đánh cùng bạn, giặc kéo đến càng đông: cứ hai người thêm một tên */
 const raidMax=M=>RAID_MAX+Math.floor(M.al.filter(a=>!a.quan).length/2);
 const raidGap=t=>Math.max(1.9,3.8-(ACT2-t)*.022);
@@ -199,7 +199,9 @@ function startAct3(){const M=MG;M.act=3;M.banner={act:3,t:3.4};M.shake=Math.max(
   M.boss=b;M.en.push(b);
   if(outside)say(ti,'Cứu cháu với! Mẹ ơi!',4);
   else{ti.st='hostage';b.cap=ti;b.st='toDinh';ti.x=b.x+.45;ti.y=b.y+.15}   // mọi người đã vào rừng: hắn lôi được cu Tí từ nhà cháy
-  for(let i=0;i<(S.path==='vo'?3:1);i++){const g=spawnEnemy(false);g.x=53.5+i*.7;g.y=21.4;g.home=[53.5,21.8];g.guard=true}
+  // đám lính đi kèm tên đầu toán: 2, đường võ thêm 2, cứ hai người cùng đánh với bạn thêm 1, tối đa GUARD_MAX
+  const nG=Math.min(GUARD_MAX,2+(S.path==='vo'?2:0)+Math.floor(M.al.filter(a=>!a.quan).length/2));
+  for(let i=0;i<nG;i++){const g=spawnEnemy(false);g.x=53.5+(i%3-1)*.7;g.y=21.4-Math.floor(i/3)*.7;g.home=[53.5,21.8];g.guard=true;g.slot=i*Math.PI*2/nG;g.hp=Math.max(g.hp,EN_HP+1)}   // lính thân tín: lì đòn như lính kỵ
   if(outside){say(b,'Bắt lấy một đứa! Ta sẽ bắt cả làng này phải ra nộp mình!',4);toast('Tù và giặc gọi quân rút. Nhưng tên đầu toán vượt sông, đi tìm người làm con tin! Cu Tí nhà bên còn kẹt trong xóm.',5600)}
   else{say(ti,'Chú ơi! Cứu cháu!',4);toast('Tù và giặc gọi quân rút. Nhưng tên đầu toán vượt sông, tay lôi theo cu Tí nhà bên vừa bắt được trong xóm cháy!',5600)}}
 function bossSeek(b){let best=null,bd=1e9;for(const p of MG.v)if(liveOut(p)){const d=Math.hypot(p.x-b.x,p.y-b.y);if(d<bd){bd=d;best=p}}return best}
@@ -283,7 +285,9 @@ function clUpdate(dt){
         // bạn đã vào rừng thì giặc thôi đuổi (giặc không dám theo vào rừng)
         if(!inZone(S.x,S.y)&&(!tg||Math.hypot(S.x-e.x,S.y-e.y)<best*1.2))tg={x:S.x,y:S.y};
         // tên canh con tin (hồi 3) đứng quanh sân đình
-        if(e.guard&&M.boss&&!M.boss.dead&&M.boss.st==='hold'&&Math.hypot(S.x-e.x,S.y-e.y)>4)tg=around({x:DINH[0],y:DINH[1]},e,1.4);
+        // lính kèm tên đầu toán (hồi 3): vây quanh hắn khi hắn đi bắt người, đứng quanh sân đình khi hắn giữ con tin;
+        // bạn tới gần thì xông ra đánh
+        if(e.guard&&M.boss&&!M.boss.dead&&Math.hypot(S.x-e.x,S.y-e.y)>3.2)tg=M.boss.st==='hold'?around({x:DINH[0],y:DINH[1]},e,1.6,.25):around(M.boss,e,1.3,.5);
         for(const a of M.al)if(!a.down&&!inZone(a.x,a.y)&&Math.hypot(a.x-e.x,a.y-e.y)<1.2)tg=a}
       if(!tg){ // không còn ai ngoài rừng để đuổi: đi lục lọi trong làng, dừng lại một lúc ở mỗi chỗ
         if(!e.loot)e.loot=pickLoot(e);

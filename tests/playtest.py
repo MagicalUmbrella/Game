@@ -60,6 +60,7 @@ STEP = """(r) => {
   if(M){ // lụt, đêm giặc: bot dịch chuyển chơi bằng luật thật, lúc cố hết sức, lúc bỏ dở
     if(M.type==='escort'||M.type==='camp'){ for(let i=0;i<6000&&D.MG&&(D.MG.type==='escort'||D.MG.type==='camp')&&!D.modalOpen;i++) D.step(0.05); }   // bị giải đi, trong trại: đứng yên, lính lôi đi
     else if(M.type==='climax') __bots.climaxTeleport(r<.5);
+    else if(M.type==='cheo') __bots.cheoBot(['giỏi','khá','kém'][rnd(3)]);
     else if(['dich','sau','kien','cuop'].includes(M.type)) __bots.goalBot(['giỏi','khá','kém'][rnd(3)], x=>r<.5?/Sổ ruộng|vắng làng/.test(x):/khóc|Cột mốc|Biên nhận/.test(x));
     else __bots.floodTeleport(r<.6);
     return 'mg';
