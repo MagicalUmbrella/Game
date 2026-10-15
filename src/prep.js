@@ -2,12 +2,13 @@
 /* Hư cấu cấp làng. Từ khi có tin Toa Đô (thu 1282) đến hết năm 1284, có ba việc tốn tiền để lo trước.
    Mỗi việc ghi một cờ S.flags[id], có hậu quả trong đêm 1285 (prepClimax, gọi từ startClimax) và một
    dòng trong biên niên (prepChronicle). Người chơi thường chỉ đủ tiền cho một, hai việc. */
+import {lanCut} from './chuc.js';
 import {S} from './state.js';
 import {doneQuest,renderHUD,toast} from './ui.js';
 import {knows} from './nghe.js';
 
 export const PREP={
-  lan:{cost:12,label:'Góp tiền dựng lán trong rừng',note:'bà Tư, bé Sen lánh vào rừng trước',
+  lan:{cost:()=>lanCut()||12,label:'Góp tiền dựng lán trong rừng',note:'bà Tư, bé Sen lánh vào rừng trước',
     done:'Trai làng dựng mấy gian lán ở bìa rừng tây nam. Có biến thì người già, trẻ nhỏ lánh vào trước.'},
   giao:{cost:()=>knows('ren')?4:10,label:'Rèn giáo cho trai làng',note:'trai làng đứng ra sẽ có giáo, đánh mạnh hơn',
     done:'Bác thợ rèn rèn một bó giáo. Đêm giặc đến, trai làng nào đứng ra sẽ có giáo trong tay.'},

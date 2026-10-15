@@ -1,4 +1,5 @@
 /* ================= UI ================= */
+import {chucName} from './chuc.js';
 import {$,SEASONS,canchi} from './constants.js';
 import {QUESTS,S,age} from './state.js';
 import {REGIONS,regionId} from './world.js';
@@ -51,7 +52,7 @@ let questsMini=false;try{questsMini=localStorage.getItem('dvmd-quests-mini')==='
 export function toggleQuests(){questsMini=!questsMini;try{localStorage.setItem('dvmd-quests-mini',questsMini?'1':'0')}catch(e){}renderHUD()}
 export function renderHUD(){
   if(!S)return;const a=age();
-  const pathName={van:S.dothi?'Thái học sinh':'Sĩ tử · Quốc học viện',vo:'Hương binh',nong:'Nhà nông'}[S.path]||'';
+  const pathName=chucName();
   const hearts=n=>Array.from({length:5},(_,i)=>ico(i<Math.min(5,n)?'heart':'heartEmpty',1)).join('');
   const rel=(name,v)=>`<span class="rel">${name} ${typeof v==='string'?v:hearts(v)}</span>`;
   const rels=[S.co==='village'||S.co==='army'?rel('Cò',S.rel.co):'',S.ev.thao&&S.thao!=='gone'?rel('Thảo',S.thao==='wife'?'(vợ)':S.thao==='co'?'(vợ Cò)':S.rel.thao):''].filter(Boolean).join('');

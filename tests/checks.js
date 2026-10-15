@@ -730,7 +730,7 @@
     for (let i = 0; i < 4; i++) { d.S.x = spot.x; d.S.y = spot.y; d.step(DT); ev('e', true); ev('e', false); while (d.modalOpen) d.nextModal(); d.closeDialog(); season(); }
     if (!d.nghe.knows('cheo')) errs.push(`giúp ông lái đò bốn mùa mà chưa biết chèo thuyền (tiến độ ${(d.S.nghe || {}).cheo})`);
     // Văn 50: viết đơn cho làng
-    fresh({van: 50, year: 1276}); d.talkLy(); if (!choose('Viết đơn')) errs.push('Văn 50 mà cụ lý không cho viết đơn'); closeDialog();
+    fresh({van: 50, year: 1276}); d.talkLy(); if (!choose('Viết đơn')) errs.push('Văn 50 mà cụ xã không cho viết đơn'); closeDialog();
     if (!d.S.flags.don || d.S.tieng < 5) errs.push('viết đơn mà không ghi cờ hoặc không thêm Tiếng');
     fresh({van: 49, year: 1276}); d.talkLy(); if (choose('Viết đơn')) errs.push('Văn 49 mà vẫn viết đơn được'); closeDialog();
     // đêm 1285: Đức 25 chỉ đường cho người nhà; thuốc nam tự băng bó; Võ 40 cõng người
@@ -750,5 +750,70 @@
     return {errs, out};
   }
 
-  window.__checks = {statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  /* Thăng tiến: trượt thi chọn đường, dạy học, lại viên, đội trưởng, ruộng nhà, việc làng 1283, bỏ bút theo kiếm,
+     hậu quả đêm 1285 và biên niên. */
+  function career() {
+    const d = D(), errs = [], C = d.chuc;
+    const fresh = (o) => { d.setS(Object.assign(d.newState('Thử'), {year: 1276, season: 0, quests: {hoc: 'done', trau: 'done'}}, o)); d.startPlay(false); while (d.modalOpen) d.nextModal(); d.closeDialog(); };
+    const mchoose = (text) => { const b = [...document.querySelectorAll('#modal .opt')].find(x => x.textContent.includes(text)); if (!b || b.disabled) return false; b.click(); return true; };
+    const flush = () => { while (d.modalOpen) d.nextModal(); d.closeDialog(); };
+    const door = (id) => d.doorAction(d.BUILDINGS.find(b => b.id === id));
+    const hud = () => { d.renderHUD(); return document.getElementById('hud').textContent; };
+    // trượt thi: về làng dạy học
+    fresh({path: 'van', van: 40, flags: {exam: 'fail'}}); C.vanFailChoice();
+    if (!mchoose('Về làng phụ thầy Chu')) errs.push('trượt thi mà không có lựa chọn về làng dạy học'); flush();
+    if (d.S.career.van !== 'day') errs.push(`chọn dạy học mà career.van = ${d.S.career.van}`);
+    if (!/Trợ giáo/.test(hud())) errs.push('dạy học mà bảng trạng thái không ghi Trợ giáo');
+    const t0 = d.S.tieng; door('truong'); if (!choose('Dạy lũ trẻ')) errs.push('trợ giáo mà ở trường làng không dạy được'); closeDialog(); flush();
+    if (d.S.career.hoctro !== 1 || d.S.tieng !== t0 + 2) errs.push(`dạy một buổi: ${d.S.career.hoctro} buổi, Tiếng ${t0}→${d.S.tieng}`);
+    d.S.year = 1281; d.S.season = 2; d.EVENTS.find(e => e.id === 'thaymat').run(); flush();
+    if (!/Thầy đồ làng/.test(hud())) errs.push('thầy Chu mất mà trợ giáo không thành thầy đồ');
+    // lại viên: cần Văn 30, làm việc ở nhà ra tiền
+    fresh({path: 'van', van: 20, flags: {exam: 'fail'}}); C.vanFailChoice();
+    if (mchoose('lại viên')) errs.push('Văn 20 mà vẫn làm lại viên được'); flush();
+    fresh({path: 'van', van: 40, flags: {exam: 'fail'}}); door('home'); if (!choose('trượt thi')) errs.push('bản lưu cũ trượt thi chưa chọn đường: ở nhà không có lựa chọn'); 
+    if (!mchoose('lại viên')) errs.push('Văn 40 mà không làm lại viên được'); flush();
+    let m0 = d.S.tien; door('home'); if (!choose('Lên huyện')) errs.push('lại viên mà ở nhà không lên huyện làm việc được'); closeDialog(); flush();
+    if (d.S.tien !== m0 + 2) errs.push(`lên huyện làm việc: tiền ${m0}→${d.S.tien}`);
+    // võ: đội trưởng
+    for (const [o, want] of [[{flags: {train: 'top'}, vo: 30}, true], [{flags: {train: 'ok'}, vo: 50, tieng: 30}, true], [{flags: {train: 'ok'}, vo: 40, tieng: 30}, false], [{flags: {train: 'low'}, vo: 80, tieng: 80}, false]]) {
+      fresh(Object.assign({path: 'vo', year: 1283, season: 3}, o)); C.trainPromote(); flush();
+      if (d.S.career.doi !== want) errs.push(`tập trận ${o.flags.train}, Võ ${o.vo}, Tiếng ${o.tieng || 0}: đội trưởng ${d.S.career.doi}, mong ${want}`);
+    }
+    fresh({path: 'vo', year: 1284, vo: 30, career: Object.assign(C.newCareer(), {doi: true})}); d.talkVo();
+    if (!choose('Luyện trai làng')) errs.push('đội trưởng mà không luyện trai làng thành đội được'); closeDialog(); flush();
+    // nông: mua ruộng, mỗi mùa một thửa; làm đồng nhiều ruộng được thêm tiền; thu hoạch mùa thu
+    fresh({path: 'nong', year: 1278, tien: 100}); d.talkLy(); if (!choose('Mua thêm một thửa')) errs.push('đường nông mà cụ xã không bán ruộng'); closeDialog(); flush();
+    d.talkLy(); if (choose('Mua thêm một thửa')) errs.push('một mùa mua được hai thửa ruộng'); closeDialog(); flush();
+    if (d.S.career.ruong !== 3 || d.S.tien !== 94) errs.push(`mua ruộng: ${d.S.career.ruong} thửa, còn ${d.S.tien} quan (mong 3 thửa, 94 quan)`);
+    fresh({path: 'van', year: 1278, tien: 100}); d.talkLy(); if (choose('Mua thêm một thửa')) errs.push('đường văn mà mua được ruộng'); closeDialog(); flush();
+    fresh({path: 'nong', year: 1278, season: 2, tien: 0, career: Object.assign(C.newCareer(), {ruong: 6})}); d.advanceOne(); flush();
+    if (d.S.tien < 2) errs.push(`sáu thửa ruộng mà thu hoạch mùa thu chỉ được ${d.S.tien} quan`);
+    if (!/nhiều ruộng/.test(hud())) errs.push('sáu thửa ruộng mà bảng trạng thái không đổi danh vị');
+    // việc làng 1283
+    const xa = d.EVENTS.find(e => e.id === 'xachinh');
+    fresh({path: 'nong', year: 1283, tieng: 35, duc: 10}); xa.run(); mchoose('Ra nhận'); flush();
+    if (d.S.career.xa !== 'win') errs.push(`đường nông Tiếng 35 Đức 10 mà không được chọn (điểm ${C.xaScore()})`);
+    if (d.prepCost('lan') !== 6) errs.push(`làm xã chính mà dựng lán vẫn ${d.prepCost('lan')} quan`);
+    fresh({path: 'vo', year: 1283, tieng: 10}); xa.run(); mchoose('Ra nhận'); flush();
+    if (d.S.career.xa !== 'lose') errs.push('Tiếng 10 mà vẫn được chọn');
+    if (d.prepCost('lan') !== 12) errs.push('không làm xã chính mà dựng lán rẻ đi');
+    // bỏ bút theo kiếm
+    fresh({path: 'van', year: 1283, season: 3, vo: 20}); d.EVENTS.find(e => e.id === 'tietche').run();
+    if (!mchoose('Bỏ bút')) errs.push('đường văn Võ 20 mà không bỏ bút theo kiếm được');
+    if (d.S.path !== 'vo' || !d.MG || d.MG.type !== 'timing') errs.push(`bỏ bút theo kiếm: đường ${d.S.path}, màn chơi ${d.MG && d.MG.type}`);
+    d.setMG(null); document.body.classList.remove('mg'); flush();
+    // đêm 1285: đội trưởng, xã chính thêm trai làng
+    const night = (c) => { d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, path: 'vo', co: 'army', cha: true, tieng: 20, quests: {trau: 'done'}, career: Object.assign(C.newCareer(), c)})); d.startClimax(); const n = d.MG.al.filter(a => a.id.startsWith('trai')).length; d.setMG(null); document.body.classList.remove('mg'); return n; };
+    const n0 = night({}), n1 = night({doi: true}), n2 = night({doi: true, xa: 'win'});
+    if (n1 !== n0 + 1 || n2 !== n0 + 2) errs.push(`trai làng đêm 1285: thường ${n0}, đội trưởng ${n1}, thêm xã chính ${n2}`);
+    // biên niên
+    d.setS(Object.assign(d.newState('Thử'), {year: 1285, path: 'nong', career: Object.assign(C.newCareer(), {ruong: 4, xa: 'win'})}));
+    const L = C.careerChronicle().join(' ');
+    if (!/4 thửa/.test(L) || !/xã chính/.test(L)) errs.push(`biên niên thiếu dòng thăng tiến: "${L}"`);
+    flush();
+    return {errs, trai: [n0, n1, n2]};
+  }
+
+  window.__checks = {career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();

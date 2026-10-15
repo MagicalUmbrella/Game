@@ -12,7 +12,7 @@ export const QUESTS={
   trau:{title:'Con trâu lạc',hint:'Lần theo dấu chân trâu từ ruộng vào rừng phía tây. Nghe tiếng mõ trâu để biết gần hay xa. Lại gần thì đi chậm, đừng giữ Shift kẻo trâu giật mình chạy mất. Dắt về thì trâu hay dừng gặm cỏ, bấm E để kéo thừng.'},
   ca:{title:'Bát canh cá',hint:'Đứng sát mép sông, quay mặt ra nước, bấm E để câu cá, rồi mang cho bà Tư.'},
   sach:{title:'Bộ Tứ thư cho thầy',hint:'Lên kinh thành Thăng Long (phía bắc, qua cầu), mua ở Hàng sách. Biếu thầy thì kỳ thi sau này dễ hơn.'},
-  lo:{title:'Lo trước ngày giặc đến',hint:'Từ nay đến hết năm 1284, có tiền thì lo trước cho đêm giặc đến: góp tiền dựng lán trong rừng (cụ lý trưởng, 12 quan), rèn giáo cho trai làng (bác thợ rèn, 10 quan), cất bớt thóc vào rừng (cha, hoặc mẹ nếu cha đã mất; 6 quan).'},
+  lo:{title:'Lo trước ngày giặc đến',hint:'Từ nay đến hết năm 1284, có tiền thì lo trước cho đêm giặc đến: góp tiền dựng lán trong rừng (cụ xã, 12 quan), rèn giáo cho trai làng (bác thợ rèn, 10 quan), cất bớt thóc vào rừng (cha, hoặc mẹ nếu cha đã mất; 6 quan).'},
   cco:{title:'Dạy Cò biết chữ',hint:()=>chainHint('co')},
   cthao:{title:'Mái nhà bà Tư',hint:()=>chainHint('thao')},
   cthay:{title:'Chép sách cho thầy',hint:()=>chainHint('thay')},
@@ -20,7 +20,7 @@ export const QUESTS={
 };
 export function newState(name){return{name,year:1264,season:0,suc:4,van:0,vo:0,duc:0,tieng:0,the:55,nghe:{},statsV:2,tien:3,items:[],quests:{},path:null,ev:{},x:43.5,y:50.4,ate:false,
   buffalo:{x:44.5,y:58.6,st:'pen',tracks:[],bolts:0},nguMet:false,thayBonus:false,dothi:false,ended:false,
-  rel:{co:2,thao:0},flags:{},ducMerged:true,cha:true,thay:true,co:'village',thao:'none',married:false,child:false,thaoHelped:false,coPlayed:false,paper:false,tonic:false,life:{},lifeWait:2,found:{},chains:{},toi:'',pending:null}}
+  rel:{co:2,thao:0},flags:{},ducMerged:true,cha:true,thay:true,co:'village',thao:'none',married:false,child:false,thaoHelped:false,coPlayed:false,paper:false,tonic:false,life:{},lifeWait:2,career:{van:null,hoctro:0,laiN:0,boBut:false,doi:false,ruong:2,mua:0,xa:null},found:{},chains:{},toi:'',pending:null}}
 export function save(){try{localStorage.setItem('dvmd-save',JSON.stringify(S))}catch(e){}}
 export function loadSave(){try{const s=localStorage.getItem('dvmd-save');if(!s)return null;const o=JSON.parse(s),b=newState('');const r=Object.assign(b,o);r.rel=Object.assign(newState('').rel,o.rel||{});r.flags=Object.assign({},o.flags||{});if(!r.buffalo||!r.buffalo.st){r.buffalo={x:44.5,y:58.6,st:'pen',tracks:[],bolts:0};if(r.quests&&r.quests.trau==='active')r._reLose=true}
   // bản lưu cũ còn uy tín làng riêng (flags.lang): quy sang Đức, mỗi điểm uy tín bằng 3 Đức
@@ -28,6 +28,8 @@ export function loadSave(){try{const s=localStorage.getItem('dvmd-save');if(!s)r
   // bản lưu trước khi tách Đức (lòng mình) với Tiếng (uy tín với làng): Đức cũ phần lớn là việc làng nên chuyển sang Tiếng,
   // giữ lại một nửa làm Đức; thể trạng mặc định; nghề đoán theo việc đã làm
   if(!o.statsV){r.tieng=r.duc;r.duc=Math.round(r.duc*.5);r.the=r.flags.daumua==='cham'?50:55;r.nghe={};if(r.found&&r.found.thuoc)r.nghe.thuoc=1;if(r.path==='vo'&&r.year>=1276)r.nghe.ngua=1;r.statsV=2}
+  // bản lưu trước khi có thăng tiến: đứng đầu tập trận thì đã là đội trưởng
+  if(!o.career){r.career.doi=r.path==='vo'&&r.flags.train==='top'}else r.career=Object.assign(newState('').career,o.career);
   // bản lưu cũ đã qua tin Toa Đô mà chưa có việc "Lo trước ngày giặc đến"
   if(r.ev&&r.ev.toado&&!r.quests.lo&&r.year<1285)r.quests.lo='active';
   // bản lưu cũ: việc Tứ thư còn dở khi thầy đã mất, việc lo trước còn dở khi đã sang 1285
@@ -44,7 +46,7 @@ export const NPCS=[
  {id:'batu',name:'Bà Tư',x:52.4,y:49.9,look:{id:'batu'},talk:talkBaTu},
  {id:'thao',name:'Thảo',x:49.3,y:50.6,look:LOOK_THAO,talk:talkThao,show:()=>!!S.ev.thao&&S.thao!=='gone',at:()=>S.thao==='wife'?[47.4,50.7]:S.thao==='co'?[36.4,49.7]:[49.3,50.6]},
  {id:'sen',name:'Bé Sen',x:46.6,y:51.7,look:{id:'sen',kid:true},talk:()=>say('Bé Sen',pickR(['Cha ơi, bế con!','Cha ơi, mẹ Thảo bảo tối nay có canh cua.','Con biết đếm đến mười rồi đấy!'])),show:()=>S.child},
- {id:'ly',name:'Cụ lý trưởng',x:35.8,y:36.9,look:{id:'ly'},talk:talkLy},
+ {id:'ly',name:'Cụ xã',x:35.8,y:36.9,look:{id:'ly'},talk:talkLy},
  {id:'co',name:'Cò',x:38.5,y:45.2,wander:true,home:[38.5,45.2],talk:talkCo,show:()=>S.co==='village'},
  {id:'hsach',name:'Chủ hàng sách',x:39.6,y:15.6,look:{id:'hsach'},talk:talkSach},
  {id:'hren',name:'Bác thợ rèn',x:44.6,y:15.6,look:{id:'hren'},talk:talkRen},

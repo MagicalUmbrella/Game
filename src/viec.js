@@ -6,6 +6,7 @@ import {MG,S,age} from './state.js';
 import {STATS,sucMax} from './stats.js';
 import {NGHE,knows} from './nghe.js';
 import {foundCount,spotTotal} from './explore.js';
+import {RUONG_MAX,ruongCost,vanFailOpen} from './chuc.js';
 
 const now=()=>S.year*4+S.season;
 export function suggestions(){
@@ -19,6 +20,12 @@ export function suggestions(){
   else if(S.path==='nong')add('Làm đồng',`Ra ruộng nhà mình phía nam làng, đứng trên ruộng bấm E. Còn ${S.suc} Sức.`);
   else{if(S.thay)add('Học chữ ở trường làng',`Gặp thầy đồ Chu ở trường làng, phía nam đình. Mỗi buổi −1 Sức, +Văn. Còn ${S.suc} Sức.`);
     if(a>=8)add('Luyện võ ở sân võ','Gặp lão võ sư Hoàng ở sân võ, phía đông bắc làng. Mỗi buổi −1 Sức, +Võ.')}
+  // thăng tiến (chuc.js)
+  const c=S.career||{};
+  if(vanFailOpen())add('Trượt thi rồi, đi đường nào?','Về nhà bấm E ở cửa: ở lại Quốc học viện, về làng dạy học, hoặc làm lại viên ở huyện.');
+  if(S.path==='van'&&c.van==='day')add(S.thay?'Phụ thầy Chu dạy trẻ':'Dạy trẻ ở trường làng',`Vào trường làng (phía nam đình) bấm E. Mỗi buổi −1 Sức, +1 Văn, +2 Tiếng. Đã dạy ${c.hoctro||0} buổi.`);
+  if(S.path==='van'&&c.van==='lai')add('Lên huyện làm việc','Ở nhà bấm E ở cửa: mỗi buổi −1 Sức, +2 quan, +1 Văn.');
+  if(S.path==='nong'&&a>=16&&(c.ruong||2)<RUONG_MAX&&c.mua!==now()&&S.tien>=ruongCost())add('Mua thêm ruộng',`Gặp cụ xã: ${ruongCost()} quan một thửa. Ruộng nhiều thì làm đồng, mùa gặt được thêm tiền.`);
   // nghề đang học dở, mùa này còn học được
   const ngheNext={ren:()=>a>=14&&S.renAt!==now()&&'Phụ bác thợ rèn quai búa (lò rèn trong kinh thành), mỗi mùa một lần.',
     cheo:()=>a>=12&&S.found&&S.found.do!=null&&S.cheoAt!==now()&&'Giúp ông lái đò ở bến sông Tô Lịch chèo đò, mỗi mùa một lần.',
