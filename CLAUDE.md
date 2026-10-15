@@ -222,6 +222,7 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 - Giặc đứng trên ô vừa bén lửa từng kẹt cứng tới khi lửa tàn (`okEnemyFire`: đứng trong lửa thì được bước xuyên ra); giặc bị chắn ở lối hẹp từng đứng im mãi (kẹt hai lần liền thì đi vòng `e.detour` 1,6 giây). Test `combat` canh việc này. Sau khi giặc nhiều máu, đông hơn (10/2026), hai tên rút chạy ngược chiều từng chắn nhau ở lối hẹp: giặc đang rút (`flee`) kẹt 0,7 giây là đi vòng ngay.
 - Đường văn từng gần như luôn ngã xuống ở đêm 1285 (chỉ có 2–3 cây đuốc 7 giây, điểm Văn vô dụng), và ngã xuống khi không có đồng minh từng làm mất hết người chưa cứu. Bảng độ khó trong `npm test` canh lại việc này.
 
+- Màn chơi trong khung (luyện võ…) từng có lúc không ăn phím khi bật bộ gõ tiếng Việt (e.key là 'Process' hoặc chữ có dấu): `input.js` đọc phím theo vị trí (`keyName`, dùng `e.code`); giữ phím (`e.repeat`) không tính là bấm nhiều lần.
 - Bản đồ thế giới: vẽ cả nền một lần từng làm khựng hình (mỗi mảnh 0,1 giây, xếp hàng 36 mảnh); nay vẽ trước chia nhỏ 6 ms một lần. Lời nhắc chạm ranh vùng từng không hiện trong 5 giây đầu (đồng hồ `performance.now()` bắt đầu từ 0, nên mốc chờ đặt `-1e9`).
 
 ## Hướng phát triển tiếp
