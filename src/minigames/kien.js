@@ -14,7 +14,7 @@ import {VW} from '../render.js';
 import {hudBar,hudBox,mark} from './flood.js';
 import {endMG,goalArrow,pickTiles,twinkle} from './chung.js';
 
-export const KIEN={T:80,WIN:5,VAN_HINT:40};
+export const KIEN={T:48,WIN:6,VAN_HINT:40};   // 10/2026: ít giờ hơn, phải đủ hai chứng cứ mạnh nhất (sổ ruộng, người làm chứng vắng làng)
 const DINH={x:34.5,y:36.4};
 /* manh mối: chỗ, lời kể khi xem, chứng cứ có được (w: sức nặng trước làng) */
 function clues(){const moc=pickTiles(43,50,52,52,70,64,(x,y)=>get(x,y)===FI,1,1)[0]||{x:60.5,y:56.5};
