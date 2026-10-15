@@ -35,7 +35,7 @@ export const sucMax=()=>3+(S.the>=40?1:0)+(S.the>=75?1:0);
 /* đổi thể trạng (cap: chỉ tăng tới mức này, ví dụ ăn uống không đưa quá 70) */
 export function gainThe(n,cap=100){const old=S.the;S.the=n>0?Math.max(old,Math.min(cap,old+n)):Math.max(0,old+n);const d=S.the-old;if(d)floatText((d>0?'+':'')+d+' Thể trạng',d>0?'#9fcaa9':'#e07f6b');S.suc=Math.min(S.suc,sucMax());renderHUD()}
 
-const STATS=[
+export const STATS=[
   {k:'van',name:'Văn',marks:[[20,'Đủ vào Quốc học viện năm 16 tuổi'],[25,'Viết được câu đối'],[30,'Đọc được bia đá, giấy tờ cũ'],
     [35,'Đi thi: loại được 1 đáp án sai'],[50,'Viết đơn xin cho làng (gặp cụ lý trưởng)'],[55,'Đi thi: loại được 2 đáp án sai']],
     note:()=>S.path==='van'?'Đường văn, đêm giặc đến: 2 cây đuốc nghi binh, cứ 25 Văn thêm một (tối đa 5), đỗ thêm một.':'Đường văn có thêm đuốc nghi binh theo điểm Văn.'},

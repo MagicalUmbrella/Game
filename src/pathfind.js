@@ -52,3 +52,23 @@ export function stepTo(o,st,m,ok){
   const ax=o.axis,d=step4(o,tx,ty,m);if(ok(Math.floor(o.x+d[0]),Math.floor(o.y+d[1])))return d;
   o.axis=(o.axis||ax)==='x'?'y':'x';const e=step4(o,tx,ty,m);if(ok(Math.floor(o.x+e[0]),Math.floor(o.y+e[1])))return e;
   o.axis=ax;o.path=null;return[0,0]}
+
+/* Đường đi ưu tiên đường sá (cho đoàn người đi theo lối, như đoàn áp giải): Dijkstra trên ô, giá mỗi ô cost(x,y)
+   (đường đất 1, cỏ 3…), chỉ tìm trong khung bao thêm PAD ô. Trả về danh sách tâm ô từ ô xuất phát tới đích (gồm cả hai),
+   hoặc null nếu không tới được. */
+export function roadRoute(sx,sy,gx,gy,ok,cost){
+  stamp++;const bx0=Math.max(0,Math.min(sx,gx)-PAD),bx1=Math.min(W-1,Math.max(sx,gx)+PAD),by0=Math.max(0,Math.min(sy,gy)-PAD),by1=Math.min(H-1,Math.max(sy,gy)+PAD);
+  const dist=new Map(),buckets=[[sy*W+sx]];const s=sy*W+sx,g=gy*W+gx;dist.set(s,0);seen[s]=stamp;prev[s]=-1;
+  for(let c=0;c<buckets.length;c++){const b=buckets[c];if(!b)continue;
+    for(const i of b){if(dist.get(i)!==c)continue;if(i===g){const out=[];for(let j=g;j>=0;j=prev[j])out.push([j%W+.5,((j/W)|0)+.5]);return out.reverse()}
+      const x=i%W,y=(i/W)|0;
+      for(let k=0;k<4;k++){const nx=x+(k===0)-(k===1),ny=y+(k===2)-(k===3);if(nx<bx0||ny<by0||nx>bx1||ny>by1)continue;
+        const j=ny*W+nx;if(!ok(nx,ny)&&j!==g)continue;const nd=c+cost(nx,ny);if(seen[j]===stamp&&dist.get(j)<=nd)continue;
+        seen[j]=stamp;dist.set(j,nd);prev[j]=i;(buckets[nd]||(buckets[nd]=[])).push(j)}}}
+  return null}
+/* Điểm trên đường gấp khúc pts tại quãng đường s (tính từ đầu), kèm hướng đi của đoạn ấy. */
+export function along(pts,s){let acc=0;for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i],L=Math.abs(b[0]-a[0])+Math.abs(b[1]-a[1]);
+    if(s<=acc+L||i===pts.length-1){const u=L?Math.max(0,Math.min(1,(s-acc)/L)):0,dx=b[0]-a[0],dy=b[1]-a[1];
+      return{x:a[0]+dx*u,y:a[1]+dy*u,dir:Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up')}}acc+=L}
+  return{x:pts[0][0],y:pts[0][1],dir:'down'}}
+export const routeLen=pts=>{let L=0;for(let i=1;i<pts.length;i++)L+=Math.abs(pts[i][0]-pts[i-1][0])+Math.abs(pts[i][1]-pts[i-1][1]);return L};

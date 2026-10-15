@@ -5,7 +5,7 @@
    (trốn trại, đốt kho lương, cứu người ở các chuồng tù).
    Tọa độ là ô bản đồ thế giới (src/world.js: CAMP, THUY). */
 import {T,TS,Z,ctx} from './constants.js';
-import {CAMP,THUY,hongX} from './world.js';
+import {CAMP,THUY,hongEW,hongX} from './world.js';
 import {simple} from './sprites.js';
 import {propSprite} from './scenery.js';
 import {Hs,flip} from './pixel.js';
@@ -42,11 +42,11 @@ export const HAY=[[165,7],[165,9]];
 export const POT=[162.5,29.2];
 /* thủy trại: cầu tàu (ô BR do world.js đặt ở y 8 và 16), thuyền chiến neo hai bên, hàng cọc phía bộ */
 export const JETTY_Y=[8,16];
-export const SHIPS=[[85.6,7.15],[85.4,9.9],[85.6,15.15],[85.2,17.9]];
-export const T_TENTS=[{x:94,y:5},{x:94,y:17}];
-export const T_SACKS=[[95.5,9.6],[96.5,9.6],[95.5,10.4],[96.3,14.6],[97.2,14.6]];
-export const T_FIRES=[[93.5,13.9]];
-export const T_FLAGS=[[92.4,9.6],[92.4,14.8]];
+export const SHIPS=[[94.6,7.15],[94.4,9.9],[94.6,15.15],[94.2,17.9]];
+export const T_TENTS=[{x:103,y:5},{x:103,y:17}];
+export const T_SACKS=[[104.5,9.6],[105.5,9.6],[104.5,10.4],[105.3,14.6],[106.2,14.6]];
+export const T_FIRES=[[102.5,13.9]];
+export const T_FLAGS=[[101.4,9.6],[101.4,14.8]];
 export const T_STAKE_X=THUY.x1+1;                                   // hàng cọc phía bộ, chừa lối ở y 11–13
 
 /* Trại có dựng chưa: từ đêm 12 tháng giêng 1285 (đã qua đêm giặc đến làng, hoặc đang bị giải đi). */
@@ -167,7 +167,7 @@ export function drawCamp(list){const x0=Math.floor(camX/T)-1,y0=Math.floor(camY/
       const px=Math.round((TORTURE.x+1.6)*TS),py=Math.round((TORTURE.y+1.55)*TS);tongue(px,py,7,4,11);drawSprite(tableSprite(),TORTURE.x+3,TORTURE.y+1.9)}})}
   if(vis(POT[0],POT[1]))list.push({y:POT[1],f:()=>{campfire(POT[0],POT[1]+.1,21);drawSprite(potSprite(),POT[0],POT[1]-.05)}});
   // thủy trại: cọc cầu tàu, thuyền chiến neo
-  for(const jy of JETTY_Y)for(let x=Math.floor(hongX(jy)+1);x<THUY.x0+2;x++)if(vis(x,jy))for(const dy of [-.08,.98])list.push({y:jy+dy,f:()=>drawSprite(jettyPost(),x+.5,jy+dy+.3)});
+  for(const jy of JETTY_Y)for(let x=Math.floor(hongX(jy)+hongEW(jy)-4);x<THUY.x0+2;x++)if(vis(x,jy))for(const dy of [-.08,.98])list.push({y:jy+dy,f:()=>drawSprite(jettyPost(),x+.5,jy+dy+.3)});
   SHIPS.forEach(([x,y],i)=>{if(vis(x,y,5))list.push({y:y-.5,f:()=>{const bob=reduce?0:Math.round(Math.sin(clock*1.2+i*2));drawSprite(shipSprite(),x,y+bob/TS)}})});
 }
 const flips={};function horseDir(c,fr,dir){const sp=horseSprite(c,fr);if(dir!=='right')return sp;const k=c+'_'+fr;return flips[k]||(flips[k]=flip(sp))}
@@ -175,7 +175,7 @@ const flips={};function horseDir(c,fr,dir){const sp=horseSprite(c,fr);if(dir!=='
 export const BEN_FIRES=[[80.5,11.2],[81,14.6]];
 
 /* ---------- người trong trại (lính tuần, thợ rèn, lính giữ ngựa): vị trí tính theo đồng hồ ---------- */
-const PATROLS=[[[131.5,12.6],[144.5,12.6],[144.5,20.6],[131.5,20.6]],[[154.5,12.6],[167.5,12.6],[167.5,20.6],[154.5,20.6]],[[132.5,30.6],[166.5,30.6]],[[98.5,6.6],[98.5,19.6]]];
+const PATROLS=[[[131.5,12.6],[144.5,12.6],[144.5,20.6],[131.5,20.6]],[[154.5,12.6],[167.5,12.6],[167.5,20.6],[154.5,20.6]],[[132.5,30.6],[166.5,30.6]],[[107.5,6.6],[107.5,19.6]]];
 function along(pts,t){const L=[];let tot=0;const loop=pts.length>2?[...pts,pts[0]]:[...pts,...pts.slice(0,-1).reverse()];
   for(let i=1;i<loop.length;i++){const d=Math.abs(loop[i][0]-loop[i-1][0])+Math.abs(loop[i][1]-loop[i-1][1]);L.push(d);tot+=d}
   let u=(t%tot+tot)%tot;for(let i=0;i<L.length;i++){if(u<=L[i]){const a=loop[i],b=loop[i+1],f=L[i]?u/L[i]:0,dx=b[0]-a[0],dy=b[1]-a[1];

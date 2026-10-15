@@ -622,7 +622,7 @@
         if (Mx.type === 'escort' && Mx.crossed) crossed = true;
         if (Mx.type === 'camp') { camp = true; if (Mx.ev.inspDone) insp = true; if (Mx.kc) kc = true;
           const P = d.trai.PEN; if (Math.floor(S.x) < P.x0 || Math.floor(S.x) > P.x1 || Math.floor(S.y) < P.y0 || Math.floor(S.y) > P.y1) { bad++; where.add(`ra ngoài bãi tù ${S.x.toFixed(1)},${S.y.toFixed(1)}`); } }
-        if (!d.walkable(Math.floor(S.x), Math.floor(S.y))) { bad++; where.add(`${Mx.type} ô cấm ${Math.floor(S.x)},${Math.floor(S.y)}`); }
+        if (!(Mx.type === 'escort' && ['board', 'row', 'land'].includes(Mx.phase)) && !d.walkable(Math.floor(S.x), Math.floor(S.y))) { bad++; where.add(`${Mx.type} ô cấm ${Math.floor(S.x)},${Math.floor(S.y)}`); }
       }
       out.seconds = Math.round(t);
       if (!crossed) errs.push('màn áp giải không tới được bến, không qua sông');
@@ -684,6 +684,13 @@
     while (q.length) { const [x, y] = q.shift(); for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + a, ny = y + b, k = nx + ',' + ny; if (vis.has(k) || !ok(nx, ny) || nx < C.x0 - 2 || nx > C.x1 + 2 || ny < C.y0 - 1 || ny > C.y1 + 2) continue; vis.add(k); q.push([nx, ny]); } }
     for (const [nm, x, y] of [['cửa chuồng tù', T.PEN.door, T.PEN.y0 - 2], ['cổng đông', C.x1, 20], ['cổng nam', 153, C.y1], ['trướng Ô Mã Nhi', Math.floor(T.KC_AT[0]), Math.floor(T.KC_AT[1])]])
       if (!vis.has(x + ',' + y)) errs.push(`trong doanh trại không đi được từ cổng tây tới ${nm} (${x}, ${y})`);
+    // đi đò thật (bến Chương Dương): có cảnh thuyền, tới bờ bên kia
+    S.res = null; const f = wd.FERRIES.find(x => /Chương Dương/.test(x.name)); S.x = f.a[0]; S.y = f.a[1]; d.step(DT);
+    const pr = document.getElementById('prompt').innerText; if (!/Đi đò/.test(pr)) errs.push(`đứng ở bến Chương Dương mà không có lựa chọn đi đò ("${pr}")`);
+    else { ev('e', true); ev('e', false); if (!d.MG || d.MG.type !== 'ferry') errs.push('đi đò mà không có cảnh thuyền');
+      let rowed = false; for (let i = 0; i < 60 * 40 && d.MG; i++) { if (d.MG.phase === 'row') rowed = true; d.step(DT); }
+      if (!rowed) errs.push('cảnh đi đò không có lúc chèo thuyền');
+      if (Math.hypot(S.x - f.b[0], S.y - f.b[1]) > .6) errs.push(`đi đò xong không tới bờ bên kia (${S.x.toFixed(1)}, ${S.y.toFixed(1)})`); }
     // vẽ một mảnh nền mới
     const t0 = performance.now(); d.groundChunk(2, 9, 4); out.chunkMs = Math.round(performance.now() - t0);
     if (out.chunkMs > 1500) errs.push(`vẽ một mảnh nền mất ${out.chunkMs} ms (quá chậm)`);
@@ -697,6 +704,10 @@
     const d = D(), errs = [], out = {};
     const fresh = (o) => { d.setS(Object.assign(d.newState('Thử'), {year: 1276, season: 0, quests: {hoc: 'done', trau: 'done'}}, o)); d.startPlay(false); while (d.modalOpen) d.nextModal(); d.closeDialog(); };
     const season = () => { d.advanceOne(); while (d.modalOpen) d.nextModal(); d.closeDialog(); };
+    // khung việc cần làm: lúc nào cũng có gợi ý việc mùa này; hết Sức thì nhắc về ngủ
+    fresh({}); d.renderHUD(); let q = document.getElementById('quests').innerText;
+    if (!/Mùa này/i.test(q) || !/trường làng|Học chữ/.test(q)) errs.push(`khung việc cần làm không gợi ý việc mùa này ("${q.slice(0, 80)}")`);
+    d.S.suc = 0; d.renderHUD(); q = document.getElementById('quests').innerText; if (!/Hết Sức/.test(q)) errs.push('hết Sức mà khung việc không nhắc về ngủ');
     // giúp việc làng: Tiếng tăng, Đức không
     fresh({}); d.talkLy(); choose('Giúp việc làng'); closeDialog();
     if (d.S.tieng !== 3 || d.S.duc !== 0) errs.push(`giúp việc làng: Tiếng ${d.S.tieng}, Đức ${d.S.duc} (mong Tiếng 3, Đức 0)`);
