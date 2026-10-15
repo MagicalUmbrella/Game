@@ -57,7 +57,7 @@ export function talkThay(){
   ch.push({label:'Học chữ',note:'−1 Sức · tập viết · +Văn',fn:()=>{if(!spend())return;hoc(1)}},...allSuc('Học chữ',hoc));
   ch.push(...chainChoices('thay'));
   if(a>=12&&!S.quests.sach)ch.push({label:'Thầy có cần con giúp gì không?',fn:()=>{startQuest('sach');say('Thầy đồ Chu','Bộ Tứ thư của thầy mối mọt hết rồi. Trong kinh thành có hàng sách bán bản mới, giá sáu quan. Con mua giúp thầy được không?')}});
-  if(S.quests.sach==='active'&&has('Tứ thư'))ch.push({label:'Biếu thầy bộ Tứ thư',fn:()=>{S.items=S.items.filter(i=>i!=='Tứ thư');doneQuest('sach');S.thayBonus=true;gain('van',5);gain('duc',1);say('Thầy đồ Chu','Quý hóa quá! Từ nay thầy kèm riêng cho con. Mỗi buổi học con được thêm một điểm Văn, và đi thi sẽ vững vàng hơn.')}});
+  if(S.quests.sach==='active'&&has('Tứ thư'))ch.push({label:'Biếu thầy bộ Tứ thư',fn:()=>{S.items=S.items.filter(i=>i!=='Tứ thư');doneQuest('sach');S.thayBonus=true;gain('van',5);gain('duc',1);say('Thầy đồ Chu','Quý hóa quá! Từ nay thầy kèm riêng cho con. Từ nay mỗi buổi học con tiến nhanh hơn, đi thi sẽ vững vàng hơn.')}});
   say('Thầy đồ Chu',voice('thay',S.path==='van'?'Học trò của thầy đã vào Quốc học viện rồi. Thầy mừng lắm.':S.flags.dieu==='di'&&a<12?'Hôm trước trò trốn học đi thả diều phải không? Lần này thầy bỏ qua.':a<10?'Muốn biết chữ thì phải chăm. Mỗi lần đến, thầy dạy con một bài.':'Học để hiểu đạo lý, không phải chỉ để thi đỗ đâu con.'),ch);
 }
 export function talkVo(){
@@ -115,7 +115,7 @@ export function talkCo(){
 export function talkSach(){
   const ch=[{label:'Mua Tứ thư',note:'6 quan',disabled:S.tien<6||has('Tứ thư'),fn:()=>{S.tien-=6;S.items.push('Tứ thư');renderHUD();toast('Bạn mua một bộ Tứ thư.')}},
     {label:'Mua giấy bút',note:S.paper?'mùa này đã mua':'3 quan · +Văn · mỗi mùa một lần',disabled:S.tien<3||S.paper,fn:()=>{S.tien-=3;S.paper=true;gain('van',2,true)}}];
-  if(age()>=14&&!S.path)ch.push({label:'Mua binh thư chép tay',note:'8 quan · +3 Võ, +1 Văn · đường võ chỉ cần Võ 12',disabled:S.tien<8||has('Binh thư'),fn:()=>{S.tien-=8;S.items.push('Binh thư');gain('vo',3);gain('van',1);toast('Có binh thư, đến tuổi 16 bạn có thể theo đường võ dù Võ chỉ cần 12.')}});
+  if(age()>=14&&!S.path)ch.push({label:'Mua binh thư chép tay',note:'8 quan · +Võ, +Văn · đường võ chỉ cần Võ 12',disabled:S.tien<8||has('Binh thư'),fn:()=>{S.tien-=8;S.items.push('Binh thư');gain('vo',3);gain('van',1);toast('Có binh thư, đến tuổi 16 bạn có thể theo đường võ dù Võ chỉ cần 12.')}});
   say('Chủ hàng sách',voice('sach'),ch);
 }
 export function talkRen(){if(age()<14)return say('Bác thợ rèn','Lò rèn nóng lắm, nhóc đứng xa ra! Lớn lên rồi hãy quay lại.');
@@ -131,11 +131,11 @@ export function talkTong(){
 }
 export function talkLinh(){say('Lính gác',age()<12?'Đứng lại! Trẻ con không được một mình vào kinh. Đợi mười hai tuổi hẵng đến.':voice('linh','Vào đi. Trong kinh thành phải giữ phép tắc, không được chạy nhảy ồn ào.'))}
 export function talkHocQuan(){
-  if(S.path==='van')return say('Học quan',voice('hocquan',S.dothi?'Thái học sinh mà vẫn chăm đến đây, tốt lắm.':'Sĩ tử của Quốc học viện phải đọc nhiều, viết nhiều.'),(()=>{const hoc=k=>startWriting(q=>{gain('van',k*(dailyReward(3,q)+(S.thayBonus?1:0)),true);toast(vanLesson())});return[{label:'Học tại Quốc học viện',note:'−1 Sức · tập viết · +Văn',fn:()=>{if(!spend())return;hoc(1)}},...allSuc('Học',hoc)]})());
+  if(S.path==='van')return say('Học quan',voice('hocquan',S.dothi?'Thái học sinh mà vẫn chăm đến đây, tốt lắm.':'Sĩ tử của Quốc học viện phải đọc nhiều, viết nhiều.'),(()=>{const hoc=k=>startWriting(q=>{gain('van',k*(dailyReward(3,q)+(S.thayBonus?1:0)),KINH);toast(vanLesson())});return[{label:'Học tại Quốc học viện',note:'−1 Sức · tập viết · +Văn',fn:()=>{if(!spend())return;hoc(1)}},...allSuc('Học',hoc)]})());
   say('Học quan','Quốc học viện lập từ năm Quý Sửu (1253), thờ Khổng Tử, Chu Công, Mạnh Tử, giảng Tứ thư, Lục kinh. Muốn vào học phải giỏi chữ trước đã.');
 }
 export function talkVoQuan(){
-  if(S.path==='vo')return say('Võ quan',voice('voquan','Giảng võ đường lập cùng năm với Quốc học viện. Hương binh giỏi thì được luyện ở đây.'),(()=>{const luyen=k=>startDrill(q=>{gain('vo',k*dailyReward(4+(has('Kiếm sắt')?1:0),q,5/6),true);if(q>=1)practice('ngua',k);toast(voLesson())});return[{label:'Luyện tại Giảng võ đường',note:'−1 Sức · +Võ · học cưỡi ngựa',fn:()=>{if(!spend())return;luyen(1)}},...allSuc('Luyện',luyen)]})());
+  if(S.path==='vo')return say('Võ quan',voice('voquan','Giảng võ đường lập cùng năm với Quốc học viện. Hương binh giỏi thì được luyện ở đây.'),(()=>{const luyen=k=>startDrill(q=>{gain('vo',k*dailyReward(4+(has('Kiếm sắt')?1:0),q,5/6),KINH);if(q>=1)practice('ngua',k);toast(voLesson())});return[{label:'Luyện tại Giảng võ đường',note:'−1 Sức · +Võ · học cưỡi ngựa',fn:()=>{if(!spend())return;luyen(1)}},...allSuc('Luyện',luyen)]})());
   say('Võ quan','Giảng võ đường lập mùa thu năm Quý Sửu (1253). Chỉ người đã vào quân mới được luyện ở đây.');
 }
 export {talkNgu} from './ngu.js';   // anh Ngũ: xem ngu.js
@@ -183,9 +183,10 @@ export function doorAction(b){
   if(b.id==='truong'){const tc=truongChoices();return say('Trường làng',tc.length?(S.thay?'Lũ trẻ ngồi chờ trên chiếu. Thầy Chu gật đầu với bạn: "Hôm nay trò giảng nhé."':'Lũ trẻ ngồi chờ trên chiếu, khay cát đã san phẳng. Từ ngày thầy Chu mất, trường làng trông cả vào bạn.'):'Lớp học có mấy chiếc chiếu, khay cát để tập viết. Thầy đồ đang đứng trước cửa.',tc)}
 }
 /* Tự học ở nhà chậm và có trần: muốn giỏi phải đến lớp, đến sân võ (mỗi mùa ở đó được 8 điểm trở lên). */
-/* tự học ở nhà: điểm thô mỗi mùa (qua growth, như việc lặp lại), bằng khoảng một phần tư đến lớp cả mùa */
-const FF_RATE={van:()=>S.path==='van'?4:3.5,vo:()=>S.path==='vo'?4:3.5},FF_CAP={van:()=>S.path==='van'?50:30,vo:()=>S.path==='vo'?50:30};
-function ffNote(k){const lab=k==='van'?'Văn':'Võ',c=FF_CAP[k]();return S[k]>=c?`tự ${k==='van'?'học':'luyện'} chỉ đến ${c} ${lab}`:`tiến chậm, tối đa ${c} ${lab}`}
+const KINH=1.5;   // học, luyện trong kinh thành được gấp rưỡi điểm
+/* tự học ở nhà: điểm thô mỗi mùa (qua growth, như việc lặp lại), gần bằng đến lớp cả mùa (đến lớp hơn không quá 1,1 lần) */
+const FF_RATE={van:()=>7.6,vo:()=>S.path==='vo'?11:7.6},FF_CAP={van:()=>S.path==='van'?50:30,vo:()=>S.path==='vo'?50:30};
+function ffNote(k){const lab=k==='van'?'Văn':'Võ',c=FF_CAP[k]();return S[k]>=c?`tự ${k==='van'?'học':'luyện'} chỉ đến ${c} ${lab}`:`tối đa ${c} ${lab}`}
 export function chooseFocus(){const a=age();say('Những năm tới','Bạn dồn sức vào việc gì? Thời gian sẽ trôi cho đến khi có chuyện quan trọng xảy ra. Bạn sẽ bỏ lỡ những lần gặp gỡ bạn bè trong thời gian ấy. Tự học, tự luyện ở nhà tiến bộ chậm; đến lớp thầy đồ hay sân võ thì nhanh hơn nhiều.',[
   {label:'Tự học ở nhà',note:ffNote('van'),fn:()=>fastForward('van')},
   {label:'Tự luyện võ',note:a<8?'cần 8 tuổi':ffNote('vo'),disabled:a<8,fn:()=>fastForward('vo')},

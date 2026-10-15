@@ -128,9 +128,9 @@ def balance(page, fails):
               n=D.S.year*4+D.S.season-y0; return [(D.S.{k}-v0)/n, D.S.{k}, n] }}""")
             name = f"{path or 'chưa chọn đường'} · {k}"
             out[name] = (cls, home[0], home[1])
-            # tự học ở nhà (tua) được khoảng nửa đến lớp; đến lớp vẫn phải hơn rõ (từ 10/2026 tua cho nhiều hơn trước)
-            if cls < 1.5 * home[0]:
-                fails.append(f'cân bằng {name}: đến lớp {cls:.2f}/mùa, tự học {home[0]:.2f}/mùa (cần đến lớp ≥ 1,5×)')
+            # tự học ở nhà (tua) gần bằng đến lớp: đến lớp hơn, nhưng không quá 1,1 lần (chủ dự án muốn tua đỡ thiệt)
+            if not (home[0] * 0.98 <= cls <= 1.1 * home[0]):
+                fails.append(f'cân bằng {name}: đến lớp {cls:.2f}/mùa, tự học {home[0]:.2f}/mùa (cần đến lớp từ 1 tới 1,1×)')
             cap = 50 if path == k else 30
             if home[1] > cap:
                 fails.append(f'cân bằng {name}: tự học vượt trần {cap} ({home[1]})')
@@ -155,8 +155,8 @@ CURVE_JS = """(([k,mode,path,q])=>{const D=__dv;D.setS(Object.assign(D.newState(
 # (chỉ số, cách chơi, đường, tay nghề) -> {tuổi: (thấp nhất, cao nhất)}
 CURVE = [
     (('van', 'cham', 'van', 'giỏi'), {7: (2, 10), 16: (28, 42), 27: (70, 88)}),
-    (('van', 'nua', 'van', 'khá'), {16: (22, 40), 27: (52, 72)}),
-    (('van', 'vua', 'van', 'khá'), {16: (8, 22), 27: (25, 42)}),
+    (('van', 'nua', 'van', 'khá'), {16: (22, 40), 27: (58, 80)}),
+    (('van', 'vua', 'van', 'khá'), {16: (8, 22), 27: (28, 50)}),
     (('vo', 'cham', 'vo', 'giỏi'), {16: (28, 42), 27: (70, 88)}),
     (('tieng', 'nua', 'nong', 'khá'), {16: (18, 38), 27: (50, 72)}),
 ]

@@ -123,4 +123,4 @@ function choosePath(){
      {label:'Theo võ sư, sung vào hương binh',note:voOk?'con đường võ':'cần Võ 20 (hoặc 12 nếu có binh thư)',disabled:!voOk,fn:()=>setPath('vo')},
      {label:'Ở lại làng, cày ruộng nuôi cha mẹ',note:'con đường nông',fn:()=>setPath('nong')}]});
 }
-function setPath(p){S.path=p;if(p==='nong')gain('tieng',3);renderHUD();setTimeout(()=>toast({van:'Từ nay đến gặp Học quan trước Quốc học viện để học, mỗi buổi +3 Văn. Năm sau có khoa thi.',vo:'Từ nay tập ở sân võ được +3 Võ, hoặc lên Giảng võ đường trong kinh được +4 Võ.',nong:'Từ nay mỗi buổi làm đồng được +3 quan và +1 Đức. Người làng tin cậy bạn hơn.'}[p],5600),50)}
+function setPath(p){S.path=p;if(p==='nong')gain('tieng',3);renderHUD();setTimeout(()=>toast({van:'Từ nay đến gặp Học quan trước Quốc học viện để học, tiến nhanh hơn học ở trường làng. Năm sau có khoa thi.',vo:'Từ nay tập ở sân võ tiến nhanh hơn trước, lên Giảng võ đường trong kinh còn nhanh hơn nữa.',nong:'Từ nay mỗi buổi làm đồng được +3 quan và thêm chút Đức. Người làng tin cậy bạn hơn.'}[p],5600),50)}

@@ -496,9 +496,9 @@
   function explore() {
     const d = D(), errs = [];
     const fresh = (o) => { d.setS(Object.assign(d.newState('Thử'), {year: 1268, season: 1, quests: {hoc: 'done', trau: 'done'}}, o)); d.startPlay(false); while (d.modalOpen) d.nextModal(); d.closeDialog(); };
-    const press = (p) => { d.S.x = p.x; d.S.y = p.y; d.step(DT); ev('e', true); ev('e', false); const ok = d.modalOpen; const txt = ok ? document.querySelector('#modal').innerText : ''; while (d.modalOpen) d.nextModal(); d.closeDialog(); return txt; };
+    const press = (p) => { d.S.mocQ = []; d.S.x = p.x; d.S.y = p.y; d.step(DT); ev('e', true); ev('e', false); const ok = d.modalOpen; const txt = ok ? document.querySelector('#modal').innerText : ''; while (d.modalOpen) d.nextModal(); d.closeDialog(); return txt; };
     const want = {tien: S => S.tien >= 8, thuoc: S => S.items.includes('Lá thuốc'), de: S => S.items.includes('Dế chọi'), bia: S => S.van >= 31,
-      kiem: S => S.items.includes('Kiếm gỉ'), thuyen: S => S.suc === 3, to: S => S.duc === 1, soi: S => S.items.includes('Sỏi trắng'), do: S => (S.nghe || {}).boi === 1};   // bến đò cũ: tắm sông với lũ trẻ (ông lái đò ra sông Hồng, xem cheo.js)
+      kiem: S => S.items.includes('Kiếm gỉ'), thuyen: S => S.suc === 3, to: S => S.duc >= 3, soi: S => S.items.includes('Sỏi trắng'), do: S => (S.nghe || {}).boi === 1};   // bến đò cũ: tắm sông với lũ trẻ (ông lái đò ra sông Hồng, xem cheo.js)
     for (const p of d.SPOTS) {
       if (p.quest) continue;
       fresh({van: p.id === 'bia' || p.id === 'do' ? 30 : 0, suc: p.id === 'thuyen' ? 2 : 4, year: p.id === 'kiem' ? 1270 : p.id === 'bia' ? 1278 : 1268});   // đọc bia cần Văn 30: tuổi phải đủ lớn (trần theo tuổi)
