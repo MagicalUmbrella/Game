@@ -184,7 +184,7 @@ export function doorAction(b){
 }
 /* Tự học ở nhà chậm và có trần: muốn giỏi phải đến lớp, đến sân võ (mỗi mùa ở đó được 8 điểm trở lên). */
 /* tự học ở nhà: điểm thô mỗi mùa (qua growth, như việc lặp lại), bằng khoảng một phần tư đến lớp cả mùa */
-const FF_RATE={van:()=>S.path==='van'?3:2,vo:()=>S.path==='vo'?3:2},FF_CAP={van:()=>S.path==='van'?45:25,vo:()=>S.path==='vo'?45:25};
+const FF_RATE={van:()=>S.path==='van'?4:3.5,vo:()=>S.path==='vo'?4:3.5},FF_CAP={van:()=>S.path==='van'?50:30,vo:()=>S.path==='vo'?50:30};
 function ffNote(k){const lab=k==='van'?'Văn':'Võ',c=FF_CAP[k]();return S[k]>=c?`tự ${k==='van'?'học':'luyện'} chỉ đến ${c} ${lab}`:`tiến chậm, tối đa ${c} ${lab}`}
 export function chooseFocus(){const a=age();say('Những năm tới','Bạn dồn sức vào việc gì? Thời gian sẽ trôi cho đến khi có chuyện quan trọng xảy ra. Bạn sẽ bỏ lỡ những lần gặp gỡ bạn bè trong thời gian ấy. Tự học, tự luyện ở nhà tiến bộ chậm; đến lớp thầy đồ hay sân võ thì nhanh hơn nhiều.',[
   {label:'Tự học ở nhà',note:ffNote('van'),fn:()=>fastForward('van')},

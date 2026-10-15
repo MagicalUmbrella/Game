@@ -34,7 +34,7 @@ export function talkLaiDo(){
   if(!S.metLaiDo){S.metLaiDo=true;gain('van',1);gain('vo',1);
     return showModal({kicker:'Bến đò sông Hồng',title:'Ông lái đò',body:`<p>Ông lái đò già ngồi hút thuốc lào trên mũi thuyền, kể chuyện năm bạn ra đời: vua Thái Tông cùng Thái tử ngự lâu thuyền xuôi dòng, đánh tan quân Mông Cổ ở bến Đông Bộ Đầu, ngay mạn trên kia. "Thuyền của ta khi ấy cũng chở quân đấy," ông cười.</p>${src('ngày 24 tháng chạp năm Đinh Tỵ (đầu năm 1258), vua cùng Thái tử ngự lâu thuyền tiến quân đến Đông Bộ Đầu, đón đánh, phá tan quân giặc.')}<p class="note">Ông lái đò là hư cấu.</p>`})}
   const ch=[];
-  if(age()>=12)ch.push({label:knows('cheo')?'Chở một chuyến khách sang sông':'Xin ông cho cầm chèo một chuyến',note:S.cheoAt===now()?'mùa này đã chèo':'−1 Sức · mỗi mùa một lần'+(knows('cheo')?'':' · học nghề chèo thuyền'),disabled:S.cheoAt===now(),fn:()=>{if(!spend())return;startCheo()}});
+  if(age()>=12)ch.push({label:knows('cheo')?'Chở một chuyến khách sang sông':'Xin ông cho cầm chèo một chuyến',note:S.cheoAt===now()?'mùa này đã chèo':'−2 Sức · mỗi mùa một lần'+(knows('cheo')?'':' · học nghề chèo thuyền'),disabled:S.cheoAt===now(),fn:()=>{if(!spend(2))return;toast('Chèo hai chuyến sang sông về: tốn 2 Sức.',3000);startCheo()}});
   say('Ông lái đò',voice('laido',age()<12?'Sông Hồng xiết lắm, trẻ con đừng ra mép nước. Lớn thêm vài tuổi ta cho cầm chèo.':knows('cheo')?'Tay chèo của cậu giờ hơn cả ta hồi trẻ.':'Chèo đò sông Hồng không như sông Tô Lịch đâu. Nước chảy xiết, mắt phải nhìn bến bên kia, chứ đừng nhìn mái chèo.'),ch)}
 
 /* thuyền đậu ở bến khi không chèo (render.js gọi khi không có màn chơi) */
@@ -54,7 +54,8 @@ export function startCheo(){
 const bob=B=>reduce?0:Math.round(Math.sin(clock*2.2+B.sx))/TS;
 const sideOf=k=>k==='a'||k==='arrowleft'?'L':k==='d'||k==='arrowright'?'R':null;
 function cKey(k){const M=MG;if(!M||M.type!=='cheo')return false;const s=sideOf(k);
-  if(s&&M.phase==='row'){M.B.v=Math.min(CHEO.VMAX,M.B.v+CHEO.IMP*(M.last===s?.25:1));M.last=s;M.stroke=.3;return true}
+  if(s&&M.phase==='row'){M.B.push=(M.B.push||0)+CHEO.IMP*(M.last===s?.25:1);   // lực mái chèo dồn dần vào thuyền, khỏi giật
+    M.last=s;M.stroke=.3;return true}
   return k==='w'||k==='s'||k==='arrowup'||k==='arrowdown'||!!s}
 function cUpdate(dt){const M=MG,B=M.B;M.t+=dt;M.stroke=Math.max(0,(M.stroke||0)-dt);
   const stern=()=>seat(B,2);
@@ -63,15 +64,18 @@ function cUpdate(dt){const M=MG,B=M.B;M.t+=dt;M.stroke=Math.max(0,(M.stroke||0)-
     const [a,b]=M.phase==='board'?[sh,st]:[st,sh];S.x=a[0]+(b[0]-a[0])*M.k;S.y=a[1]+(b[1]-a[1])*M.k;P.moving=M.k<1;
     if(M.k>=1){if(M.phase==='board'){M.phase='row';M.k=0}else return finish()}return}
   if(M.phase==='swap'){   // cập bến đông: khách lên bờ, nghỉ một nhịp rồi quay về
-    M.k+=dt;const st=stern();S.x=st[0];S.y=st[1];if(M.k>=1.6){M.phase='row';M.k=0;M.leg=1;B.dir='left';B.v=0;M.last=null;M.paxT=0}return}
+    M.k+=dt;const st=stern();S.x=st[0];S.y=st[1];if(M.k>=1.6){M.phase='row';M.k=0;M.leg=1;B.dir='left';B.v=0;B.push=0;B.vy=0;M.last=null;M.paxT=0}return}
   // chèo
   if(M.t>=CHEO.TMAX)return giveUp();
   const sg=M.leg?-1:1,tx=M.leg?WX:EX,mid=(WX+EX)/2,half=(EX-WX)/2,cur=CHEO.CUR*(1-.55*Math.min(1,Math.abs(B.x-mid)/half))*(1+CHEO.GUST*Math.sin(M.t*.9+M.leg*2));   // nước xiết giữa dòng, lúc mạnh lúc yếu
   B.v*=Math.exp(-CHEO.DRAG*dt);
+  if(B.push>0){const g=Math.min(B.push,B.push*dt*9+.02);B.push-=g;B.v=Math.min(CHEO.VMAX,B.v+g)}
   const up=keys.w||keys.arrowup,down=keys.s||keys.arrowdown,steer=(down?1:0)-(up?1:0);
   const atBank=sg*(B.x-tx)>=0;
-  if(!atBank){B.x+=sg*B.v*dt;B.y+=(cur+steer*CHEO.STEER)*dt}
-  else{B.x=tx;B.v=0;B.y+=steer*CHEO.STEER*.8*dt;   // mắc bãi: chỉ men bờ được
+  // lái và nước trôi đổi dần (B.vy), không đổi tốc ngay một nhịp: thuyền đi mượt, có quán tính
+  const vyT=atBank?steer*CHEO.STEER*.8:cur+steer*CHEO.STEER;B.vy=(B.vy||0)+(vyT-(B.vy||0))*Math.min(1,dt*5);
+  if(!atBank){B.x+=sg*B.v*dt;B.y+=B.vy*dt}
+  else{B.x=tx;B.v=0;B.push=0;B.y+=B.vy*dt;   // mắc bãi: chỉ men bờ được
     if(!M.stuck&&Math.abs(B.y-BEN)>CHEO.TOL){M.stuck=true;M.bumps++;toast(B.y>BEN?'Thuyền trôi xuôi quá bến, mắc bãi. Giữ W men bờ ngược lên.':'Thuyền lên quá bến. Giữ S men bờ xuống.',3600)}}
   B.y=Math.max(BEN-7,Math.min(BEN+9,B.y));B.moving=B.v>.15;
   if(B.moving){B.wakeT=(B.wakeT||0)-dt;if(B.wakeT<=0){B.wakeT=.12;B.wake.push({x:B.x-sg*1.4,y:B.y+.05,t:0})}}
@@ -81,7 +85,8 @@ function cUpdate(dt){const M=MG,B=M.B;M.t+=dt;M.stroke=Math.max(0,(M.stroke||0)-
     if(M.leg===0){M.phase='swap';M.k=0;M.paxT=0}else{M.phase='off';M.k=0}}}
 function q(){const M=MG;return M.bumps===0&&M.t<=CHEO.FAST?2:1}
 function finish(){const M=MG,qq=M.gaveUp?0:q();endMG();S.cheoAt=now();S.x=SHORE_W[0];S.y=SHORE_W[1]+.6;
-  if(qq>=1){const was=knows('cheo');practice('cheo');gain('tien',qq);
+  if(qq>=1){const was=knows('cheo');practice('cheo');gain('tien',qq);gain('vo',2,true);   // chèo đò cũng là luyện sức
+
     showModal({kicker:'Bến đò sông Hồng',title:qq===2?'Đò cập đúng bến':'Xong một chuyến',body:`<p>${qq===2?'Hai chuyến, cả hai lần mũi thuyền chạm đúng bến. Ông lái đò gõ tẩu vào mạn thuyền: "Được! Lần sau ta ngồi uống nước thôi."':'Thuyền còn chòng chành, có lúc lệch bến, nhưng khách lên bờ không ướt chân. Ông lái đò gật gù.'}</p><p class="note">Khách trả tiền đò. ${was?'':'Nghề chèo thuyền: '+Math.min(S.nghe.cheo,4)+' chuyến.'}</p>`})}
   else showModal({kicker:'Bến đò sông Hồng',title:'Ông lái đò cầm chèo thay',body:'<p>Nước cuốn thuyền trôi mãi, ông lái đò phải đỡ lấy mái chèo đưa khách vào bờ. "Không sao. Sông Hồng có ai thuần được ngay đâu."</p><p class="note">Chuyến này chưa tính vào nghề chèo thuyền.</p>'});
   save()}
