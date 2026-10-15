@@ -17,37 +17,45 @@ export const sackSprite=()=>simple('sack',12,11,s=>{s(2,2,8,8,'#a8885a');s(3,1,6
 export function mark(x,y,col){const sx=Math.round(x*TS)*Z-camX,sy=Math.round(y*TS)*Z-camY,b=Math.round(Math.sin(clock*6)*1.5)*Z;ctx.fillStyle='#0b0d0c';ctx.fillRect(sx-2*Z,sy-7*Z+b,4*Z,9*Z);ctx.fillStyle=col;ctx.fillRect(sx-Z,sy-6*Z+b,2*Z,4*Z);ctx.fillRect(sx-Z,sy-Z+b,2*Z,2*Z)}
 export function hudBox(x,y,w,h){ctx.fillStyle='#0b0d0c';ctx.fillRect(x-3,y-3,w+6,h+6);ctx.fillStyle='#1d221f';ctx.fillRect(x,y,w,h);ctx.strokeStyle='#6b5430';ctx.lineWidth=2;ctx.strokeRect(x+1,y+1,w-2,h-2)}
 export function hudBar(x,y,w,frac,col){ctx.fillStyle='#0b0d0c';ctx.fillRect(x,y,w,12);ctx.fillStyle=col;ctx.fillRect(x+2,y+2,Math.max(0,(w-4)*Math.min(1,frac)),8)}
+/* Độ khó (đã chỉnh bằng bảng bot trong npm test): nước dâng theo số chỗ vỡ còn mở; chỗ vỡ để lâu WIDEN giây thì loang
+   rộng, cần thêm một bao (tối đa 4); NEW_AT giây sau nước xói thêm một chỗ ở NEW_X. Cò lấy bao cách nhau CO_GAP giây. */
+const RISE=.004,RISE_OPEN=.002,WIDEN=30,NEED_MAX=4,NEW_AT=28,NEW_X=62,CO_GAP=12;
+const brOf=x=>({x:x+.5,y:Math.floor(tolichY(x)+2.6)+.5,got:0,need:2,age:0});
 export function startFlood(){
   const xs=[31,37,44,50,57];
-  setMG({type:'flood',carry:false,level:0,coT:4,co:S.rel.co>=3?{x:43.5,y:34.6,dir:'up',walk:0,moving:false,bag:false,tgt:null,pause:0}:null,hide:['co'],br:xs.map(x=>({x:x+.5,y:Math.floor(tolichY(x)+2.6)+.5,got:0})),pile:{x:41.5,y:33.4},
+  setMG({type:'flood',carry:false,level:0,coT:4,co:S.rel.co>=3?{x:43.5,y:34.6,dir:'up',walk:0,moving:false,bag:false,tgt:null,pause:0}:null,hide:['co'],br:xs.map(brOf),t:0,pile:{x:41.5,y:33.4},
     update:floodUpdate,findTarget:floodTarget,draw:floodDraw,hud:floodHud,post:rainPost,speedMul:()=>MG.carry?(knows('boi')?.9:.75):1});   // biết bơi: quen nước, lội lụt vác bao nhanh hơn
   S.x=41.5;S.y=34.8;P.dir='up';document.body.classList.add('mg');
-  setKeys('<span><kbd>E</kbd> vác bao đất ở đống đất, đắp vào chỗ đê vỡ</span><span><kbd>Shift</kbd> chạy</span><span>Mỗi chỗ vỡ cần 2 bao</span>');
+  setKeys('<span><kbd>E</kbd> vác bao đất ở đống đất, đắp vào chỗ đê vỡ</span><span><kbd>Shift</kbd> chạy</span><span>Chỗ vỡ để lâu sẽ loang rộng, cần thêm bao</span>');
 }
-function floodUpdate(dt){const M=MG,open=M.br.filter(b=>b.got<2).length;
-  M.level+=dt*(.004+.0023*open);
+function floodUpdate(dt){const M=MG;M.t+=dt;M.shake=Math.max(0,(M.shake||0)-dt*1.6);
+  // chỗ vỡ để lâu thì loang rộng; giữa chừng nước xói thêm một chỗ
+  for(const b of M.br)if(b.got<b.need&&b.need<NEED_MAX&&(b.age+=dt)>=WIDEN){b.age=0;b.need++;floatAt('Chỗ vỡ loang rộng!',b.x,b.y,'#e07f6b')}
+  if(!M.added&&M.t>=NEW_AT){M.added=true;const b=brOf(NEW_X);M.br.push(b);floatAt('Nước xói thêm một chỗ!',b.x,b.y,'#e07f6b');M.shake=.5}
+  const open=M.br.filter(b=>b.got<b.need).length;
+  M.level+=dt*(RISE+RISE_OPEN*open);
   if(M.co&&open)coUpdate(M,dt);
-  if(!M.br.some(b=>b.got<2))endFlood(true);else if(M.level>=1)endFlood(false)}
+  if(M.added&&!open)endFlood(true);else if(M.level>=1)endFlood(false)}
 /* Cò (thân với bạn từ 3 trở lên) ra đê giúp: chạy ra đống đất vác bao, chạy tới chỗ vỡ gần nhất đắp xuống.
    Mỗi lần lấy bao cách nhau ít nhất 8 giây (coT), giữ nhịp như trước. Đi theo đường thật, 4 hướng. */
 const okCo=(x,y)=>!solidAt(x+.5,y+.5);
 function coUpdate(M,dt){const c=M.co;M.coT-=dt;c.moving=false;if((c.pause=Math.max(0,c.pause-dt))>0)return;
   let tx,ty;
   if(!c.bag){tx=M.pile.x+1.2;ty=M.pile.y+.2;
-    if(Math.hypot(tx-c.x,ty-c.y)<.3){c.dir='left';if(M.coT<=0){c.bag=true;M.coT=8;c.pause=.4}return}}
-  else{if(!c.tgt||c.tgt.got>=2){c.tgt=null;let bd=1e9;for(const b of M.br)if(b.got<2){const d=Math.hypot(b.x-c.x,b.y-c.y);if(d<bd){bd=d;c.tgt=b}}}
+    if(Math.hypot(tx-c.x,ty-c.y)<.3){c.dir='left';if(M.coT<=0){c.bag=true;M.coT=CO_GAP;c.pause=.4}return}}
+  else{if(!c.tgt||c.tgt.got>=c.tgt.need){c.tgt=null;let bd=1e9;for(const b of M.br)if(b.got<b.need){const d=Math.hypot(b.x-c.x,b.y-c.y);if(d<bd){bd=d;c.tgt=b}}}
     const b=c.tgt;tx=b.x;ty=b.y;
-    if(Math.hypot(tx-c.x,ty-c.y)<1){b.got++;c.bag=false;c.tgt=null;c.pause=.5;c.dir=dirOf(tx-c.x,ty-c.y);floatAt(b.got>=2?'Cò chặn được một chỗ!':'Cò đắp giúp một bao!',b.x,b.y,'#e2bf72');return}}
+    if(Math.hypot(tx-c.x,ty-c.y)<1){b.got++;b.age=0;c.bag=false;c.tgt=null;c.pause=.5;c.dir=dirOf(tx-c.x,ty-c.y);floatAt(b.got>=b.need?'Cò chặn được một chỗ!':'Cò đắp giúp một bao!',b.x,b.y,'#e2bf72');return}}
   const st=nextStep(c,tx,ty,okCo,clock);if(!st)return;
   const [mx,my]=stepTo(c,st,(c.bag?3:3.8)*dt,okCo);c.x+=mx;c.y+=my;c.moving=true;c.walk+=dt*9;if(mx||my)c.dir=dirOf(mx,my)}
 function floodTarget(){const M=MG;if(!M.carry&&Math.hypot(M.pile.x-S.x,M.pile.y-S.y)<1.7)return{label:'Vác bao đất',act:()=>{M.carry=true}};
-  if(M.carry){let best=1.7,tb=null;for(const b of M.br)if(b.got<2){const d=Math.hypot(b.x-S.x,b.y-S.y);if(d<best){best=d;tb=b}}
-    if(tb)return{label:'Đắp chỗ đê vỡ',act:()=>{tb.got++;M.carry=false;floatAt(tb.got>=2?'Đã chặn được!':'Thêm một bao nữa!',tb.x,tb.y,'#9fcaa9')}}}
+  if(M.carry){let best=1.7,tb=null;for(const b of M.br)if(b.got<b.need){const d=Math.hypot(b.x-S.x,b.y-S.y);if(d<best){best=d;tb=b}}
+    if(tb)return{label:'Đắp chỗ đê vỡ',act:()=>{tb.got++;tb.age=0;M.carry=false;floatAt(tb.got>=tb.need?'Đã chặn được!':`Thêm bao nữa (${tb.got}/${tb.need})`,tb.x,tb.y,'#9fcaa9')}}}
   return null}
 function gush(x,y){const sx=Math.round(x*TS),sy=Math.round(y*TS);for(let i=0;i<12;i++){const ph=(clock*2.4+i*.37)%1;const px=sx-7+Math.floor(Hs(i,7,1)*14),py=sy-12+Math.floor(ph*13);ctx.fillStyle=i%3?'#7fb3c8':'#d6eaf0';ctx.fillRect(px*Z-camX,py*Z-camY,Z*2,Z*2)}}
 function floodDraw(list){const M=MG;
   list.push({y:M.pile.y,f:()=>{for(let i=0;i<6;i++)drawSprite(sackSprite(),M.pile.x-.45+(i%3)*.45,M.pile.y-Math.floor(i/3)*.4)},lab:Math.hypot(M.pile.x-S.x,M.pile.y-S.y)<5?['Đống bao đất',M.pile.x,M.pile.y-1.1]:null});
-  for(const b of M.br)list.push({y:b.y,f:()=>{if(b.got>=2){for(let i=0;i<3;i++)drawSprite(sackSprite(),b.x-.45+i*.45,b.y)}else{gush(b.x,b.y);if(b.got)drawSprite(sackSprite(),b.x,b.y+.15);mark(b.x,b.y-1.1,'#e07f6b')}}});
+  for(const b of M.br)list.push({y:b.y,f:()=>{if(b.got>=b.need){for(let i=0;i<3;i++)drawSprite(sackSprite(),b.x-.45+i*.45,b.y)}else{gush(b.x,b.y);if(b.got)drawSprite(sackSprite(),b.x,b.y+.15);mark(b.x,b.y-1.1,'#e07f6b')}}});
   if(M.carry)list.push({y:S.y+.01,f:()=>drawSprite(sackSprite(),S.x,S.y-1.55)});
   const c=M.co;if(c){const look=coLook(),kid=isKid(look);
     list.push({y:c.y,f:()=>{shadow(c.x,c.y,10);drawSprite(personSprite(look,c.dir,c.moving?[1,0,2,0][Math.floor(c.walk)%4]:0),c.x,c.y);if(c.bag)drawSprite(sackSprite(),c.x,c.y-(kid?1.3:1.55))},
@@ -55,7 +63,7 @@ function floodDraw(list){const M=MG;
 }
 function floodHud(){const M=MG,w=Math.min(420,VW-32),x=Math.round(VW/2-w/2);hudBox(x,16,w,64);
   ctx.font='600 12px "Be Vietnam Pro", system-ui, sans-serif';ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillStyle='#9fcaa9';ctx.fillText('Nước lên',x+12,32);hudBar(x+90,26,w-102,M.level,'#5aa0c0');
-  const open=M.br.filter(b=>b.got<2).length;ctx.fillStyle='#efe8d4';ctx.fillText(`Chỗ đê vỡ còn ${open}/5`,x+12,56);ctx.textAlign='right';ctx.fillStyle=M.carry?'#e2bf72':'#aab2a2';ctx.fillText(M.carry?'Đang vác bao đất':'Ra đống đất lấy bao',x+w-12,56)}
+  const open=M.br.filter(b=>b.got<b.need).length,bags=M.br.reduce((a,b)=>a+Math.max(0,b.need-b.got),0);ctx.fillStyle='#efe8d4';ctx.fillText(`Chỗ đê vỡ còn ${open}/${M.br.length} · cần ${bags} bao`,x+12,56);ctx.textAlign='right';ctx.fillStyle=M.carry?'#e2bf72':'#aab2a2';ctx.fillText(M.carry?'Đang vác bao đất':'Ra đống đất lấy bao',x+w-12,56)}
 function rainPost(){ctx.fillStyle='rgba(30,50,90,.3)';ctx.fillRect(0,0,VW,VH);if(reduce)return;ctx.fillStyle='rgba(205,220,245,.45)';
   for(let i=0;i<140;i++){const rx=(Hs(i,1,2)*VW+clock*200*(.8+Hs(i,2,3)*.4))%VW,ry=(Hs(i,3,4)*VH+clock*620*(.8+Hs(i,5,6)*.4))%VH;ctx.fillRect(Math.round(rx/Z)*Z,Math.round(ry/Z)*Z,Z,Z*3)}}
 export function endFlood(win){setMG(null);setKeys();document.body.classList.remove('mg');S.pending=null;practice('boi',2);

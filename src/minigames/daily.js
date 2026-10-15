@@ -35,9 +35,9 @@ export function startWriting(done){
 }
 /* ---------- luyện võ: ba đòn canh nhịp ---------- */
 export function startDrill(done){
-  const zw=Math.max(34,Math.min(130,40+S.vo*.9));
+  const zw=Math.max(26,Math.min(100,24+S.vo*.7));
   start('vo','Luyện võ','Bấm <kbd>Space</kbd> hoặc <kbd>E</kbd> khi mũi côn ở vùng sáng của cọc gỗ. Ba đòn, đòn sau nhanh hơn. Võ càng cao, vùng sáng càng rộng.',
-    {pos:10,dir:1,speed:230,round:0,pts:0,zw,zc:0},done);
+    {pos:10,dir:1,speed:270,round:0,pts:0,zw,zc:0},done);
   zone();info('Đòn 1/3');
 }
 function zone(){const M=MG;M.zc=60+M.zw/2+Math.random()*(CW-120-M.zw)}
@@ -60,7 +60,7 @@ function key(k){const M=MG;if(!M||M.type!=='daily'||M.over)return false;
   if(M.kind==='viet'){const d=DIRS[k];if(!d||M.phase!=='input')return!!d;M.inp.push(d);const i=M.inp.length-1;
     if(d!==M.seq[i]){M.flash=-.3;info(`Sai nét thứ ${i+1}.`);finish(i/M.seq.length,700)}else if(M.inp.length===M.seq.length){info('Đúng hết!');finish(1,600)}return true}
   const hit=k===' '||k==='e';
-  if(M.kind==='vo'&&hit){const d=Math.abs(M.pos-M.zc),p=d<M.zw*.18?2:d<M.zw/2?1:0;M.pts+=p;M.round++;M.speed+=60;M.flash=p?.25:-.25;
+  if(M.kind==='vo'&&hit){const d=Math.abs(M.pos-M.zc),p=d<M.zw*.18?2:d<M.zw/2?1:0;M.pts+=p;M.round++;M.speed+=70;M.flash=p?.25:-.25;
     info((p===2?'Trúng hiểm!':p?'Trúng!':'Trượt!')+(M.round<3?`  ·  Đòn ${M.round+1}/3`:''));if(M.round>=3)finish(M.pts/6,600);else zone();return true}
   if(M.kind==='dong'&&(k==='a'||k==='d'||k==='arrowleft'||k==='arrowright')){const kk=k==='arrowleft'?'a':k==='arrowright'?'d':k;
     const n=M.notes.find(n=>!n.hit&&!n.miss&&Math.abs(n.t-M.t)<.17);if(n&&n.k===kk){n.hit=true;M.flash=.15}else M.flash=-.15;return true}

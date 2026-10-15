@@ -87,7 +87,7 @@
         let g = M.pile;
         if (M.carry) {
           let best = 1e9;
-          for (const b of M.br) if (b.got < 2) { const dd = Math.hypot(b.x - S.x, b.y - S.y); if (dd < best) { best = dd; g = b; } }
+          for (const b of M.br) if (b.got < b.need) { const dd = Math.hypot(b.x - S.x, b.y - S.y); if (dd < best) { best = dd; g = b; } }
         }
         if (w.toward(g.x, g.y, 1.3)) {
           const before = M.carry;
@@ -104,12 +104,16 @@
   function floodTeleport(win) {
     const d = D(), M = d.MG, S = d.S;
     const act = () => { const tg = M.findTarget(); if (tg) tg.act(); };
-    for (const b of M.br)
-      while (b.got < 2 && (win || Math.random() < 0.5)) {
-        S.x = M.pile.x; S.y = M.pile.y; act();
-        S.x = b.x; S.y = b.y; act();
-      }
-    for (let i = 0; i < 4000 && d.MG === M; i++) d.step(0.1);
+    // đắp ngay mọi chỗ đang vỡ (cả chỗ mới xói, chỗ loang rộng); bỏ dở thì chỉ đắp hú họa một lần
+    let tried = false;
+    for (let i = 0; i < 4000 && d.MG === M; i++) {
+      if (win || !tried) for (const b of M.br)
+        while (b.got < b.need && (win || Math.random() < 0.5)) {
+          S.x = M.pile.x; S.y = M.pile.y; act();
+          S.x = b.x; S.y = b.y; act();
+        }
+      tried = true; d.step(0.1);
+    }
   }
 
   /* ---------- Đêm tháng giêng 1285 ---------- */
