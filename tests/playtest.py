@@ -140,6 +140,7 @@ def mechanics(page, fails):
                      ('bị bắt: luật, giải sang trại giặc, cảnh trong trại', 'captivity'),
                      ('bản đồ thế giới: khóa vùng, đi tới mọi nơi, doanh trại', 'world'),
                      ('chỉ số: Đức / Tiếng, thể trạng, nghề, mốc mở việc, bản lưu cũ', 'statsV2'),
+                     ('thăng tiến: trượt thi, dạy học, lại viên, đội trưởng, ruộng, việc làng', 'career'),
                      ('giặc không đứng dàn hàng ở bìa rừng', 'noCamping'),
                      ('giấy bút, thuốc bổ mỗi mùa một lần', 'shopLimit'), ('lo trước ngày giặc đến', 'prep'),
                      ('mốc chỉ số, phím C', 'statTiers'), ('chuyện đời thường: mọi lựa chọn', 'lifeAll'),

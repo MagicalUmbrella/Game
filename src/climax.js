@@ -13,6 +13,7 @@
    Hết máu: đang đối đầu tên đầu toán (hắn còn sống) thì bị bắt ('captured', how 'fight'); lừa hắn hỏng cũng bị bắt
    (how 'trick'). Lúc khác: còn người cùng đánh đứng được thì được kéo vào rừng ('down'), không còn ai thì bị bắt (how 'down').
    Bị bắt (cả 'surrender') dẫn tới màn bị giải sang trại giặc bên kia sông (src/camp.js) và mở đầu chương hai khác. */
+import {careerChronicle,careerTrai,laiFollow} from './chuc.js';
 import {$,T,TS,W,H,WA,Z,ctx} from './constants.js';
 import {regionId} from './world.js';
 import {Hs} from './pixel.js';
@@ -125,7 +126,7 @@ export function startClimax(){
   const al=[];
   if(S.co==='village')al.push({id:'co',name:'Cò',x:38.5,y:45.2,look:{id:'co_do'},hp:S.rel.co>=4?6:4,dmg:1,cd:0,sp:4,inv:0,dir:'down',walk:0});
   // trai làng: theo Tiếng (src/stats.js), thêm một nếu giữ được đê 1270, một nếu theo đường nông; nói "hòa" thì bớt một; tối đa 4
-  const nLang=Math.min(4,traiFromTieng()+(S.flags.de==='saved'?1:0)+(S.path==='nong'?1:0)-(S.flags.dh==='hoa'?1:0));
+  const nLang=Math.min(4,traiFromTieng()+careerTrai()+(S.flags.de==='saved'?1:0)+(S.path==='nong'?1:0)-(S.flags.dh==='hoa'?1:0));
   for(let i=0;i<Math.max(0,nLang);i++)al.push({id:'trai'+i,name:'Trai làng',x:39+i*2,y:44.6,look:{id:'trai'},hp:4,dmg:1,cd:0,sp:3.6,inv:0,dir:'down',walk:0});
   const maxhp=Math.max(2,4+(S.path==='vo'?2:0)+(S.flags.train==='top'?1:0)+voHp()+theHp());
   setMG({type:'climax',T:150,t:150,act:1,hp:maxhp,maxhp,v,sk:sk.map(([x,y])=>({x,y,st:'wait'})),carry:null,en:[],al,spawnT:2,decoy:null,decoys:torches(),cd:0,inv:0,slash:0,kills:0,ngu:false,horn:false,nLang:Math.max(0,nLang),
@@ -259,7 +260,7 @@ function clUpdate(dt){
         opts.sort((a,b)=>{const g=o=>(o[0]&&o[0]===Math.sign(lead.x-p.x))||(o[1]&&o[1]===Math.sign(lead.y-p.y))?1:0,w=o=>o[0]?Math.abs(p.x-en.x):Math.abs(p.y-en.y);return g(b)-g(a)||w(b)-w(a)});
         for(const [ux,uy] of opts){const nx=p.x+ux*m,ny=p.y+uy*m;if(okAlly(Math.floor(nx),Math.floor(ny))){p.x=nx;p.y=ny;break}}
         lead=p;continue}
-      const d=Math.hypot(lead.x-p.x,lead.y-p.y);if(d>.9){followTrail(p,lead,Math.min(d-.85,4.3*(carryWeak()?Math.max(p.slow,1):p.slow)*(followFast()?1.15:1)*(d>3?1.3:1)*dt));p.moving=true;p.walk+=dt*8}else p.moving=false;lead=p;
+      const d=Math.hypot(lead.x-p.x,lead.y-p.y);if(d>.9){followTrail(p,lead,Math.min(d-.85,4.3*(carryWeak()?Math.max(p.slow,1):p.slow)*(followFast()||laiFollow()?1.15:1)*(d>3?1.3:1)*dt));p.moving=true;p.walk+=dt*8}else p.moving=false;lead=p;
       if(inZone(p.x,p.y))reachSafe(p)}
     else if(p.st==='self'){const st=p.dest&&nextStep(p,p.dest[0],p.dest[1],okAlly,M.T-M.t);
       if(st){const [mx,my]=stepTo(p,st,4.3*p.slow*SELF_SPEED*dt,okAlly);p.x+=mx;p.y+=my;p.moving=true;p.walk+=dt*8;p.dir=dirOf(mx,my)}else p.moving=false;
@@ -467,6 +468,7 @@ export function endChapter(res){
   if(F.tolich)L.push(F.tolich==='done'?'Bạn cùng làng vét sông Tô Lịch. Đêm giặc đến, chúng chỉ qua được bằng hai cây cầu.':'Bạn không ra vét sông Tô Lịch. Đêm giặc đến, chúng lội qua được chỗ sông nông.');
   if(F.duyet&&F.duyet!=='the')L.push(F.duyet==='luong'?'Bạn góp lương cho quân của Hưng Đạo Vương.':'Bạn giữ thóc cho nhà, đêm giặc đến có thêm một bao phải cứu.');
   if(F.dh)L.push(F.dh==='danh'?'Trước Diên Hồng, bạn nói "Đánh!".':'Trước Diên Hồng, bạn nói "nên hòa". Trai làng nhớ câu ấy.');
+  L.push(...careerChronicle());
   L.push(...prepChronicle(res.nLang||0));
   L.push(...exploreChronicle());
   L.push(...chainChronicle());

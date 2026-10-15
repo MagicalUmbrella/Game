@@ -1,4 +1,5 @@
 /* ================= time & events (theo Đại Việt sử ký toàn thư) ================= */
+import {boButOpen,harvest,thayMatCareer,xaEvent} from './chuc.js';
 import {SEASONS,canchi} from './constants.js';
 import {S,age,has,save} from './state.js';
 import {gain,modalOpen,renderHUD,showModal,startQuest,toast} from './ui.js';
@@ -14,7 +15,7 @@ import {knows} from './nghe.js';
 export function advanceOne(){S.season++;if(S.season>3){S.season=0;S.year++}
   // thể trạng: dùng cạn Sức mà bỏ bữa thì yếu đi; yếu dưới 50 thì tự hồi dần
   if(S.suc===0&&!S.ate)S.the=Math.max(0,S.the-1);if(S.the<50)S.the++;S.theTrain=false;
-  S.suc=sucMax();S.ate=false;S.thaoHelped=false;S.coPlayed=false;S.paper=false;S.tonic=false;if(S.season===0&&S.year>1264)S.tien+=2;if(S.quests.trau==='active'&&S.buffalo.st!=='follow'){S.tien=Math.max(0,S.tien-1);S._trauNote=true}checkEvents()}
+  if(S.season===3)harvest();S.suc=sucMax();S.ate=false;S.thaoHelped=false;S.coPlayed=false;S.paper=false;S.tonic=false;if(S.season===0&&S.year>1264)S.tien+=2;if(S.quests.trau==='active'&&S.buffalo.st!=='follow'){S.tien=Math.max(0,S.tien-1);S._trauNote=true}checkEvents()}
 export function advance(n){S._trauNote=false;
   for(let i=0;i<n;i++){advanceOne();if(modalOpen||S.ended)break}
   toast(`${SEASONS[S.season]} năm ${canchi(S.year)} (${S.year}). Bạn ${age()} tuổi.`+(S.season===0?(age()<18?' Tết đến, mẹ mừng tuổi 2 quan.':S.married?' Tết đến, cả nhà sum họp bên nồi bánh chưng (+2 quan).':' Tết đến, nhà gói bánh chưng, đi chúc Tết họ hàng (+2 quan).'):'')+(S._trauNote?' Trâu chưa tìm về, ruộng bỏ không (−1 quan).':''));save();renderHUD();
@@ -53,15 +54,19 @@ export const EVENTS=[
  {id:'con',y:1281,s:0,run:()=>{if(!S.married)return;S.child=true;showModal({kicker:K(0,1281),title:'Tiếng khóc trẻ thơ',body:'<p>Thảo sinh một bé gái. Cả nhà đặt tên con là Sen. Mẹ bế cháu đi khắp xóm khoe.</p><p class="note">Từ nay có thêm một người để bạn bảo vệ.</p>'})}},
  {id:'thaymat',y:1281,s:2,run:()=>{if(!S.thay)return;S.thay=false;if(S.quests.sach==='active'){delete S.quests.sach;renderHUD()}showModal({kicker:K(2,1281),title:'Thầy đồ Chu qua đời',body:'<p>Thầy đồ Chu mất vào một chiều thu, tay vẫn cầm cuốn sách. Nhà thầy nghèo, không có con cháu gần.</p>',choices:[
    {label:'Đứng ra lo tang cho thầy',note:'−3 quan · +3 Tiếng · +2 Đức',disabled:S.tien<3,fn:()=>{S.tien-=3;S.flags.tang='lo';gain('tieng',3);gain('duc',2);const books=S.van>=30;if(books)gain('van',3);showModal({kicker:'Đám tang',title:'Ơn thầy',body:`<p>Cả làng theo bạn tiễn thầy ra đồng.${books?' Người nhà thầy trao lại cho bạn tủ sách thầy để lại: "Thầy dặn chỉ trò mới đọc được hết."':''}</p>`})}},
-   {label:'Gửi chút tiền phúng viếng',note:'−1 quan',fn:()=>{S.tien=Math.max(0,S.tien-1);S.flags.tang='vieng';gain('tieng',1)}}]})}},
+   {label:'Gửi chút tiền phúng viếng',note:'−1 quan',fn:()=>{S.tien=Math.max(0,S.tien-1);S.flags.tang='vieng';gain('tieng',1)}}]});thayMatCareer()}},
  {id:'toado',y:1282,s:2,run:()=>{startQuest('lo');showModal({kicker:K(2,1282),title:'Tin dữ từ Lạng Châu',body:`<p>Quan trấn giữ Lạng Châu chạy trạm về báo: Hữu thừa tướng Nguyên là Toa Đô đem 50 vạn quân, nói phao là mượn đường đánh Chiêm Thành, nhưng thực ra là sang xâm lược nước ta.</p>${src('mùa thu, tháng 8 năm 1282, Lạng Châu báo Toa Đô đem 50 vạn quân, mượn cớ đánh Chiêm Thành để sang xâm lược.')}<p class="note">Ở làng An Phú (hư cấu), cụ lý trưởng họp dân bàn chuyện lo trước. Xem mục Việc cần làm.</p>`})}},
  {id:'binhthan',y:1282,s:3,run:()=>{showModal({kicker:K(3,1282),title:'Hội nghị Bình Than',body:`<p>Tháng 10, vua ngự ra Bình Than, họp vương hầu và trăm quan bàn kế công thủ. Ở bến sông, vua nhận ra người lái thuyền than đội nón lá, mặc áo ngắn chính là Nhân Huệ Vương Trần Khánh Dư, bèn tha tội, cho làm Phó đô tướng quân.</p><p>Hoài Văn hầu Trần Quốc Toản còn trẻ, không được dự bàn, phẫn kích bóp nát quả cam trong tay lúc nào không biết. Về nhà, chàng tập hợp hơn nghìn gia nô, thân thuộc, viết lên cờ sáu chữ <b>Phá cường địch, báo hoàng ân</b>.</p>${src('Quốc Toản trong lòng hổ thẹn, phẫn kích, tay cầm quả cam bóp nát lúc nào không biết.')}`});
    if(S.co==='village')showModal({kicker:'Ít hôm sau',title:'Cò muốn đi',body:`<p>Cò tìm đến nhà bạn, mắt sáng rực: "Nghe nói Hoài Văn hầu đang tập hợp người đánh giặc. Tớ muốn theo. Ở làng mãi thì làm được gì?"</p>${S.thao==='co'?'<p>Phía sau, Thảo đứng nép bên cửa, mắt đỏ hoe.</p>':''}`,choices:[
      {label:'Khuyên Cò ở lại giữ làng',note:'Cò sẽ ở bên bạn khi giặc đến',fn:()=>{S.flags.coStay=true;showModal({kicker:'Ít hôm sau',title:'Ở lại',body:'<p>"Giặc mà đến, làng mình cần người hơn ai hết." Cò im lặng rất lâu, rồi gật đầu.</p>'})}},
      {label:'Ủng hộ Cò lên đường',note:'Cò thân hơn · rời làng',fn:()=>{S.co='army';S.rel.co+=2;showModal({kicker:'Ít hôm sau',title:'Lên đường',body:'<p>Bạn tiễn Cò ra đến bến sông. Cậu giơ cao nắm tay: "Phá cường địch, báo hoàng ân!" rồi đi không ngoảnh lại.</p>'})}}]})}},
+ {id:'xachinh',y:1283,s:0,run:()=>xaEvent(K(0,1283))},
  {id:'tietche',y:1283,s:3,mg:true,run:()=>{
    const body=`<p>Vua thân hành dẫn các vương hầu điều quân thủy bộ tập trận. Hưng Đạo Vương Trần Quốc Tuấn được phong Quốc công tiết chế, thống lĩnh quân đội cả nước.</p>${src('mùa đông, tháng 10 năm 1283, Hưng Đạo Vương được phong Quốc công tiết chế, thống lĩnh quân đội toàn quốc.')}`;
    if(S.path==='vo')showModal({kicker:K(3,1283),title:'Quốc công tiết chế',body:body+'<p>Đội hương binh của bạn được gọi đi tập trận cùng quan quân. Đây là dịp để tướng lĩnh để mắt đến bạn.</p>',choices:[{label:'Ra bãi tập',fn:startTraining}]});
+   else if(boButOpen())showModal({kicker:K(3,1283),title:'Quốc công tiết chế',body:body+'<p>Hương binh các làng được gọi đi tập trận cùng quan quân. Trai làng An Phú đi qua cổng Quốc học viện, giáo vác vai. Bạn nhìn chồng sách trên bàn, rồi nhìn ra đường.</p><p class="note">Hư cấu. Bỏ bút theo kiếm thì từ nay đi đường võ, ra bãi tập ngay.</p>',choices:[
+     {label:'Bỏ bút theo kiếm, xin vào hương binh',note:'sang đường võ · +2 Tiếng',fn:()=>{S.path='vo';S.career.boBut=true;gain('tieng',2);startTraining()}},
+     {label:'Ở lại với sách vở',fn:()=>{S.pending=null}}]});
    else{S.pending=null;showModal({kicker:K(3,1283),title:'Quốc công tiết chế',body})}}},
  {id:'tolich',y:1284,s:0,run:()=>showModal({kicker:K(0,1284),title:'Vét sông Tô Lịch',body:`<p>Tháng giêng, triều đình cho vét sông Tô Lịch. Trai tráng làng An Phú, nằm ngay bên sông, đều được gọi ra làm.</p>${src('mùa xuân, tháng giêng năm 1284, vét sông Tô Lịch.')}`,choices:[
    {label:'Ra sông cùng dân làng',note:'−1 Sức · +4 Tiếng · lòng sông sâu hơn',fn:()=>{S.flags.tolich='done';S.suc=Math.max(0,S.suc-1);gain('tieng',4);gain('vo',1)}},

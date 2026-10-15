@@ -1,4 +1,5 @@
 /* ================= dialogs ================= */
+import {fieldBonus,homeChoices,lyChoices,truongChoices} from './chuc.js';
 import {BI,H,MO,PA,SEASONS,TR,TS,W,WA,WL,WR,Z,canchi,ctx} from './constants.js';
 import {locked} from './world.js';
 import {bsolid,get,map} from './map.js';
@@ -56,7 +57,7 @@ export function talkVo(){
   const ch=[{label:S.path==='vo'?'Tập trận':'Luyện võ',note:'−1 Sức · +Võ'+(S.theTrain?'':' · khỏe lên'),fn:()=>{if(!spend())return;startDrill(q=>{gain('vo',dailyReward(n,q,5/6));if(!S.theTrain){S.theTrain=true;gainThe(1,90)}toast(voLesson())})}}];
   // Võ 60: luyện trai làng thành đội, ba buổi (mỗi mùa một buổi); đêm giặc đến trai làng ra đòn nhanh hơn
   const dv=S.flags.doi||0,now=S.year*4+S.season;
-  if(voTeach()&&age()>=18&&dv<3)ch.push({label:`Luyện trai làng thành đội (${dv}/3)`,note:S.doiAt===now?'mùa này đã luyện':'−1 Sức · +1 Tiếng · cần Võ 60',disabled:S.doiAt===now,fn:()=>{if(!spend())return;S.doiAt=now;S.flags.doi=dv+1;gain('tieng',1);
+  if((voTeach()||S.career.doi)&&age()>=18&&dv<3)ch.push({label:`Luyện trai làng thành đội (${dv}/3)`,note:S.doiAt===now?'mùa này đã luyện':'−1 Sức · +1 Tiếng'+(S.career.doi?' · việc của đội trưởng':' · cần Võ 60'),disabled:S.doiAt===now,fn:()=>{if(!spend())return;S.doiAt=now;S.flags.doi=dv+1;gain('tieng',1);
     toast(dv+1>=3?'Ba buổi tập xong, trai làng đã biết giữ hàng, đánh theo hiệu lệnh. Đêm giặc đến, họ sẽ ra đòn nhanh hơn.':'Bạn cho trai làng tập giữ hàng, tiến lui theo tiếng mõ. Lão võ sư đứng xem, gật gù.',4600)}});
   say('Lão võ sư Hoàng',dv>=3?'Trò luyện trai làng thành đội ra dáng lắm. Võ truyền đi được thì làng mới vững.':S.path==='vo'?'Hương binh thì phải luyện mỗi ngày. Người phương bắc chưa bao giờ thôi dòm ngó nước ta.':'Võ không phải để bắt nạt người. Võ để giữ làng, giữ nước.',ch);
 }
@@ -80,10 +81,11 @@ export function talkThao(){
 export function talkLy(){
   const ch=[];if(age()>=10)ch.push({label:'Giúp việc làng',note:'−1 Sức · +3 Tiếng · +1 quan',fn:()=>{if(!spend())return;gain('tieng',3);gain('tien',1);toast(pickR(['Bạn cùng trai làng đắp lại đoạn đê.','Bạn giúp dọn sân đình chuẩn bị lễ hội.','Bạn đi báo tin cho các xóm.']))}});
   {const pc=prepChoice('lan');if(pc)ch.push(pc)}
+  ch.push(...lyChoices());
   // Văn 50: viết đơn xin quan trên giảm sưu thuế năm mất mùa cho làng (một lần, hư cấu)
   if(vanPetition()&&age()>=16&&!S.flags.don)ch.push({label:'Viết đơn cho làng xin giảm sưu thuế năm mất mùa',note:'−1 Sức · +5 Tiếng · cần Văn 50',fn:()=>{if(!spend())return;S.flags.don=true;gain('tieng',5);
     say('Cụ lý trưởng','Chữ nghĩa cháu đâu ra đấy, lý lẽ chặt chẽ. Ta đóng dấu của làng, mai đưa lên huyện. Cả làng phải cảm ơn cháu.')}});
-  say('Cụ lý trưởng',S.flags.dh==='hoa'?'Trước Diên Hồng, cháu lại bảo nên hòa. Ta không trách, nhưng trai làng nghe thế thì nản lòng.':S.year>=1282?'Tin từ kinh thành không lành. Người Nguyên đòi mượn đường sang đánh Chiêm Thành. Làng mình phải sẵn sàng.':S.tieng>=40?'Làng An Phú nhớ công cháu. Có việc gì, trai làng sẵn lòng theo cháu.':S.flags.de==='home'?'Năm nước to, nhà cháu lo dọn đồ, còn đê làng thì vỡ. Ta vẫn nhớ đấy.':'Làng An Phú ta ruộng tốt, người hiền. Ai có sức thì góp sức với làng.',ch);
+  say('Cụ lý trưởng',S.career.xa==='win'?'Việc làng giờ trong tay cháu. Ta già rồi, chỉ ngồi uống nước, ngó trẻ con chơi.':S.flags.dh==='hoa'?'Trước Diên Hồng, cháu lại bảo nên hòa. Ta không trách, nhưng trai làng nghe thế thì nản lòng.':S.year>=1282?'Tin từ kinh thành không lành. Người Nguyên đòi mượn đường sang đánh Chiêm Thành. Làng mình phải sẵn sàng.':S.tieng>=40?'Làng An Phú nhớ công cháu. Có việc gì, trai làng sẵn lòng theo cháu.':S.flags.de==='home'?'Năm nước to, nhà cháu lo dọn đồ, còn đê làng thì vỡ. Ta vẫn nhớ đấy.':'Làng An Phú ta ruộng tốt, người hiền. Ai có sức thì góp sức với làng.',ch);
 }
 export function talkCo(){
   const a=age(),ch=[];let t;
@@ -161,12 +163,12 @@ export function drawTracks(){if(!S)return;const b=S.buffalo;if(!b.tracks||!b.tra
     const px=x*TS+8+(k%2?3:-3),py=y*TS+8;ctx.fillRect((px-2)*Z-camX,(py-2)*Z-camY,2*Z,2*Z);ctx.fillRect((px+1)*Z-camX,(py-2)*Z-camY,2*Z,2*Z);ctx.fillRect((px-1)*Z-camX,(py+3)*Z-camY,Z,Z);ctx.fillRect((px+1)*Z-camX,(py+3)*Z-camY,Z,Z)}}
 export function doorAction(b){
   if(b.id==='home')return say('Nhà mình','Gian nhà tranh ba gian, vách đất, có bàn thờ tổ tiên ở giữa.',[
-    {label:'Ngủ, sang mùa mới',fn:()=>advance(1)},{label:'Chọn việc chính, cho thời gian trôi',note:'đến chuyện quan trọng tiếp theo',fn:chooseFocus},{label:'Lưu game',fn:()=>{save();toast('Đã lưu. Lần sau mở game chọn "Tiếp tục".')}}]);
+    {label:'Ngủ, sang mùa mới',fn:()=>advance(1)},...homeChoices(),{label:'Chọn việc chính, cho thời gian trôi',note:'đến chuyện quan trọng tiếp theo',fn:chooseFocus},{label:'Lưu game',fn:()=>{save();toast('Đã lưu. Lần sau mở game chọn "Tiếp tục".')}}]);
   if(b.id==='cung')return say('Hoàng thành','Cổng Hoàng thành canh gác nghiêm ngặt. Bên trong là cung điện của vua Trần. Dân thường không được vào.');
   if(b.id==='thap')return say('Tháp Báo Thiên','Ngọn tháp cao nhất kinh thành. Toàn thư chép: mùa thu tháng 8 năm Mậu Ngọ (1258), năm bạn ra đời, gió to làm đỉnh tháp rơi xuống.');
   if(b.id==='chua')return talkSu();
   if(b.id==='dinh')return say('Đình làng','Đình làng thờ Thành hoàng, là nơi dân làng họp bàn việc chung.');
-  if(b.id==='truong')return say('Trường làng','Lớp học có mấy chiếc chiếu, khay cát để tập viết. Thầy đồ đang đứng trước cửa.');
+  if(b.id==='truong'){const tc=truongChoices();return say('Trường làng',tc.length?(S.thay?'Lũ trẻ ngồi chờ trên chiếu. Thầy Chu gật đầu với bạn: "Hôm nay trò giảng nhé."':'Lũ trẻ ngồi chờ trên chiếu, khay cát đã san phẳng. Từ ngày thầy Chu mất, trường làng trông cả vào bạn.'):'Lớp học có mấy chiếc chiếu, khay cát để tập viết. Thầy đồ đang đứng trước cửa.',tc)}
 }
 /* Tự học ở nhà chậm và có trần: muốn giỏi phải đến lớp, đến sân võ (mỗi mùa ở đó được 8 điểm trở lên). */
 const FF_RATE={van:()=>S.path==='van'?2:1,vo:()=>S.path==='vo'?2:1},FF_CAP={van:()=>S.path==='van'?45:25,vo:()=>S.path==='vo'?45:25};
@@ -174,14 +176,14 @@ function ffNote(k){const lab=k==='van'?'Văn':'Võ',c=FF_CAP[k]();return S[k]>=c
 export function chooseFocus(){const a=age();say('Những năm tới','Bạn dồn sức vào việc gì? Thời gian sẽ trôi cho đến khi có chuyện quan trọng xảy ra. Bạn sẽ bỏ lỡ những lần gặp gỡ bạn bè trong thời gian ấy. Tự học, tự luyện ở nhà tiến bộ chậm; đến lớp thầy đồ hay sân võ thì nhanh hơn nhiều.',[
   {label:'Tự học ở nhà',note:ffNote('van'),fn:()=>fastForward('van')},
   {label:'Tự luyện võ',note:a<8?'cần 8 tuổi':ffNote('vo'),disabled:a<8,fn:()=>fastForward('vo')},
-  {label:'Làm ruộng',note:a<8?'cần 8 tuổi':`+${S.path==='nong'?3:2} quan mỗi mùa`,disabled:a<8,fn:()=>fastForward('tien')},
+  {label:'Làm ruộng',note:a<8?'cần 8 tuổi':`+${S.path==='nong'?3+fieldBonus():2} quan mỗi mùa`,disabled:a<8,fn:()=>fastForward('tien')},
   {label:'Lo việc làng',note:a<10?'cần 10 tuổi':S.tieng>=TIENG_FF_CAP?`ở nhà lo việc làng chỉ tới ${TIENG_FF_CAP} Tiếng`:`+2 Tiếng mỗi mùa, tối đa ${TIENG_FF_CAP}`,disabled:a<10,fn:()=>fastForward('lang')}])}
 export function fastForward(k){let n=0;
   for(let i=0;i<60;i++){
     /* mùa đang dở chỉ tính phần Sức còn lại, tránh vừa học ở lớp vừa được cộng thêm */
     const part=i?1:S.suc/sucMax();
     if(k==='van'||k==='vo'){const c=FF_CAP[k]();if(S[k]<c&&Math.random()<part)S[k]=Math.min(c,S[k]+FF_RATE[k]())}
-    else if(k==='tien')S.tien+=Math.round((S.path==='nong'?3:2)*part);else if(S.tieng<TIENG_FF_CAP&&Math.random()<part)S.tieng=Math.min(TIENG_FF_CAP,S.tieng+2)
+    else if(k==='tien')S.tien+=Math.round((S.path==='nong'?3+fieldBonus():2)*part);else if(S.tieng<TIENG_FF_CAP&&Math.random()<part)S.tieng=Math.min(TIENG_FF_CAP,S.tieng+2)
     n++;advanceOne();if(modalOpen||S.ended)break}
   toast(`${n} mùa trôi qua. Bây giờ là ${SEASONS[S.season].toLowerCase()} năm ${canchi(S.year)} (${S.year}), bạn ${age()} tuổi.`,4600);save();renderHUD()}
 export function fishAction(){if(!spend())return;practice('boi');
@@ -190,6 +192,6 @@ export function fishAction(){if(!spend())return;practice('boi');
     if(S.quests.ca==='active'&&!has('Cá')){S.items.push('Cá');renderHUD();toast('Bạn câu được một con cá rô. Mang cho bà Tư thôi!')}
     else if(q===1&&Math.random()<.25){gain('tien',2);toast('Một con cá chép to! Đem bán được hai quan.')}
     else{gain('tien',1);toast('Câu được mấy con cá, đem bán được một quan.')}})}
-export function fieldAction(){if(!spend())return;const n=Math.max(1,(S.path==='nong'?3:2)-(trauYeu()?1:0));
+export function fieldAction(){if(!spend())return;const n=Math.max(1,(S.path==='nong'?3+fieldBonus():2)-(trauYeu()?1:0));
   startField(q=>{gain('tien',dailyReward(n,q,.875));
     toast(['Bạn cùng cha cấy lúa, lưng mỏi nhừ.','Bạn làm cỏ, tát nước vào ruộng.','Mùa gặt! Lúa vàng trĩu bông.','Bạn cày ải, phơi đất cho vụ sau.'][S.season])})}

@@ -1,4 +1,5 @@
 /* ================= minigame: kỳ thi 1275 ================= */
+import {vanFailChoice} from '../chuc.js';
 import {S,save,shuffle} from '../state.js';
 import {gain,showModal,toast} from '../ui.js';
 
@@ -27,5 +28,5 @@ function examResult(ok,need){S.pending=null;
     showModal({kicker:'Tiệc mừng ở nhà',title:'Cò đứng ngoài ngõ',body:'<p>Giữa tiệc, bạn thấy Cò đứng ngoài ngõ, không vào. Cậu mặc bộ áo cũ, tay còn dính bùn.</p>',choices:[
       {label:'Ra kéo Cò vào ngồi mâm trên',note:'Cò thân hơn',fn:()=>{S.flags.exam='pass';S.rel.co+=2;toast('"Ông Thái học sinh mà vẫn nhớ thằng bạn chăn trâu này à?" Cò cười, mắt đỏ hoe.',5000)}},
       {label:'Mải tiếp khách quan, để Cò đứng đó',note:'Cò tủi thân',fn:()=>{S.flags.exam='khoe';S.rel.co=Math.max(0,S.rel.co-2);toast('Lúc bạn ngoảnh ra, Cò đã đi mất.',4000)}}]});
-  }else{S.flags.exam='fail';showModal({kicker:'Ngày xướng danh',title:'Không có tên trên bảng',body:`<p>Bạn trả lời đúng ${ok}/5 câu, chưa đủ để đỗ. Đào Tiêu đỗ Trạng nguyên, cùng 27 người đỗ Thái học sinh.</p><p>${S.rel.co>=3?'Tối ấy Cò mang sang một vò rượu: "Trượt thì học tiếp, tớ còn chẳng biết chữ đây này."':'Mẹ nấu nồi chè đậu đen, không nhắc gì chuyện thi.'}</p>`})}
+  }else{S.flags.exam='fail';showModal({kicker:'Ngày xướng danh',title:'Không có tên trên bảng',body:`<p>Bạn trả lời đúng ${ok}/5 câu, chưa đủ để đỗ. Đào Tiêu đỗ Trạng nguyên, cùng 27 người đỗ Thái học sinh.</p><p>${S.rel.co>=3?'Tối ấy Cò mang sang một vò rượu: "Trượt thì học tiếp, tớ còn chẳng biết chữ đây này."':'Mẹ nấu nồi chè đậu đen, không nhắc gì chuyện thi.'}</p>`});vanFailChoice()}
   save()}
