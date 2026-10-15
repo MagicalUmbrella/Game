@@ -17,7 +17,11 @@ import {buildingSprite,personSprite} from './sprites.js';
 import {MG,P,S,save,setMG} from './state.js';
 import {floatAt,gain,setKeys,showModal,toast} from './ui.js';
 import {walkable} from './dialogs.js';
-import {nextStep,stepTo} from './pathfind.js';
+import {along,nextStep,roadRoute,routeLen,stepTo} from './pathfind.js';
+import {drawBoat,makeBoat,rowBoat,seat} from './thuyen.js';
+import {keys} from './input.js';
+import {get} from './map.js';
+import {BR,DK,GA,PA,SA,ST} from './constants.js';
 import {VH,VW,camX,camY,clock,drawSprite,reduce,shadow} from './render.js';
 import {charred,dirOf,endChapter,smoke,tongue,torchFx} from './climax.js';
 import {hudBox} from './minigames/flood.js';
@@ -57,55 +61,72 @@ const sayMe=(text,dur)=>say(MG.me,text,dur);
 function note(text,dur=9){MG.note={text,t:dur}}
 
 /* ---------- 1–2. bị giải đi, qua sông ---------- */
+/* Đoàn áp giải đi thành một hàng theo đường sá (roadRoute ưu tiên đường đất, đê, cầu): lính cầm đuốc đi đầu, tên cầm
+   đầu nắm đầu thừng, bạn bị trói, người làng bị bắt nối dây phía sau, một lính cầm đuốc đi cuối. Mọi người giữ khoảng
+   cách đều trên cùng một đường (along), đi 4 hướng, cùng một nhịp. Bạn không tự đi được; giữ Space thì đoàn đi nhanh
+   (tua cảnh). Tới bến Đông Bộ Đầu thì xuống thuyền giặc (thuyen.js), chèo sang thủy trại bờ đông, lên bờ đi tiếp vào trại. */
+const GAP=1.5,PACE=2.2;
+const roadCost=(x,y)=>{const t=get(x,y);return t===PA||t===DK||t===BR||t===ST||t===GA?1:t===SA?2:3};
+function route(a,b){return roadRoute(Math.floor(a[0]),Math.floor(a[1]),Math.floor(b[0]),Math.floor(b[1]),okWalk,roadCost)||[[a[0],a[1]],[b[0],b[1]]]}
+const ME={me:true,name:'Bạn',get x(){return S.x},get y(){return S.y}};
 export function startEscort(res){
   const how=(S.capt&&S.capt.how)||'down',bossLead=res.boss==='took'||res.boss==='alive'||how==='fight'||how==='trick'||how==='surrender';
-  const me={me:true,get x(){return S.x},get y(){return S.y}};
-  const lead=walker('lead',bossLead?'Tên đầu toán':'Lính giặc',{id:bossLead?'giac_dau':'giac_ky'},S.x+1.2,S.y,{torch:true});
-  const g1=walker('g1','Lính giặc',{id:'giac'},S.x-1.2,S.y+.2,{torch:true}),g2=walker('g2','Lính giặc',{id:'giac'},S.x,S.y+1.4,{});
-  const caps=(res.lostWho||[]).map((p,i)=>walker('cap'+i,p.name,p.look,S.x-.6-i*.4,S.y+.8+i*.5,{}));
-  setMG({type:'escort',phase:'walk',clock:0,lead,guards:[g1,g2],caps,me,bub:[],note:null,fade:0,yanked:false,res,hideNPC:true,burnt:(res.burnt||[]).map(id=>BUILDINGS.find(b=>b.id===id)).filter(Boolean),
-    roam:true,hideProp,update:escortUpdate,draw:escortDraw,post:nightPost,hud:sceneHud,findTarget:()=>null,blockAt,speedMul:()=>.6,mini:sceneMini,said:{}});
-  MG.goal=BEN;document.body.classList.add('mg');P.dir='right';
-  setKeys('<span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> bước theo</span><span>Tay bị trói: không chạy được, tụt lại xa thì bị lôi đi</span>');
+  const lead=walker('lead',bossLead?'Tên đầu toán':'Lính giặc',{id:bossLead?'giac_dau':'giac_ky'},S.x,S.y,{});
+  const g1=walker('g1','Lính giặc',{id:'giac'},S.x,S.y,{torch:true}),g2=walker('g2','Lính giặc',{id:'giac'},S.x,S.y,{torch:true});
+  const caps=(res.lostWho||[]).map((p,i)=>walker('cap'+i,p.name,p.look,S.x,S.y,{tied:true}));
+  const col=[g1,lead,ME,...caps,g2],pts=route([S.x,S.y],BEN);
+  setMG({type:'escort',phase:'walk',clock:0,lead,guards:[g1,g2],caps,me:ME,col,pts,L:routeLen(pts),s:2*GAP,k:0,bub:[],note:null,fade:0,res,hideNPC:true,burnt:(res.burnt||[]).map(id=>BUILDINGS.find(b=>b.id===id)).filter(Boolean),
+    roam:true,hideProp,update:escortUpdate,draw:escortDraw,post:nightPost,hud:sceneHud,findTarget:()=>null,speedMul:()=>0,mini:sceneMini,said:{},
+    key:k=>k===' ',meSort:()=>MG.phase==='row'?{y:MG.B.y-.44,dy:.32}:null});
+  MG.goal=BEN;document.body.classList.add('mg');placeColumn(MG,0);
+  setKeys('<span>Tay bị trói, bị giải đi giữa toán giặc</span><span>Giữ <kbd>Space</kbd> cho đoàn đi nhanh</span>');
   $('toast').hidden=true;
   say(lead,BRANCH[how].lead,4.2);
   if(caps.length){const c=caps.find(p=>p.look&&p.look.id==='me_gia')||caps[0];setTimeout(()=>{if(MG&&MG.type==='escort')say(c,c.look&&c.look.id==='me_gia'?'Con ơi... mẹ đây!':c.look&&c.look.id==='sen'?'Cha ơi!':'Đừng sợ, có nhau cả đây.',3.6)},2200)}
   toast('Tay bị trói giật cánh khuỷu, bạn bị lôi đi giữa toán giặc cầm đuốc, về phía bến Đông Bộ Đầu.',5200);
   save();
 }
-function chain(list,first,dt,sp){let prev=first;for(const o of list){const d=Math.hypot(prev.x-o.x,prev.y-o.y);if(d>1){const st=nextStep(o,prev.x,prev.y,okWalk,MG.clock);if(st){const [mx,my]=stepTo(o,st,Math.min(d-.9,sp*dt),okWalk);o.x+=mx;o.y+=my;o.moving=!!(mx||my);if(o.moving){o.walk+=dt*8;o.dir=dirOf(mx,my)}}else o.moving=false}else o.moving=false;
-  if(d>6){o.x=prev.x;o.y=prev.y+.4;o.path=null}prev=o}}
-function escortUpdate(dt){const M=MG;M.clock+=dt;
+/* Đặt cả hàng người lên đường M.pts theo quãng đường M.s của người đi đầu. */
+function placeColumn(M,dt,moving){M.col.forEach((o,i)=>{const si=M.s-i*GAP,p=along(M.pts,Math.max(0,si)),mv=!!moving&&si>0;
+  if(o.me){S.x=p.x;S.y=p.y;P.dir=p.dir;P.moving=mv;if(mv)P.walk+=dt*7}else{o.x=p.x;o.y=p.y;o.dir=p.dir;o.moving=mv;if(mv)o.walk+=dt*7}})}
+/* chỗ của từng người trên thuyền: hai lính chèo ở mũi, đuôi; tên cầm đầu, bạn, người bị bắt ngồi giữa */
+function boatSpots(M){const B=M.B,a=seat(B,1),b=seat(B,4),riders=[M.lead,ME,...M.caps],n=riders.length,out=new Map();
+  riders.forEach((o,i)=>{const u=n>1?i/(n-1):.5;out.set(o,[a[0]+(b[0]-a[0])*u,a[1]])});out.set(M.guards[0],seat(B,0));out.set(M.guards[1],seat(B,5));return out}
+function setPos(o,p,dir){if(o.me){S.x=p[0];S.y=p[1];if(dir)P.dir=dir}else{o.x=p[0];o.y=p[1];if(dir)o.dir=dir}}
+function escortUpdate(dt){const M=MG;M.clock+=dt;const fast=keys[' ']?3:1;
   for(const b of M.bub)b.t-=dt;M.bub=M.bub.filter(b=>b.t>0);if(M.note&&(M.note.t-=dt)<=0)M.note=null;
-  if(M.phase==='cross'){M.fade+=dt;if(M.fade>=1.4&&!M.crossed){M.crossed=true;
-      const [lx,ly]=LANDING;S.x=lx;S.y=ly+.2;M.lead.x=lx+1.3;M.lead.y=ly;M.guards[0].x=lx-1;M.guards[0].y=ly-.6;M.guards[1].x=lx-.8;M.guards[1].y=ly+1;M.caps.forEach((c,i)=>{c.x=lx-1.6-i*.5;c.y=ly+.5+(i%2)*.4;c.path=null});
-      for(const o of [M.lead,...M.guards])o.path=null;M.goal=PEN_DOOR}
-    if(M.fade>=2.8&&(knows('cheo')||knows('boi'))&&!M.river){M.river=true;S.capt.river=true;setTimeout(()=>toast('Bạn quen sông nước: lúc ngồi trên thuyền giặc, bạn nhớ con nước đang ròng, thuyền đi chếch về phía hạ lưu.',5000),5600)}
-    if(M.fade>=2.8){M.phase='walk2';M.fade=0;toast('Thuyền cập cầu tàu thủy trại giặc ở bờ đông. Thuyền chiến neo kín bến, lính canh đứng sau hàng cọc.',5200)}
-    return}
-  const L=M.lead,dp=Math.hypot(S.x-L.x,S.y-L.y),[gx,gy]=M.goal;
-  // tên cầm đầu: đi tới đích, chờ khi bạn tụt lại
-  if(dp<2.4){goTo(L,gx,gy,2.4,dt);M.waitT=0}else{L.moving=false;M.waitT=(M.waitT||0)+dt}
-  // đứng yên thì bị sợi thừng kéo theo; tụt lại xa thì lính giật mạnh (theo đường ô, không xuyên tường, sông)
-  M.idleT=P.moving?0:(M.idleT||0)+dt;
-  if(dp>3||(M.idleT>.8&&dp>1.2)){const st=nextStep(M.me,L.x,L.y,okWalk,M.clock);if(st){const [mx,my]=stepTo(M.me,st,(dp>3?5:2.6)*dt,okWalk);S.x+=mx;S.y+=my;if(mx||my){P.dir=dirOf(mx,my);P.walk+=dt*8}}
-    if(dp>3&&!M.yanked){M.yanked=true;toast('Tên lính giật mạnh sợi thừng, lôi bạn đi xềnh xệch.',3200);say(M.guards[0],'Đi mau!',2)}}
-  // lính đi kèm hai bên, người làng bị bắt thành một dây sau lưng bạn
-  const [g1,g2]=M.guards;goTo(g1,S.x+(L.x<S.x?1:-1)*1.1,S.y-.5,3.2,dt);goTo(g2,S.x,S.y+1.3,3.2,dt);
-  chain(M.caps,M.me,dt,3);
-  // chuyện dọc đường
   const once=(k,f)=>{if(!M.said[k]){M.said[k]=1;f()}};
-  const home=BUILDINGS.find(b=>b.id==='home');if(M.phase==='walk'&&home&&Math.hypot(S.x-(home.x+2.5),S.y-(home.y+3))<4)once('home',()=>sayMe(M.burnt.includes(home)?'Nhà mình... cháy cả rồi.':'Nhà mình...',3.4));
-  if(M.phase==='walk'&&S.y<31&&S.x>45)once('tolich',()=>{sayMe('Qua sông Tô Lịch rồi. Làng ở sau lưng...',3.4)});
-  if(M.phase==='walk'&&Math.hypot(S.x-BEN[0],S.y-BEN[1])<9)once('ben',()=>{toast('Bến Đông Bộ Đầu đỏ rực đuốc giặc. Một lá cờ lớn cắm trên bãi.',4600);note('giặc kéo đến Đông Bộ Đầu, dựng một lá cờ lớn (tháng giêng năm 1285).')});
-  if(M.phase==='walk'&&Math.hypot(L.x-BEN[0],L.y-BEN[1])<.6&&dp<2.6){M.phase='cross';M.fade=0;M.crossed=false;sayMe('',.01)}
-  if(M.phase==='walk2'&&S.x>THUY.x1+4)once('road',()=>{sayMe('Chúng giải mình đi đâu thế này... xa bờ sông quá.',3.6);note('ngày 12 tháng giêng, giặc đánh vào Gia Lâm, Vũ Ninh, Đông Ngàn.',8)});
-  if(M.phase==='walk2'&&S.x>CAMP.x0-9)once('see',()=>toast('Trước mặt là doanh trại quân Nguyên: rào cọc nhọn, chòi canh bốn góc, lửa trại khắp bãi.',5000));
-  if(M.phase==='walk2'&&inRect(Math.floor(S.x),Math.floor(S.y),CAMP))once('gate',()=>{say(L,'Ném nó vào chuồng tù!',2.6);note('',.01)});
-  if(M.phase==='walk2'&&Math.hypot(L.x-gx,L.y-gy)<.5&&dp<2.6)startCamp();
+  if(M.phase==='walk'||M.phase==='walk2'){
+    M.s=Math.min(M.L+M.col.length*GAP,M.s+PACE*fast*dt);placeColumn(M,dt*fast,true);
+    // chuyện dọc đường
+    const home=BUILDINGS.find(b=>b.id==='home');if(M.phase==='walk'&&home&&Math.hypot(S.x-(home.x+2.5),S.y-(home.y+3))<4)once('home',()=>sayMe(M.burnt.includes(home)?'Nhà mình... cháy cả rồi.':'Nhà mình...',3.4));
+    if(M.phase==='walk'&&S.y<31&&S.x>45)once('tolich',()=>{sayMe('Qua sông Tô Lịch rồi. Làng ở sau lưng...',3.4)});
+    if(M.phase==='walk'&&Math.hypot(S.x-BEN[0],S.y-BEN[1])<9)once('ben',()=>{toast('Bến Đông Bộ Đầu đỏ rực đuốc giặc. Một lá cờ lớn cắm trên bãi, thuyền giặc chờ sẵn.',4600);note('giặc kéo đến Đông Bộ Đầu, dựng một lá cờ lớn (tháng giêng năm 1285).')});
+    if(M.phase==='walk2'&&S.x>THUY.x1+4)once('road',()=>{sayMe('Chúng giải mình đi đâu thế này... xa bờ sông quá.',3.6);note('ngày 12 tháng giêng, giặc đánh vào Gia Lâm, Vũ Ninh, Đông Ngàn.',8)});
+    if(M.phase==='walk2'&&S.x>CAMP.x0-9)once('see',()=>toast('Trước mặt là doanh trại quân Nguyên: rào cọc nhọn, chòi canh bốn góc, lửa trại khắp bãi.',5000));
+    if(M.phase==='walk2'&&inRect(Math.floor(S.x),Math.floor(S.y),CAMP))once('gate',()=>{say(M.lead,'Ném nó vào chuồng tù!',2.6);note('',.01)});
+    // tới bến: xuống thuyền; tới cửa chuồng tù: vào trại
+    if(M.phase==='walk'&&M.s-GAP>=M.L-.05){M.B=makeBoat(BEN,LANDING,{big:true,speed:1.45});M.phase='board';M.k=0;M.from=new Map(M.col.map(o=>[o,[o.x,o.y]]));sayMe('',.01);say(M.lead,'Xuống thuyền! Nhanh lên!',2.4)}
+    if(M.phase==='walk2'&&Math.hypot(S.x-PEN_DOOR[0],S.y-PEN_DOOR[1])<1.3)startCamp();
+    return}
+  const B=M.B,spots=boatSpots(M);
+  if(M.phase==='board'){M.k=Math.min(1,M.k+dt*1.1*fast);for(const o of M.col){const a=M.from.get(o),b=spots.get(o),u=M.k;setPos(o,[a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u],u<1?null:B.dir);if(!o.me)o.moving=u<1;else P.moving=u<1}
+    if(M.k>=1){M.phase='row';toast('Thuyền giặc rời bến Đông Bộ Đầu. Sông Hồng mênh mông, bờ bên kia chỉ thấy lửa đuốc lập lòe.',5200)}return}
+  if(M.phase==='row'){const done=rowBoat(B,dt*fast);const sp=boatSpots(M);for(const o of M.col){setPos(o,sp.get(o),B.dir);if(!o.me)o.moving=false;else P.moving=false}
+    if(B.t>B.dur*.35)once('mid',()=>{if(knows('cheo')||knows('boi')){S.capt.river=true;sayMe('Nước đang ròng, thuyền trôi chếch về hạ lưu... phải nhớ lấy.',4)}else sayMe('Sông rộng quá. Làng mình ở đâu sau lưng kia...',3.6)});
+    if(done){M.crossed=true;M.phase='land';M.k=0;M.from=new Map(M.col.map(o=>[o,o.me?[S.x,S.y]:[o.x,o.y]]));
+      M.pts=route([B.ex+(B.dir==='right'?.9:-.9),B.ey],PEN_DOOR);M.L=routeLen(M.pts);M.s=2*GAP;
+      toast('Thuyền cập cầu tàu thủy trại giặc ở bờ đông. Thuyền chiến neo kín bến, lính canh đứng sau hàng cọc.',5200)}return}
+  if(M.phase==='land'){M.k=Math.min(1,M.k+dt*1.1*fast);M.col.forEach((o,i)=>{const p=along(M.pts,Math.max(0,M.s-i*GAP)),a=M.from.get(o),u=M.k;setPos(o,[a[0]+(p.x-a[0])*u,a[1]+(p.y-a[1])*u],p.dir);if(!o.me)o.moving=u<1;else P.moving=u<1});
+    if(M.k>=1)M.phase='walk2'}
 }
-function drawWalker(list,o,lab){list.push({y:o.y,f:()=>{shadow(o.x,o.y,10);drawSprite(personSprite(o.look,o.dir,frame(o)),o.x,o.y);if(o.torch){const px=Math.round((o.x+.35)*TS),py=Math.round((o.y-.4)*TS);tongue(px,py-10,8,5,o.x)}},lab:lab&&Math.hypot(o.x-S.x,o.y-S.y)<5?[o.name,o.x,o.y-2]:null})}
-function rope(a,b){ctx.strokeStyle='#8a6a3a';ctx.lineWidth=Z;ctx.beginPath();ctx.moveTo(a.x*T-camX,(a.y-.55)*T-camY);ctx.lineTo(b.x*T-camX,(b.y-.55)*T-camY);ctx.stroke()}
+function drawWalker(list,o,lab){list.push({y:o.y,f:()=>{shadow(o.x,o.y,10);drawSprite(personSprite(o.look,o.dir,frame(o)),o.x,o.y);if(o.tied)wrists(o.x,o.y);if(o.torch){const px=Math.round((o.x+(o.dir==='left'?-.35:.35))*TS),py=Math.round((o.y-.4)*TS);tongue(px,py-10,8,5,o.x)}},lab:lab&&Math.hypot(o.x-S.x,o.y-S.y)<5?[o.name,o.x,o.y-2]:null})}
+/* thừng trói tay: một vòng dây ngang thắt lưng */
+function wrists(x,y,dy=0){const px=Math.round(x*TS),py=Math.round((y+dy)*TS)-11;ctx.fillStyle='#8a6a3a';ctx.fillRect((px-4)*Z-camX,py*Z-camY,Z*8,Z*2);ctx.fillStyle='#5a4426';ctx.fillRect((px-1)*Z-camX,(py+2)*Z-camY,Z*2,Z*2)}
+/* sợi thừng võng xuống giữa hai người: từ tay người kéo tới chỗ trói người sau */
+function rope(a,b,dy=0){const ax=a.x*T-camX,ay=(a.y-.68+dy)*T-camY,bx=b.x*T-camX,by=(b.y-.68+dy)*T-camY,mx=(ax+bx)/2,my=Math.max(ay,by)+T*.35;
+  ctx.strokeStyle='#3a2a16';ctx.lineWidth=Z+2;ctx.beginPath();ctx.moveTo(ax,ay);ctx.quadraticCurveTo(mx,my,bx,by);ctx.stroke();
+  ctx.strokeStyle='#9a7a46';ctx.lineWidth=Z;ctx.beginPath();ctx.moveTo(ax,ay);ctx.quadraticCurveTo(mx,my,bx,by);ctx.stroke()}
 function escortDraw(list){const M=MG;
   // xóm bị đốt: còn cháy âm ỉ
   for(const b of M.burnt){const c=buildingSprite(b),top=b.y*TS-c.oy,roof=top+Math.round(c.height*.42);list.push({y:b.y+b.h+.02,f:()=>{
@@ -113,7 +134,15 @@ function escortDraw(list){const M=MG;
     for(let x=0;x<b.w;x+=2){const px=b.x*TS+x*TS+8;smoke(px,roof-10,x+b.x*3,8);tongue(px,roof+6,9,9,x+b.y)}}})}
   drawCamp(list);drawFolk(list);
   list.push({y:BIGFLAG[1],f:()=>flagFx(BIGFLAG[0],BIGFLAG[1],true)});for(const f of BEN_FIRES)list.push({y:f[1],f:()=>torchFx(f[0],f[1],true)});
-  list.push({y:-1,f:()=>{rope(M.me,M.lead);let prev=M.me;for(const c of M.caps){rope(prev,c);prev=c}}});
+  const tied=[M.lead,ME,...M.caps];
+  if(M.phase==='row'){const B=M.B;
+    drawBoat(list,B,[M.lead,...M.caps].map(o=>({look:o.look,at:[o.x,o.y],dir:B.dir})),M.guards.map(g=>({look:g.look,at:[g.x,g.y]})));
+    list.push({y:B.y-.43,f:()=>{wrists(S.x,S.y,.32);for(const c of M.caps)wrists(c.x,c.y,.32);for(let i=1;i<tied.length;i++)rope(tied[i-1],tied[i],.32)}});
+    for(const g of M.guards){const px=Math.round(g.x*TS),py=Math.round((g.y-.4)*TS);list.push({y:B.y-.29,f:()=>tongue(px+(B.dir==='left'?-5:5),py-10,8,5,g.x)})}
+    return}
+  if(M.B)drawBoat(list,M.B);   // thuyền đậu ở bến (lúc xuống thuyền, lên bờ)
+  list.push({y:S.y+.001,f:()=>wrists(S.x,S.y)});
+  list.push({y:-1,f:()=>{for(let i=1;i<tied.length;i++)rope(tied[i-1],tied[i])}});
   drawWalker(list,M.lead,true);for(const g of M.guards)drawWalker(list,g,false);for(const c of M.caps)drawWalker(list,c,true);
 }
 
@@ -227,9 +256,9 @@ function bubbles(){const M=MG;ctx.font='600 12px "Be Vietnam Pro", system-ui, sa
     ctx.fillStyle='#1d221f';ctx.textAlign='left';lines.forEach((l,i)=>ctx.fillText(l,x+8,y+13+i*16));ctx.globalAlpha=1}}
 function sceneHud(){const M=MG;if(M.fade>.3)return;bubbles();
   const w=Math.min(420,VW-32),x=Math.round(VW/2-w/2);hudBox(x,16,w,44);ctx.font='600 12px "Be Vietnam Pro", system-ui, sans-serif';ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillStyle='#e2bf72';
-  ctx.fillText(M.type==='escort'?(M.phase==='walk2'?'Bờ đông sông Hồng · trại quân Nguyên':'Bị giải đi · đêm 12 tháng giêng'):'Trại quân Nguyên · chuồng tù',x+12,30);
+  ctx.fillText(M.type==='escort'?(M.phase==='walk2'?'Bờ đông sông Hồng · trại quân Nguyên':M.B?'Sông Hồng · thuyền giặc':'Bị giải đi · đêm 12 tháng giêng'):'Trại quân Nguyên · chuồng tù',x+12,30);
   ctx.fillStyle='#aab2a2';ctx.textAlign='right';ctx.fillText(M.type==='camp'&&M.dawn?'giờ Mão, ngày 13':'Ất Dậu 1285',x+w-12,30);
-  ctx.textAlign='left';ctx.fillStyle='#efe8d4';ctx.fillText(M.type==='escort'?(M.phase==='walk2'?'Tên lính lôi bạn về phía chuồng tù trong trại':'Bước theo tên cầm đầu ra bến Đông Bộ Đầu'):M.kc?'Một viên quan nước ta vào trại giặc':'Quan sát, nghe ngóng',x+12,47);
+  ctx.textAlign='left';ctx.fillStyle='#efe8d4';ctx.fillText(M.type==='escort'?(M.phase==='walk2'?'Tên lính lôi bạn về phía chuồng tù trong trại':M.B?'Thuyền giặc chở bạn sang bờ đông':'Bị lôi đi giữa toán giặc, ra bến Đông Bộ Đầu'):M.kc?'Một viên quan nước ta vào trại giặc':'Quan sát, nghe ngóng',x+12,47);
   if(M.note&&M.note.text){const nw=Math.min(620,VW-32),nx=Math.round(VW/2-nw/2);ctx.font='500 12px "Be Vietnam Pro", system-ui, sans-serif';const words=('Toàn thư chép: '+M.note.text).split(' '),lines=[];let cur='';
     for(const wd of words){const t=cur?cur+' '+wd:wd;if(ctx.measureText(t).width>nw-24&&cur){lines.push(cur);cur=wd}else cur=t}if(cur)lines.push(cur);
     const nh=lines.length*16+12,ny=VH-170-nh;ctx.globalAlpha=Math.min(1,M.note.t*2);hudBox(nx,ny,nw,nh);ctx.fillStyle='#c9bfa0';lines.forEach((l,i)=>ctx.fillText(l,nx+12,ny+14+i*16));ctx.globalAlpha=1}}

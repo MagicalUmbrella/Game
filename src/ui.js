@@ -5,6 +5,7 @@ import {REGIONS,regionId} from './world.js';
 import {chips,ico} from './icons.js';
 import {banner,portrait} from './portrait.js';
 import {statProgress,sucMax} from './stats.js';
+import {suggestions} from './viec.js';
 
 export let dialogOpen=false,modalOpen=false,curOpts=[],modalQueue=[];
 export const floats=[];
@@ -62,12 +63,14 @@ export function renderHUD(){
    ${pathName?`<div class="path">${pathName}</div>`:''}${rels?`<div class="rels">${rels}</div>`:''}${S.items.length?`<div class="items">${S.items.map(x=>`<span>${x}</span>`).join('')}</div>`:''}`;
   $('status').querySelector('.name').textContent=S.name;
   const qs=Object.entries(S.quests);
-  // chỉ hiện việc đang làm; việc đã xong gom thành một dòng. Bấm tiêu đề (hoặc phím J) để thu gọn khung cho khỏi che bản đồ.
-  const act=qs.filter(q=>q[1]==='active'),nDone=qs.length-act.length;
+  // việc đã nhận đang làm, rồi gợi ý việc làm được ngay mùa này (viec.js), tối đa 5 dòng; việc đã xong gom một dòng.
+  // Bấm tiêu đề (hoặc phím J) để thu gọn khung cho khỏi che bản đồ.
+  const act=qs.filter(q=>q[1]==='active'),nDone=qs.length-act.length,sug=suggestions().slice(0,Math.max(2,5-act.length));
+  const row=(cls,t,h)=>`<div class="q ${cls}"><b>${t}</b><span>${h}</span></div>`;
   $('quests').classList.toggle('mini',questsMini);
-  $('quests').innerHTML=`<h3 role="button" tabindex="0" title="Thu gọn hoặc mở rộng (J)">Việc cần làm <span class="tog">${questsMini?'▸':'▾'}</span>${questsMini&&act.length?` <span class="cnt">${act.length}</span>`:''}</h3>`+(questsMini?'':
-    (act.length?act.map(([id])=>`<div class="q active"><b>${QUESTS[id].title}</b><span>${typeof QUESTS[id].hint==='function'?QUESTS[id].hint():QUESTS[id].hint}</span></div>`).join(''):qs.length?'':`<div class="q"><span>Đi gặp mọi người trong làng để nhận việc.</span></div>`)
-    +(nDone?`<div class="q done"><b>${ico('done',1)}Đã xong ${nDone} việc</b></div>`:'')
-    +`<div class="q"><span>Về nhà để ngủ sang mùa mới, hoặc chọn việc chính và cho thời gian trôi nhanh.</span></div>`);
+  $('quests').innerHTML=`<h3 role="button" tabindex="0" title="Thu gọn hoặc mở rộng (J)">Việc cần làm <span class="tog">${questsMini?'▸':'▾'}</span>${questsMini?` <span class="cnt">${act.length+sug.length}</span>`:''}</h3>`+(questsMini?'':
+    act.map(([id])=>row('active',QUESTS[id].title,typeof QUESTS[id].hint==='function'?QUESTS[id].hint():QUESTS[id].hint)).join('')
+    +(sug.length?`<div class="qsec">Mùa này</div>`+sug.map(x=>row('sug',x.title,x.hint)).join(''):'')
+    +(nDone?`<div class="q done"><b>${ico('done',1)}Đã xong ${nDone} việc</b></div>`:''));
   const h=$('quests').querySelector('h3');h.onclick=toggleQuests;h.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleQuests()}};
 }

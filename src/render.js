@@ -63,7 +63,8 @@ function render(){
     list.push({y:S.buffalo.y,f:()=>{shadow(S.buffalo.x,S.buffalo.y,22);drawSprite(buffaloSprite(S.buffalo.dir||'left'),S.buffalo.x,S.buffalo.y)}});
     const look={id:a<14?'ban_be':S.path==='van'?'ban_van':S.path==='vo'?'ban_vo':'ban_nong'};
     const fr=MG&&MG.swing>0?(MG.swing>.17?'a0':'a1'):P.moving?[1,0,2,0][Math.floor(P.walk)%4]:0;
-    list.push({y:S.y,f:()=>{if(MG&&MG.inv>0&&Math.floor(clock*14)%2)return;shadow(S.x,S.y,10);drawSprite(personSprite(look,P.dir,fr),S.x,S.y)}});
+    const ms=MG&&MG.meSort?MG.meSort():null;   // ngồi trên thuyền: vẽ giữa thân thuyền và mạn trước, không bóng
+    list.push({y:ms?ms.y:S.y,f:()=>{if(MG&&MG.inv>0&&Math.floor(clock*14)%2)return;if(!ms)shadow(S.x,S.y,10);drawSprite(personSprite(look,P.dir,fr),S.x,S.y+(ms?ms.dy:0))}});
   }
   if(S&&campUp()&&!(MG&&MG.draw&&(MG.type==='escort'||MG.type==='camp')))drawCamp(list);   // doanh trại giặc ở Gia Lâm (từ đêm 1285)
   if(MG&&MG.draw)MG.draw(list);
