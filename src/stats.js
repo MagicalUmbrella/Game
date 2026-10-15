@@ -24,7 +24,7 @@ export const theHp=()=>(S.the>=75?1:0)-(S.the<30?1:0);                 // thể 
 export const ducKin=()=>S.duc>=25;                                     // người nhà tin lời: chỉ đường là tự đi
 export const ducTrust=()=>S.duc>=45;                                   // người bị bắt cùng tin bạn (chương hai)
 export const ducShield=()=>S.duc>=60;                                  // ở trại giặc dám đứng ra nhận thay người khác
-export const vanPetition=()=>S.van>=50;                                // viết đơn cho làng (cụ lý)
+export const vanPetition=()=>S.van>=50;                                // viết đơn cho làng (cụ xã)
 export const voTeach=()=>S.vo>=60;                                     // luyện trai làng thành đội (võ sư)
 // Tự lo việc làng ở nhà (Chọn việc chính) chỉ đưa Tiếng tới đây; cao hơn phải làm việc thật.
 export const TIENG_FF_CAP=40;
@@ -37,7 +37,7 @@ export function gainThe(n,cap=100){const old=S.the;S.the=n>0?Math.max(old,Math.m
 
 export const STATS=[
   {k:'van',name:'Văn',marks:[[20,'Đủ vào Quốc học viện năm 16 tuổi'],[25,'Viết được câu đối'],[30,'Đọc được bia đá, giấy tờ cũ'],
-    [35,'Đi thi: loại được 1 đáp án sai'],[50,'Viết đơn xin cho làng (gặp cụ lý trưởng)'],[55,'Đi thi: loại được 2 đáp án sai']],
+    [35,'Đi thi: loại được 1 đáp án sai'],[50,'Viết đơn xin cho làng (gặp cụ xã)'],[55,'Đi thi: loại được 2 đáp án sai']],
     note:()=>S.path==='van'?'Đường văn, đêm giặc đến: 2 cây đuốc nghi binh, cứ 25 Văn thêm một (tối đa 5), đỗ thêm một.':'Đường văn có thêm đuốc nghi binh theo điểm Văn.'},
   {k:'vo',name:'Võ',marks:[[12,'Có binh thư thì đủ vào hương binh'],[20,'Đủ vào hương binh năm 16 tuổi'],[25,'Đêm giặc đến: thêm 1 máu'],
     [40,'Cõng được người già, trẻ nhỏ: họ theo bạn nhanh hơn'],[50,'Đêm giặc đến: đánh mạnh hơn'],[60,'Luyện trai làng thành đội (gặp lão võ sư): đêm giặc đến họ ra đòn nhanh hơn'],[75,'Đêm giặc đến: thêm 1 máu, ra đòn nhanh hơn']],

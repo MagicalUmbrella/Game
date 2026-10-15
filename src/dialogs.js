@@ -84,8 +84,8 @@ export function talkLy(){
   ch.push(...lyChoices());
   // Văn 50: viết đơn xin quan trên giảm sưu thuế năm mất mùa cho làng (một lần, hư cấu)
   if(vanPetition()&&age()>=16&&!S.flags.don)ch.push({label:'Viết đơn cho làng xin giảm sưu thuế năm mất mùa',note:'−1 Sức · +5 Tiếng · cần Văn 50',fn:()=>{if(!spend())return;S.flags.don=true;gain('tieng',5);
-    say('Cụ lý trưởng','Chữ nghĩa cháu đâu ra đấy, lý lẽ chặt chẽ. Ta đóng dấu của làng, mai đưa lên huyện. Cả làng phải cảm ơn cháu.')}});
-  say('Cụ lý trưởng',S.career.xa==='win'?'Việc làng giờ trong tay cháu. Ta già rồi, chỉ ngồi uống nước, ngó trẻ con chơi.':S.flags.dh==='hoa'?'Trước Diên Hồng, cháu lại bảo nên hòa. Ta không trách, nhưng trai làng nghe thế thì nản lòng.':S.year>=1282?'Tin từ kinh thành không lành. Người Nguyên đòi mượn đường sang đánh Chiêm Thành. Làng mình phải sẵn sàng.':S.tieng>=40?'Làng An Phú nhớ công cháu. Có việc gì, trai làng sẵn lòng theo cháu.':S.flags.de==='home'?'Năm nước to, nhà cháu lo dọn đồ, còn đê làng thì vỡ. Ta vẫn nhớ đấy.':'Làng An Phú ta ruộng tốt, người hiền. Ai có sức thì góp sức với làng.',ch);
+    say('Cụ xã','Chữ nghĩa cháu đâu ra đấy, lý lẽ chặt chẽ. Ta đóng dấu của làng, mai đưa lên huyện. Cả làng phải cảm ơn cháu.')}});
+  say('Cụ xã',S.career.xa==='win'?'Việc làng giờ trong tay cháu. Ta già rồi, chỉ ngồi uống nước, ngó trẻ con chơi.':S.flags.dh==='hoa'?'Trước Diên Hồng, cháu lại bảo nên hòa. Ta không trách, nhưng trai làng nghe thế thì nản lòng.':S.year>=1282?'Tin từ kinh thành không lành. Người Nguyên đòi mượn đường sang đánh Chiêm Thành. Làng mình phải sẵn sàng.':S.tieng>=40?'Làng An Phú nhớ công cháu. Có việc gì, trai làng sẵn lòng theo cháu.':S.flags.de==='home'?'Năm nước to, nhà cháu lo dọn đồ, còn đê làng thì vỡ. Ta vẫn nhớ đấy.':'Làng An Phú ta ruộng tốt, người hiền. Ai có sức thì góp sức với làng.',ch);
 }
 export function talkCo(){
   const a=age(),ch=[];let t;

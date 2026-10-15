@@ -730,7 +730,7 @@
     for (let i = 0; i < 4; i++) { d.S.x = spot.x; d.S.y = spot.y; d.step(DT); ev('e', true); ev('e', false); while (d.modalOpen) d.nextModal(); d.closeDialog(); season(); }
     if (!d.nghe.knows('cheo')) errs.push(`giúp ông lái đò bốn mùa mà chưa biết chèo thuyền (tiến độ ${(d.S.nghe || {}).cheo})`);
     // Văn 50: viết đơn cho làng
-    fresh({van: 50, year: 1276}); d.talkLy(); if (!choose('Viết đơn')) errs.push('Văn 50 mà cụ lý không cho viết đơn'); closeDialog();
+    fresh({van: 50, year: 1276}); d.talkLy(); if (!choose('Viết đơn')) errs.push('Văn 50 mà cụ xã không cho viết đơn'); closeDialog();
     if (!d.S.flags.don || d.S.tieng < 5) errs.push('viết đơn mà không ghi cờ hoặc không thêm Tiếng');
     fresh({van: 49, year: 1276}); d.talkLy(); if (choose('Viết đơn')) errs.push('Văn 49 mà vẫn viết đơn được'); closeDialog();
     // đêm 1285: Đức 25 chỉ đường cho người nhà; thuốc nam tự băng bó; Võ 40 cõng người
@@ -783,7 +783,7 @@
     fresh({path: 'vo', year: 1284, vo: 30, career: Object.assign(C.newCareer(), {doi: true})}); d.talkVo();
     if (!choose('Luyện trai làng')) errs.push('đội trưởng mà không luyện trai làng thành đội được'); closeDialog(); flush();
     // nông: mua ruộng, mỗi mùa một thửa; làm đồng nhiều ruộng được thêm tiền; thu hoạch mùa thu
-    fresh({path: 'nong', year: 1278, tien: 100}); d.talkLy(); if (!choose('Mua thêm một thửa')) errs.push('đường nông mà cụ lý không bán ruộng'); closeDialog(); flush();
+    fresh({path: 'nong', year: 1278, tien: 100}); d.talkLy(); if (!choose('Mua thêm một thửa')) errs.push('đường nông mà cụ xã không bán ruộng'); closeDialog(); flush();
     d.talkLy(); if (choose('Mua thêm một thửa')) errs.push('một mùa mua được hai thửa ruộng'); closeDialog(); flush();
     if (d.S.career.ruong !== 3 || d.S.tien !== 94) errs.push(`mua ruộng: ${d.S.career.ruong} thửa, còn ${d.S.tien} quan (mong 3 thửa, 94 quan)`);
     fresh({path: 'van', year: 1278, tien: 100}); d.talkLy(); if (choose('Mua thêm một thửa')) errs.push('đường văn mà mua được ruộng'); closeDialog(); flush();

@@ -117,7 +117,7 @@ HAIR = {
 HAT = {
     'nonla': {d: T('.......TT.......', '......TUTt......', '.....TUUTtt.....', '....TUUTTTtt....', '...TUTTTTTTtt...', '..TUTTTTTTTTtt..',
                    '.TTTTTTTTTTTTTt.', 'tttttttttttttttt', y=-6, x=-1) for d in DIRS},
-    'khan': {  # khăn chít đen (thầy đồ, lý trưởng, học trò)
+    'khan': {  # khăn chít đen (thầy đồ, cụ xã, học trò)
         'down': T('....TTTTTT....', '...TUUTTTTt...', '..TUTTTTTTTt..', '..TTTTTTTTTt..', '..tttttttttt..', y=-1),
         'left': T('.....TTTTTT...', '....TUUTTTTt..', '...TUTTTTTTTt.', '..TTTTTTTTTTt.', '..ttttttttttt.', '..........tt..', y=-1),
         'up': T('....TTTTTT....', '...TUUTTTTt...', '..TUTTTTTTTt..', '..TTTTTTTTTt..', '..tttttttttt..', '.....tttt.....', '.....t..t.....', y=-1),
@@ -285,7 +285,7 @@ PEOPLE = [
     ('thay', 'Thầy đồ Chu', dict(hair='knot', hat='khan', beard='long', torso='robe', legs='feet', pal={**WHITE, **C('#33606a'), **B2('#1f3a40'), 'T': '#2e3552', 'U': '#4d587e', 't': '#1b2036'})),
     ('vosu', 'Lão võ sư Hoàng', dict(hair='knot', hat='band', beard='long', torso='vest', legs='boots', pal={**WHITE, **C('#8a2f22'), **B2('#2a2226'), **P2('#2e2a2c')})),
     ('su', 'Sư cụ', dict(hair='bald', torso='monk', legs='feet', pal={**C('#b0702e'), 'A': '#e8a83a', 'a': '#b87a1e'})),
-    ('ly', 'Cụ lý trưởng', dict(hair='knot', hat='khan', beard='goat', torso='robe', legs='feet', pal={**GREY, **C('#2c3a5e'), **B2('#d9b25a'), 'A': '#e9b93a', 'a': '#a87d1e', 'T': '#2e3552', 'U': '#4d587e', 't': '#1b2036'})),
+    ('ly', 'Cụ xã', dict(hair='knot', hat='khan', beard='goat', torso='robe', legs='feet', pal={**GREY, **C('#2c3a5e'), **B2('#d9b25a'), 'A': '#e9b93a', 'a': '#a87d1e', 'T': '#2e3552', 'U': '#4d587e', 't': '#1b2036'})),
     ('hsach', 'Chủ hàng sách', dict(hair='knot', beard='goat', torso='robe', legs='feet', pal={**C('#4a6a4a'), **B2('#2e3e2e')})),
     ('hren', 'Bác thợ rèn', dict(hair='knot', hat='band', beard='full', torso='apron', legs='bare', pal={**C('#4a3a30'), **B2('#2a2020'), **P2('#3a3230')})),
     ('tong', 'Lái buôn người Tống', dict(hair='knot', hat='tong', beard='mus', torso='robe', legs='feet', pal={**C('#3f6f9a'), **B2('#d9b25a'), 'A': '#e9b93a', 'a': '#a87d1e'})),

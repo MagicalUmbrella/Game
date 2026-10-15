@@ -88,7 +88,7 @@ function separate(en){const R=.7;
     if(d<1e-3){dx=Math.cos(i+j);dy=Math.sin(i+j);d=1}const k=(R-d)/2/d;if(Math.abs(dx)>=Math.abs(dy))dy=0;else dx=0;   // đẩy theo một trục, không trượt chéo
     for(const [o,s] of [[a,-1],[b,1]]){if(o.boss&&o.st==='hold')continue;const nx=o.x+s*dx*k,ny=o.y+s*dy*k;if(okEnemy(Math.floor(nx),Math.floor(ny))&&(o.st==='flee'||!inZone(nx,ny))){o.x=nx;o.y=ny}}}}
 const FIRES=[[53.5,21.6],[24.5,20.2],[48.5,21.2]];
-/* tên người đứng giữa câu: viết thường chữ đầu với danh xưng (mẹ, cha, bà Tư, bé Sen, cụ lý trưởng, trai làng, cu Tí) */
+/* tên người đứng giữa câu: viết thường chữ đầu với danh xưng (mẹ, cha, bà Tư, bé Sen, cụ xã, trai làng, cu Tí) */
 const lc=n=>/^(Mẹ|Cha|Bà|Bé|Cụ|Trai|Cu)/.test(n)?n[0].toLowerCase()+n.slice(1):n;
 const names=a=>a.map(lc).join(', ');
 const liveOut=p=>p.st==='wait'||p.st==='follow'||p.st==='self';   // người còn ngoài rừng, chưa bị bắt
@@ -104,7 +104,7 @@ function leadLine(p){const F=S.flags;
     case'batu':return S.thao==='wife'?'Cháu rể ơi, bà già rồi, cứ đưa con Thảo đi trước...':'Bà chạy không nổi đâu cháu ơi... Ừ, đi thì đi!';
     case'thao':return S.thao==='wife'?'Em đi sau anh. Anh đừng buông tay em.':S.thao==='co'?'Anh Cò đâu rồi? Anh có thấy anh ấy không?':'Em... em sợ lắm.';
     case'sen':return 'Cha ơi, con sợ! Cha bế con!';
-    case'ly':return F.dh==='hoa'?'Giờ thì cháu hiểu vì sao cả nước nói "đánh" rồi chứ?':'Lý trưởng phải đi sau cùng. Cháu dẫn ta đi.';
+    case'ly':return F.dh==='hoa'?'Giờ thì cháu hiểu vì sao cả nước nói "đánh" rồi chứ?':'Người coi việc làng phải đi sau cùng. Cháu dẫn ta đi.';
     case'ti':return 'Chú ơi! Nhà cháu cháy rồi, mẹ cháu chạy đâu mất!';
   }return 'Đi! Đi mau!'}
 /* Câu mở màn của người cùng đánh. */
@@ -121,7 +121,7 @@ export function startClimax(){
   add('batu','Bà Tư',52.4,49.9,{id:'batu'},.75);
   if(S.ev.thao&&S.thao!=='gone'){const p=S.thao==='wife'?[47.4,50.7]:S.thao==='co'?[36.4,49.7]:[49.3,50.6];add('thao','Thảo',p[0],p[1],LOOK_THAO)}
   if(S.child)add('sen','Bé Sen',46.6,51.7,{id:'sen',kid:true},.8);
-  add('ly','Cụ lý trưởng',35.8,36.9,{id:'ly'},.8);
+  add('ly','Cụ xã',35.8,36.9,{id:'ly'},.8);
   const sk=[[42.3,50.3],[44.9,50.3],[33.4,37.4],[35.3,37.5]];if(S.flags.duyet==='giu')sk.push([43.6,51.4]);
   const al=[];
   if(S.co==='village')al.push({id:'co',name:'Cò',x:38.5,y:45.2,look:{id:'co_do'},hp:S.rel.co>=4?6:4,dmg:1,cd:0,sp:4,inv:0,dir:'down',walk:0});

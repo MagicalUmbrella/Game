@@ -25,7 +25,7 @@ export function suggestions(){
   if(vanFailOpen())add('Trượt thi rồi, đi đường nào?','Về nhà bấm E ở cửa: ở lại Quốc học viện, về làng dạy học, hoặc làm lại viên ở huyện.');
   if(S.path==='van'&&c.van==='day')add(S.thay?'Phụ thầy Chu dạy trẻ':'Dạy trẻ ở trường làng',`Vào trường làng (phía nam đình) bấm E. Mỗi buổi −1 Sức, +1 Văn, +2 Tiếng. Đã dạy ${c.hoctro||0} buổi.`);
   if(S.path==='van'&&c.van==='lai')add('Lên huyện làm việc','Ở nhà bấm E ở cửa: mỗi buổi −1 Sức, +2 quan, +1 Văn.');
-  if(S.path==='nong'&&a>=16&&(c.ruong||2)<RUONG_MAX&&c.mua!==now()&&S.tien>=ruongCost())add('Mua thêm ruộng',`Gặp cụ lý trưởng: ${ruongCost()} quan một thửa. Ruộng nhiều thì làm đồng, mùa gặt được thêm tiền.`);
+  if(S.path==='nong'&&a>=16&&(c.ruong||2)<RUONG_MAX&&c.mua!==now()&&S.tien>=ruongCost())add('Mua thêm ruộng',`Gặp cụ xã: ${ruongCost()} quan một thửa. Ruộng nhiều thì làm đồng, mùa gặt được thêm tiền.`);
   // nghề đang học dở, mùa này còn học được
   const ngheNext={ren:()=>a>=14&&S.renAt!==now()&&'Phụ bác thợ rèn quai búa (lò rèn trong kinh thành), mỗi mùa một lần.',
     cheo:()=>a>=12&&S.found&&S.found.do!=null&&S.cheoAt!==now()&&'Giúp ông lái đò ở bến sông Tô Lịch chèo đò, mỗi mùa một lần.',
