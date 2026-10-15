@@ -146,6 +146,7 @@ def mechanics(page, fails):
                      ('chỉ số: Đức / Tiếng, thể trạng, nghề, mốc mở việc, bản lưu cũ', 'statsV2'),
                      ('thăng tiến: trượt thi, dạy học, lại viên, đội trưởng, ruộng, việc làng', 'career'),
                      ('màn giữa game: dịch đậu mùa, sâu, tờ văn tự, cướp trâu, đấu vật', 'midgame'),
+                     ('anh Ngũ: nghe ba lần, tin 1278, bãi tập, bến Đông Bộ Đầu', 'nguArc'),
                      ('giặc không đứng dàn hàng ở bìa rừng', 'noCamping'),
                      ('giấy bút, thuốc bổ mỗi mùa một lần', 'shopLimit'), ('lo trước ngày giặc đến', 'prep'),
                      ('mốc chỉ số, phím C', 'statTiers'), ('chuyện đời thường: mọi lựa chọn', 'lifeAll'),

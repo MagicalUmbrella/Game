@@ -138,11 +138,7 @@ export function talkVoQuan(){
   if(S.path==='vo')return say('Võ quan',voice('voquan','Giảng võ đường lập cùng năm với Quốc học viện. Hương binh giỏi thì được luyện ở đây.'),(()=>{const luyen=k=>startDrill(q=>{gain('vo',k*dailyReward(4+(has('Kiếm sắt')?1:0),q,5/6));if(q>=1)practice('ngua',k);toast(voLesson())});return[{label:'Luyện tại Giảng võ đường',note:'−1 Sức · +4 Võ · học cưỡi ngựa',fn:()=>{if(!spend())return;luyen(1)}},...allSuc('Luyện',luyen)]})());
   say('Võ quan','Giảng võ đường lập mùa thu năm Quý Sửu (1253). Chỉ người đã vào quân mới được luyện ở đây.');
 }
-export function talkNgu(){
-  const first=!S.nguMet;S.nguMet=true;
-  say('Chàng trai đọc sách',first?'Một chàng trai to khỏe đứng tựa gốc cây bên vệ đường đọc sách, thỉnh thoảng lại ngâm nga mấy câu thơ. Anh tên Ngũ, người làng Phù Ủng. Anh bảo làm trai mà chưa lập được công danh thì còn thẹn lắm.':'Anh Ngũ ngẩng lên khỏi trang sách: "'+voice('ngu')+'"',
-    first?[{label:'Ngồi nghe anh bàn chuyện binh pháp',fn:()=>{gain('vo',2);gain('van',1);toast('Bạn thấy trong lòng sục sôi chí lớn. Anh Ngũ sẽ nhớ mặt bạn.')}}]:[]);
-}
+export {talkNgu} from './ngu.js';   // anh Ngũ: xem ngu.js
 export const PEN={x:44.5,y:58.6};
 let reachOK=null,hintT=0;
 export function walkable(x,y){return x>=0&&y>=0&&x<W&&y<H&&![WA,WR,BI,MO,TR,WL].includes(map[y*W+x])&&!bsolid[y*W+x]}

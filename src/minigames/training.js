@@ -7,8 +7,8 @@
    Cách chơi giữ như cũ (hàm tmHit, test và bot dùng): thanh canh nhịp hiện ở đầu màn hình, bấm Space hoặc E khi mũi
    giáo ở vùng sáng của hình nộm; giữa vùng là trúng hiểm (2 điểm), trong vùng là trúng (1), ngoài là trượt. 6 lượt,
    mũi giáo nhanh dần, hai lượt cuối hình nộm lắc lư. Võ càng cao vùng sáng càng rộng (20 + Võ×0,65, 26–90 điểm ảnh).
-   Sau mỗi đòn: quan chấm hô điểm, người xem reo hoặc ồ lên. Xong 6 lượt các quan bàn rồi xướng điểm; đứng đầu mà đã
-   gặp anh Ngũ thì anh cưỡi ngựa tới, dừng trước mặt bạn: "Ta nhớ cậu." Điểm ≥ 9 'top', ≥ 5 'ok', còn lại 'low'. */
+   Sau mỗi đòn: quan chấm hô điểm, người xem reo hoặc ồ lên. Xong 6 lượt các quan bàn rồi xướng điểm; đã gặp anh Ngũ
+   bên đường (1272–1277) thì anh cưỡi ngựa tới, dừng trước mặt bạn, lời theo điểm (đứng đầu: "Ta nhớ cậu."). Điểm ≥ 9 'top', ≥ 5 'ok', còn lại 'low'. */
 import {TS,Z,ctx} from '../constants.js';
 import {trainPromote} from '../chuc.js';
 import {MG,P,S,save,setMG} from '../state.js';
@@ -59,11 +59,12 @@ function tmUpdate(dt){const M=MG;M.t+=dt;M.flash=Math.max(0,M.flash-dt);M.swing=
   else if(M.phase==='cham'){const sc=M.score;M.phase='xuong';M.pt=3;
     sayJ(1,sc>=9?`Điểm ${sc} trên 12. Đứng đầu cả bãi!`:sc>=5?`Điểm ${sc} trên 12. Đạt.`:`Điểm ${sc} trên 12. Phải luyện thêm.`,3);
     for(const c of M.crowd)if(Math.random()<.35)say(c,sc>=9?pick(CHEER):sc>=5?'Được đấy.':pick(OOH),2.4)}
-  else if(M.phase==='xuong'){if(M.score>=9&&S.nguMet){M.phase='ngu';M.pt=1e9;M.ngu={x:NGU_FROM.x,y:NGU_FROM.y,dir:'down',arrived:false,talk:0};say(M.crowd[1],'Ngựa ai kia?',2.2);say(M.crowd[7],'Tướng dưới trướng Hưng Đạo Vương đấy!',2.6)}
+  else if(M.phase==='xuong'){if(S.nguMet){   // đã gặp anh Ngũ bên đường: anh cưỡi ngựa tới, với mọi mức điểm
+    M.phase='ngu';M.pt=1e9;M.ngu={x:NGU_FROM.x,y:NGU_FROM.y,dir:'down',arrived:false,talk:0};say(M.crowd[1],'Ngựa ai kia?',2.2);say(M.crowd[7],'Tướng dưới trướng Hưng Đạo Vương đấy!',2.6)}
     else tmEnd()}}
 /* anh Ngũ cưỡi ngựa từ đầu bãi xuống, dừng trước mặt bạn */
 function nguRide(dt){const M=MG,n=M.ngu;
-  if(!n.arrived){const dx=NGU_TO.x-n.x,dy=NGU_TO.y-n.y,d=Math.hypot(dx,dy),sp=3.4*dt;if(d<=sp){n.x=NGU_TO.x;n.y=NGU_TO.y;n.arrived=true;n.talk=0;say(n,'Ta nhớ cậu. Cậu trai đứng nghe ta bàn binh pháp bên đường năm nào.',3.4)}
+  if(!n.arrived){const dx=NGU_TO.x-n.x,dy=NGU_TO.y-n.y,d=Math.hypot(dx,dy),sp=3.4*dt;if(d<=sp){n.x=NGU_TO.x;n.y=NGU_TO.y;n.arrived=true;n.talk=0;const sc=M.score;say(n,sc>=9?'Ta nhớ cậu. Cậu trai đứng nghe ta bàn binh pháp bên đường năm nào.':sc>=5?'Cậu trai bên gốc cây năm nào đây mà! Đường giáo vững đấy, chỉ thiếu chút nhanh.':'Hôm nay tay run phải không? Năm xưa ta cũng thế. Cái chí thì ta thấy rồi, đừng nản.',3.6)}
     else if(Math.abs(dy)>.05){n.y+=Math.sign(dy)*Math.min(sp,Math.abs(dy));n.dir='down'}else{n.x+=Math.sign(dx)*Math.min(sp,Math.abs(dx));n.dir=dx<0?'left':'right'}return}   // đi 4 hướng
   n.talk+=dt;if(n.talk>3.6&&!n.said2){n.said2=true;say(n,'Giặc sang, ta sẽ tìm cậu.',2.8)}if(n.talk>6.6)tmEnd()}
 
@@ -103,7 +104,8 @@ function tmHud(){const M=MG;
 function tmEnd(){const M=MG;if(!M||M.type!=='timing'||M.over)return;M.over=true;const sc=M.score;
   setMG(null);setKeys();document.body.classList.remove('mg');S.pending=null;S.x=M.back.x;S.y=M.back.y;let title,body;
   practice('ngua');
-  if(sc>=9){S.flags.train='top';gain('vo',5);title='Xuất sắc nhất đội';body='<p>Đường giáo của bạn nhanh và chuẩn đến mức cả bãi tập phải dừng lại xem.</p>'+(S.nguMet?'<p>Viên tướng trẻ cưỡi ngựa dừng trước mặt bạn chính là anh Ngũ đứng đọc sách bên đường năm nào, nay đã là tướng dưới trướng Hưng Đạo Vương.</p>':'')+'<p class="note">Khi có biến, bạn sẽ khỏe hơn trong chiến đấu.</p>';if(S.nguMet)S.flags.nguKnows=true}
-  else if(sc>=5){S.flags.train='ok';gain('vo',3);title='Đạt yêu cầu';body='<p>Bạn hoàn thành buổi tập, được võ quan khen một câu.</p>'}
-  else{S.flags.train='low';gain('vo',1);title='Cần luyện thêm';body='<p>Mấy lần bạn đâm trượt hình nộm, bị võ quan mắng trước cả bãi.</p>'}
+  const nguP=S.nguMet?'<p>Viên tướng trẻ cưỡi ngựa dừng trước mặt bạn chính là anh Ngũ đứng đọc sách bên đường năm nào, nay là Phạm Ngũ Lão, tướng dưới trướng Hưng Đạo Vương.</p>':'';if(S.nguMet)S.flags.nguKnows=true;
+  if(sc>=9){S.flags.train='top';gain('vo',5);title='Xuất sắc nhất đội';body='<p>Đường giáo của bạn nhanh và chuẩn đến mức cả bãi tập phải dừng lại xem.</p>'+nguP+'<p class="note">Khi có biến, bạn sẽ khỏe hơn trong chiến đấu.</p>'}
+  else if(sc>=5){S.flags.train='ok';gain('vo',3);title='Đạt yêu cầu';body='<p>Bạn hoàn thành buổi tập, được võ quan khen một câu.</p>'+nguP}
+  else{S.flags.train='low';gain('vo',1);title='Cần luyện thêm';body='<p>Mấy lần bạn đâm trượt hình nộm, bị võ quan mắng trước cả bãi.</p>'+nguP}
   showModal({kicker:`${K(3,1283)} · Điểm ${sc}/12`,title,body});trainPromote();save()}

@@ -13,6 +13,7 @@
    Hết máu: đang đối đầu tên đầu toán (hắn còn sống) thì bị bắt ('captured', how 'fight'); lừa hắn hỏng cũng bị bắt
    (how 'trick'). Lúc khác: còn người cùng đánh đứng được thì được kéo vào rừng ('down'), không còn ai thì bị bắt (how 'down').
    Bị bắt (cả 'surrender') dẫn tới màn bị giải sang trại giặc bên kia sông (src/camp.js) và mở đầu chương hai khác. */
+import {nguChronicle,nguRecall} from './ngu.js';
 import {midChronicle} from './minigames/chung.js';
 import {careerChronicle,careerTrai,laiFollow} from './chuc.js';
 import {$,T,TS,W,H,WA,Z,ctx} from './constants.js';
@@ -251,7 +252,7 @@ function clUpdate(dt){
   if(S.nguMet&&!M.horn&&M.t<=NGU_HORN){M.horn=true;toast('Xa xa, phía sông Hồng, có tiếng tù và quân ta vọng lại. Cầm cự thêm chút nữa!',5200)}
   if(!M.ngu&&M.t<=NGU_AT){
     if(S.nguMet){M.ngu=true;M.shake=.6;for(let i=0;i<4;i++)M.al.push({id:'quan'+i,name:i?'Quân Trần':'Phạm Ngũ Lão',x:79+i*.6,y:31.2+(i%2)*.6,look:{id:i?'quan':'ngu_tuong'},hp:99,dmg:3,cd:0,sp:6,inv:0,quan:true,dir:'left',walk:0});
-      toast(S.flags.nguKnows?'Quân Phạm Ngũ Lão tràn vào làng! Ông nhận ra bạn từ buổi tập trận năm nào!':'Một đội quân áo đỏ tràn vào làng. Người đi đầu chính là anh Ngũ từng đứng đọc sách bên đường năm xưa!',5600);
+      toast(nguRecall(),5600);
       const ngu=M.al.find(a=>a.id==='quan0');if(ngu)say(ngu,M.boss&&M.boss.cap&&!M.boss.dead?'Bọn tay chân để ta lo. Tên đầu toán là của cậu!':'Giết hết bọn cướp lương!',4.6)}
     else{M.ngu='none';const a=M.al.find(x=>!x.down);if(a)say(a,'Không có ai đến cứu đâu. Chỉ còn chúng ta thôi!',4);else sayMe('Không ai đến cả. Chỉ còn mình mình.',4)}}
   let lead={x:S.x,y:S.y};
@@ -491,7 +492,7 @@ export function endChapter(res){
   L.push(soulChronicle());
   L.push(ngheChronicle());
   L.push(S.the>=75?'Bạn khỏe mạnh, mỗi mùa làm được nhiều việc hơn người.':S.the<40?'Những năm thức khuya, đói kém làm bạn gầy yếu đi.':'');
-  if(S.nguMet)L.push('Bạn từng ngồi nghe anh Ngũ bàn binh pháp bên đường. Đêm giặc đến, anh ấy dẫn quân tới.');
+  if(S.nguMet)L.push(nguChronicle());
   // đêm tháng giêng: tên đầu toán, cu Tí, bị bắt
   if(res.boss==='killed')L.push('Đêm giặc đến, bạn hạ tên đầu toán giữa sân đình.');
   else if(res.boss==='took')L.push(`Đêm giặc đến, tên đầu toán giải ${lc(res.hostage)} đi lúc trời sáng.`);

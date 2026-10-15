@@ -869,5 +869,38 @@
     return {errs, out};
   }
 
-  window.__checks = {midgame, career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  /* Mạch anh Ngũ: việc nghe anh ba lần (mỗi năm một lần), tin năm 1278, bãi tập 1283 (mọi mức điểm), bến Đông Bộ Đầu
+     1284 (đường văn, nông), lời nhắc đêm 1285. */
+  function nguArc() {
+    const d = D(), errs = [];
+    const flush = () => { while (d.modalOpen) d.nextModal(); d.closeDialog(); };
+    const fresh = (o) => { d.setS(Object.assign(d.newState('Thử'), {quests: {hoc: 'done', trau: 'done'}, lifeWait: 99}, o)); d.startPlay(false); flush(); };
+    const talk = () => { d.talkNgu(); const b = [...document.querySelectorAll('#dialog .opt')][0]; if (b && !/Đóng|Tạm biệt/.test(b.textContent)) b.click(); flush(); };
+    fresh({year: 1271, season: 3}); d.advanceOne(); flush();
+    if (d.S.quests.ngu !== 'active') errs.push('năm 1272 chưa có việc "Chàng trai đọc sách bên đường"');
+    talk(); talk(); if (d.S.nguN !== 1) errs.push(`một năm nói chuyện hai lần mà tính ${d.S.nguN} lần (mong 1)`);
+    d.S.year = 1273; talk(); d.S.year = 1275; talk();
+    if (d.S.nguN !== 3 || d.S.quests.ngu !== 'done') errs.push(`ba năm nghe anh Ngũ: ${d.S.nguN} lần, việc ${d.S.quests.ngu}`);
+    d.S.year = 1278; d.S.season = 1; d.EVENTS.find(e => e.id === 'ngu').run(); const news = document.querySelector('#modal').innerText; flush();
+    if (!/Phạm Ngũ Lão/.test(news) || !/nợ công danh/.test(news)) errs.push('tin năm 1278 không nêu tên Phạm Ngũ Lão hoặc thiếu câu riêng cho người nghe đủ ba lần');
+    // chưa gặp: hết 1277 thì việc tự bỏ, không có tin 1278
+    fresh({year: 1277, season: 3}); d.S.quests.ngu = 'active'; d.advanceOne(); flush();
+    if (d.S.quests.ngu) errs.push('sang năm 1278 mà việc nghe anh Ngũ còn treo');
+    // bãi tập 1283: đã gặp thì điểm thấp anh vẫn tới
+    fresh({year: 1283, season: 3, path: 'vo', vo: 30, nguMet: true, nguN: 1}); d.startTraining(); const M = d.MG; let saw = false;
+    for (let i = 0; i < 60 * 60 && d.MG === M; i++) { if (M.phase === 'aim' && M.pos > 400) d.tmHit(); if (M.phase === 'ngu') saw = true; d.step(DT); }
+    flush(); if (!saw || !d.S.flags.nguKnows) errs.push(`bãi tập 1283 (điểm ${M.score}): anh Ngũ không tới`);
+    // bến Đông Bộ Đầu 1284: đường văn đã gặp anh bên đường
+    fresh({year: 1284, season: 2, path: 'van', nguMet: true, nguN: 2}); d.EVENTS.find(e => e.id === 'duyetbinh').run(); flush();
+    if (d.S.quests.nguDB !== 'active') errs.push('duyệt binh 1284: đường văn đã gặp anh Ngũ mà không có việc gặp ở bến');
+    const npc = d.NPCS.find(n => n.id === 'ngutuong'); if (!npc || !npc.show()) errs.push('năm 1284 không thấy Phạm Ngũ Lão ở bến');
+    npc.talk(); const b = [...document.querySelectorAll('#dialog .opt')][0]; b && b.click(); flush();
+    if (!d.S.nguDB || !d.S.flags.nguKnows || d.S.quests.nguDB !== 'done') errs.push('nói chuyện ở bến mà chưa ghi đã gặp lại');
+    if (!/bến Đông Bộ Đầu/.test(d.ngu.nguRecall())) errs.push('đêm 1285 lời báo quân tới không nhắc lần gặp ở bến');
+    fresh({year: 1284, season: 2, path: 'vo', nguMet: true, flags: {nguKnows: true}}); d.EVENTS.find(e => e.id === 'duyetbinh').run(); flush();
+    if (d.S.quests.nguDB) errs.push('đã gặp anh ở bãi tập 1283 mà duyệt binh vẫn giao việc gặp ở bến');
+    return {errs};
+  }
+
+  window.__checks = {nguArc, midgame, career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();
