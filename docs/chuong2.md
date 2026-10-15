@@ -188,9 +188,111 @@ Quay lại lối chơi đời thường của chương 1, theo mùa, nhưng làn
 
 Code để trong `src/chapter2/`, tách dữ liệu sự kiện khỏi logic.
 
-## Câu hỏi để chủ dự án quyết
+## Chủ dự án đã chốt (15/10/2026)
 
-1. Ở Chương Dương, người chơi đánh trực tiếp (như trên), hay chỉ làm hậu cần?
-2. Phần 3 giữa hai cuộc chiến: dài như chương một (theo mùa) hay gọn lại vài sự kiện?
-3. Vân Đồn có bắt buộc không, hay chỉ mở cho ai biết chèo?
-4. Trong trận Bạch Đằng, người làng có thể mất không, hay giữ nhẹ tay?
+1. **Người chơi đánh trực tiếp.** Muốn cảnh chiến tranh thật mãn nhãn, chiến trường thật sự hàng vạn quân, ở một hoặc nhiều trận.
+2. **Phần 3 (giữa hai cuộc chiến) làm gọn.**
+3. **Vân Đồn: nghĩ hướng khác cho người không biết chèo** (không khóa màn, không chỉ ngồi xem).
+4. **Người làng có thể chết**, kể cả trong trận lớn.
+5. **Giọng chương:** cần những cảnh kịch tính, buồn, chiến tranh mất mát, mà qua đó tôn lên sự huy hoàng của nhân vật và của cuộc giữ nước.
+
+Các mục dưới đây cụ thể hóa năm điều trên, thay các chỗ tương ứng ở trên khi hai bên lệch nhau.
+
+---
+
+## Chiến trường lớn (hàng vạn quân)
+
+### Ba trận lớn, mỗi trận một kiểu
+| Trận | Kiểu | Quy mô cảm nhận | Người chơi |
+|---|---|---|---|
+| **Chương Dương** (tháng 5 năm 1285) | Đổ bộ, đánh bến, rồi tràn lên bộ | Hàng nghìn thuyền nhỏ trên sông, hai bờ đầy quân | Trong đợt thuyền đầu, giữ bến rồi tiến lên |
+| **Tây Kết** (hạ 1285) | Đánh thủy bộ, đuổi Toa Đô | Thuyền giặc dàn dài trên sông, ta mai phục hai bờ | Tầm vừa, như màn chuyển giữa hai trận lớn |
+| **Bạch Đằng** (tháng 3 năm 1288) | Trận lớn nhất: cọc, triều, mai phục, bốn trăm thuyền | Cả khúc sông kín thuyền, núi đá, hai bờ rừng | Từ đóng cọc tới lao lên thuyền giặc mắc cạn |
+
+Trận Tây Kết có thể bớt hoặc chỉ kể qua, nếu hai trận kia đã đủ nặng.
+
+### Làm sao có "hàng vạn quân" trong game điểm ảnh chạy trên trình duyệt
+Không mô phỏng từng người như đêm 1285 (vài chục người là máy đã nặng). Dùng ba lớp:
+
+1. **Lớp gần** (quanh người chơi, khoảng 30–60 người): người thật như `climax.js`, có máu, đánh, tìm đường, vây.
+2. **Lớp giữa** (vài trăm người trong tầm màn hình): **khối quân**. Mỗi khối là một đội 20–50 người vẽ thành hàng, cùng tiến, cùng lùi, cùng đánh với khối đối diện. Tính thắng thua theo sức khối, không theo từng người. Người trong khối vẫn có bước chân, vung giáo (khung hình lấy từ `nguoi.png`), lâu lâu có người ngã. Khối thua thì vỡ ra thành người chạy lẻ.
+3. **Lớp xa** (cả chiến trường, hàng vạn): **vẽ nền động**. Biển cờ, rừng giáo, khói, lửa trên thuyền, hàng chấm người đổ trên đồi, tiếng trống. Chỉ để nhìn, không tính.
+
+Kèm theo:
+- **Máy quay:** đầu trận kéo rộng, lia qua toàn cảnh (giống màn tiêu đề) rồi mới hạ xuống chỗ người chơi. Đến khoảnh khắc lớn (cờ ta cắm lên bến, thuyền giặc vướng cọc) thì máy lia ra lại vài giây.
+- **Âm thanh** nếu có thêm sau: trống trận, tù và, tiếng hò. Hiện game chưa có tiếng nên ghi nhận, làm sau.
+- **Bản đồ nhỏ** hiện chiến tuyến hai màu, chỗ ta đang thắng, chỗ đang vỡ.
+
+### Người chơi làm gì giữa trận lớn
+Không phải đánh hết quân giặc. Mỗi trận chia **3–4 nhịp**, mỗi nhịp một việc rõ:
+- **Chương Dương:**
+  1. Đêm: chèo thuyền im lặng, tránh thuyền canh.
+  2. Rạng sáng: lên bến, giữ đầu cầu cho đợt thuyền sau.
+  3. Chiến tuyến bên trái sắp vỡ: dẫn trai làng sang chặn.
+  4. Cắm cờ trên gò, quân ta tràn lên, giặc chạy về phía sông Lô.
+- **Bạch Đằng:** bốn pha (đóng cọc, nhử, nước rút, đánh) như phần 5, thêm nhịp **cứu người rơi xuống nước** và **lên thuyền tướng giặc**.
+
+Người chơi gánh một khúc chiến tuyến. Đánh tốt thì khúc ấy thắng nhanh, đồng đội ít người ngã. Đánh kém thì vẫn thắng trận (theo sử) nhưng làng mất nhiều người hơn, và biên niên ghi lại.
+
+### Kỹ thuật
+- Khối quân là mảng số liệu: vị trí, hướng, sức, kiểu (giáo, cung, kỵ, thuyền). Vẽ theo lô, không tạo đối tượng cho từng người xa.
+- Cần đo hiệu năng: giữ 60 khung hình mỗi giây trên máy bình thường. Viết test hiệu năng giống bài "vẽ một mảnh nền không quá 1,5 giây".
+- File riêng: `src/chapter2/chientruong.js` (khối quân, chiến tuyến), `src/chapter2/chuongduong.js`, `src/chapter2/bachdang.js`.
+
+---
+
+## Phần 3 làm gọn
+
+Bỏ lối chơi theo mùa. Thay bằng **4–5 cảnh nối nhau**, mỗi cảnh một lựa chọn, đi qua hai năm 1286–1287:
+1. **Dựng lại nhà** (nhà cháy, nếu có): một màn ngắn chặt tre, lợp mái cùng hàng xóm.
+2. **Giỗ đầu** người mất năm 1285. Cảnh buồn, ai còn sống đứng quanh mâm cơm.
+3. **Một chuyện gia đình**, theo chương một: Thảo, bé Sen, cha mẹ, hoặc Cò về làng hay ở lại quân.
+4. **Thăng tiến**: một lựa chọn duy nhất theo đường đời.
+5. **Lo trước lần ba**: chọn hai trong bốn việc (giấu lương, rèn khí giới, đóng thuyền, luyện đội), không đủ tiền làm hết.
+
+Mỗi cảnh có một dòng biên niên.
+
+---
+
+## Vân Đồn cho người không biết chèo
+
+Ai biết chèo thì **cầm lái thuyền xung kích** như đã viết ở phần 4. Ai không biết chèo thì có vai khác, theo đường đời, không kém phần quan trọng:
+
+| Vai | Ai làm | Việc |
+|---|---|---|
+| **Trinh sát chợ Vân Đồn** | Đường văn | Vân Đồn là bến buôn, dân ở đó mặc đồ như khách buôn phương bắc (Toàn thư dòng ~12162). Đội nón khách buôn lẫn vào chợ, nghe ngóng thuyền lương tới lúc nào, bao nhiêu chiếc. Lỡ lời là bị lộ. |
+| **Đốt lửa hiệu trên đảo** | Đường nông, hoặc ai cũng được | Leo núi đá ven biển, canh buồm thuyền lương trong sương, đốt lửa đúng lúc để thuyền ta xuất kích. Đốt sớm thì giặc biết, đốt muộn thì lỡ. |
+| **Đánh giáp lá cà khi áp mạn** | Đường võ | Đứng mũi thuyền, người khác chèo. Áp mạn thì nhảy sang thuyền lương, mở đường, chặt dây buồm. |
+| **Lặn cắt neo** | Ai biết bơi | Đêm trước, bơi ra cắt neo thuyền giặc đậu ven đảo cho chúng trôi dạt. |
+
+Người chơi được chọn một vai hợp với mình. Mỗi vai đổi kết quả trận (bắt được bao nhiêu lương) và có dòng biên niên riêng.
+
+---
+
+## Giọng chương: buồn, kịch tính, rồi huy hoàng
+
+Chương hai không chỉ là thắng. Mỗi chiến thắng phải có giá, để lúc huy hoàng thì người chơi thấy mình đã trả đủ giá ấy.
+
+### Những cảnh mất mát (người làng có thể chết)
+Ai chết **phụ thuộc vào cách chơi**, không viết sẵn một người chắc chắn chết. Mỗi trận lớn có một danh sách "người có thể ngã": trai làng theo bạn, Cò, cha (nếu còn và đã già yếu, lúc tản cư), một người trong chuồng tù.
+- **Trai làng ngã ở Chương Dương:** lời trăng trối nhắc lại chương một (năm giữ đê, buổi luyện đội). Biên niên ghi tên.
+- **Cò** (nếu theo quân Quốc Toản): có thể ngã ở một trận. Chỉ ngã khi người chơi để khúc chiến tuyến của mình vỡ. Cảnh cuối Cò nhắc chuyện thả diều năm 8 tuổi. Đây là cảnh buồn nhất chương, nên chỉ xảy ra khi người chơi thật sự thua ở nhịp ấy, không bắt buộc.
+- **Người chết trong trại** (lối A): người không cứu kịp.
+- **Cha** (nếu đã yếu sau năm đậu mùa): mất trên đường tản cư, cảnh chôn vội bên bờ ruộng.
+- **Giỗ đầu** ở phần 3 gom tất cả người đã mất về một mâm cơm.
+
+### Những cảnh kịch tính
+- **Trốn trại:** đuốc lính quét qua, bạn nín thở sau đống bao thóc.
+- **Tin Trần Bình Trọng:** dân binh im lặng quanh đống lửa; có người đứng dậy nói "thà chết như ông ấy" (hư cấu, không bịa lời Trần Bình Trọng).
+- **Đêm trước Chương Dương:** thuyền trôi trong sương, nghe tiếng giặc nói chuyện trên thuyền canh sát bên.
+- **Khánh Dư bị xiềng** (Toàn thư): bạn thấy ông bị giải đi rồi xin khất ba ngày, rồi thắng. Một bài học về đứng dậy sau thất bại.
+- **Bạch Đằng, nước chưa rút:** thuyền giặc sắp vượt qua bãi cọc, đồng hồ thủy triều chạy chậm. Phải giữ thêm vài phút.
+
+### Những khoảnh khắc huy hoàng (tôn nhân vật)
+- **Cắm cờ trên gò Chương Dương:** máy quay lia ra, hàng nghìn dân binh hò reo, tên bạn được gọi.
+- **Vua về kinh:** dân đứng hai bên đường, bạn đứng trong hàng dân binh. Nếu công lớn thì có viên quan dừng lại hỏi tên. Bài thơ Trần Quang Khải hiện chữ.
+- **Bạch Đằng, nước rút:** từ thuyền nhỏ nhìn cả khúc sông thuyền giặc nghiêng đổ. Toàn thư chép nước sông đỏ ngầu, bắt được bốn trăm thuyền, bắt Ô Mã Nhi.
+- **Về làng:** trẻ con chạy ra đón, mâm cơm có người, có chỗ trống của người không về. Vui và buồn cùng lúc là cảnh kết chương.
+
+### Cân lại vai người chơi cho đúng sử
+Vinh quang của bạn là vinh quang của **người dân binh** giữa trận lớn: người giữ được khúc bến, cứu được người làng, cắm được lá cờ. Không để bạn lập công thay các tướng có tên trong Toàn thư (bắt Ô Mã Nhi là Đỗ Hành, bắt Áo Lỗ Xích là Nguyễn Khoái). Bạn có thể đứng gần, giúp một tay, nhưng công ghi đúng người.
