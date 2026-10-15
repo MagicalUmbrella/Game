@@ -225,20 +225,134 @@
    "kid": false,
    "fight": true
   },
-  "ti": {
+  "laido": {
    "row": 34,
+   "name": "Ông lái đò",
+   "kid": false,
+   "fight": false
+  },
+  "khach": {
+   "row": 35,
+   "name": "Khách qua đò",
+   "kid": false,
+   "fight": false
+  },
+  "trai2": {
+   "row": 36,
+   "name": "Trai làng",
+   "kid": false,
+   "fight": true
+  },
+  "trai2_giao": {
+   "row": 37,
+   "name": "Trai làng (giáo)",
+   "kid": false,
+   "fight": true
+  },
+  "trai3": {
+   "row": 38,
+   "name": "Trai làng",
+   "kid": false,
+   "fight": true
+  },
+  "trai3_giao": {
+   "row": 39,
+   "name": "Trai làng (giáo)",
+   "kid": false,
+   "fight": true
+  },
+  "trai4": {
+   "row": 40,
+   "name": "Trai làng",
+   "kid": false,
+   "fight": true
+  },
+  "trai4_giao": {
+   "row": 41,
+   "name": "Trai làng (giáo)",
+   "kid": false,
+   "fight": true
+  },
+  "huong_binh": {
+   "row": 42,
+   "name": "Hương binh làng khác",
+   "kid": false,
+   "fight": true
+  },
+  "huong_binh2": {
+   "row": 43,
+   "name": "Hương binh làng khác",
+   "kid": false,
+   "fight": true
+  },
+  "dan_nam1": {
+   "row": 44,
+   "name": "Dân làng",
+   "kid": false,
+   "fight": false
+  },
+  "dan_nam2": {
+   "row": 45,
+   "name": "Dân làng",
+   "kid": false,
+   "fight": false
+  },
+  "ong_gia": {
+   "row": 46,
+   "name": "Ông cụ",
+   "kid": false,
+   "fight": false
+  },
+  "dan_nu1": {
+   "row": 47,
+   "name": "Dân làng (nữ)",
+   "kid": false,
+   "fight": false
+  },
+  "dan_nu2": {
+   "row": 48,
+   "name": "Dân làng (nữ)",
+   "kid": false,
+   "fight": false
+  },
+  "dan_nu3": {
+   "row": 49,
+   "name": "Cô gái",
+   "kid": false,
+   "fight": false
+  },
+  "tre1": {
+   "row": 50,
+   "name": "Trẻ con",
+   "kid": true,
+   "fight": false
+  },
+  "tre2": {
+   "row": 51,
+   "name": "Trẻ con",
+   "kid": true,
+   "fight": false
+  },
+  "cuop": {
+   "row": 52,
+   "name": "Kẻ cướp",
+   "kid": false,
+   "fight": true
+  },
+  "ti": {
+   "row": 53,
    "name": "Cu Tí nhà bên",
    "kid": true,
    "fight": false
   },
   "o_ma_nhi": {
-   "row": 35,
+   "row": 54,
    "name": "Ô Mã Nhi",
    "kid": false,
    "fight": false
   },
   "khac_chung": {
-   "row": 36,
+   "row": 55,
    "name": "Đỗ Khắc Chung",
    "kid": false,
    "fight": false

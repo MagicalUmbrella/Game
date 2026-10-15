@@ -24,6 +24,15 @@ import * as stats from './stats.js';
 import * as nghe from './nghe.js';
 import {talkSu,doorAction} from './dialogs.js';
 import * as chuc from './chuc.js';
+import {startDich} from './minigames/dich.js';
+import {startCuop} from './minigames/cuop.js';
+import {startSau} from './minigames/sau.js';
+import {startKien} from './minigames/kien.js';
+import {hoiVat,startVat,vatFlush} from './minigames/vat.js';
+import {midChronicle} from './minigames/chung.js';
+import * as cheo from './minigames/cheo.js';
+import * as loi from './loi.js';
+import * as ngu from './ngu.js';
 import {prepCost} from './prep.js';
 import {personSprite} from './sprites.js';
 import {loadPeople} from './person.js';
@@ -41,4 +50,4 @@ const hook=import.meta.env.MODE==='test'&&{
   get modalOpen(){return ui.modalOpen},renderHUD:ui.renderHUD,get dialogOpen(){return ui.dialogOpen},pick:ui.pick,closeDialog:ui.closeDialog,mpick:ui.mpick,nextModal:ui.nextModal,startQuest:ui.startQuest,
   advance,advanceOne,EVENTS,LIFE,SPOTS,runLife,lifeChronicle,fastForward,chooseFocus,talkThay,talkVo,talkLy,talkRen,talkCha,talkMe,talkSach,talkTong,talkCo,talkThao,startPlay,fieldAction,fishAction,
   startFlood,endFlood,startExam,startTraining,tmHit,startClimax,finishClimax,startEscort,W,H,
-  dailyFlush,step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY,personSprite,groundChunk,overview,world,trai,stats,nghe,talkSu,loadSave:state.loadSave,doorAction,chuc,prepCost,endChapter};
+  dailyFlush,step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY,personSprite,groundChunk,overview,world,trai,stats,nghe,talkSu,loadSave:state.loadSave,doorAction,chuc,prepCost,endChapter,startDich,startCuop,startSau,startKien,hoiVat,startVat,vatFlush,midChronicle,cheo,loi,ngu,talkNgu:ngu.talkNgu};

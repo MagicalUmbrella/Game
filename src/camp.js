@@ -148,7 +148,7 @@ function escortDraw(list){const M=MG;
 
 /* ---------- 3. trong trại ---------- */
 function startCamp(){const M=MG,res=M.res;
-  const caps=M.caps,px=PEN.x0,py=PEN.y0;caps.push(walker('la1','Người làng bên',{id:'trai'},px+3.6,py+.4,{tat:true}),walker('la2','Người làng bên',{id:'dan1'},px+.6,py+2.2,{}));
+  const caps=M.caps,px=PEN.x0,py=PEN.y0;caps.push(walker('la1','Người làng bên',{id:'dan_nam1'},px+3.6,py+.4,{tat:true}),walker('la2','Người làng bên',{id:'dan_nu1'},px+.6,py+2.2,{}));
   const spots=[[px+.6,py+.6],[px+4.2,py+1.8],[px+1.4,py+2.4],[px+3.4,py+2.6],[px+.4,py+1.6],[px+4.4,py+.6]];caps.forEach((c,i)=>{if(c.id.startsWith('cap')){const p=spots[i%spots.length];c.x=p[0];c.y=p[1]}c.path=null;c.moving=false;c.dir='down'});
   S.x=PEN_IN[0];S.y=PEN_IN[1];P.dir='down';if(ducTrust())S.capt.trust=true;if(knows('ngua'))S.capt.horse=true;
   const guards=[walker('gd1','Lính canh',{id:'giac'},PEN_DOOR[0]-.8,PEN_DOOR[1]-.2,{torch:true}),walker('gd2','Lính canh',{id:'giac'},CAMP.x0+1.4,12.6,{torch:true})];

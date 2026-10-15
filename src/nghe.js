@@ -8,15 +8,15 @@ import {S} from './state.js';
 import {toast} from './ui.js';
 
 export const NGHE={
-  boi:{name:'Bơi lội',need:6,how:'câu cá, đẩy thuyền, cứu người dưới nước, đắp đê lúc lụt',
+  boi:{name:'Bơi lội',need:8,how:'câu được cá, tắm sông, đẩy thuyền, cứu người dưới nước, đắp đê lúc lụt',
     effect:'Lụt năm 1270: quen nước, lội lụt vác bao nhanh hơn. Bị giải qua sông thì nhớ con nước (chương hai: thoát theo đường sông).'},
-  cheo:{name:'Chèo thuyền',need:4,how:'giúp ông lái đò bến sông Tô Lịch chèo đò, mỗi mùa một lần',
+  cheo:{name:'Chèo thuyền',need:4,how:'cầm chèo cho ông lái đò bến sông Hồng (phía đông làng), mỗi mùa một chuyến; phải đưa khách sang và quay về trong giờ',
     effect:'Chương hai: chèo thuyền đi đánh trên sông. Bị giải sang sông thì nhớ được đường nước.'},
-  thuoc:{name:'Thuốc nam',need:5,how:'hái lá thuốc, sắc thuốc chữa người, chữa trâu, hỏi sư cụ',
+  thuoc:{name:'Thuốc nam',need:6,how:'hái lá thuốc, sắc thuốc chữa người, chữa trâu, nhận mặt cây thuốc với sư cụ (nhớ đúng mới tính)',
     effect:'Đậu mùa năm 1278: tự sắc thuốc cho cha. Đêm giặc đến: một lần tự băng bó, hồi 1 máu.'},
-  ngua:{name:'Cưỡi ngựa',need:3,how:'luyện ở Giảng võ đường, tập trận năm 1283 (đường võ)',
+  ngua:{name:'Cưỡi ngựa',need:5,how:'luyện ở Giảng võ đường (đạt từ khá), tập trận năm 1283 (đường võ)',
     effect:'Chương hai: đi ngựa đưa tin, đánh trận. Ở trại giặc: nhìn bãi ngựa biết quân số kỵ binh.'},
-  ren:{name:'Nghề rèn',need:4,how:'phụ bác thợ rèn quai búa (từ 14 tuổi)',
+  ren:{name:'Nghề rèn',need:6,how:'phụ bác thợ rèn quai búa đúng nhịp (từ 14 tuổi)',
     effect:'Rèn giáo cho trai làng (lo trước ngày giặc đến) chỉ mất 7 quan thay vì 16; tự rèn lại kiếm gỉ.'},
 };
 export const knows=id=>((S.nghe||{})[id]||0)>=NGHE[id].need;

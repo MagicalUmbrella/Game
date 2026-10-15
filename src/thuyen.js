@@ -70,7 +70,7 @@ export function startFerry(f,a,b){const B=makeBoat(a,b,{speed:1.7});if(!B){S.x=b
       if(M.phase==='row'){if(rowBoat(B,dt*f2)){M.phase='land';M.k=0}const st=seat(B,1);S.x=st[0];S.y=st[1];P.dir=B.dir;P.moving=false;return}
       M.k=Math.min(1,M.k+dt*1.6);const st=seat(B,1);S.x=st[0]+(b[0]-st[0])*M.k;S.y=st[1]+(b[1]-st[1])*M.k;P.moving=M.k<1;
       if(M.k>=1){setMG(null);setKeys();document.body.classList.remove('mg');toast('Đò cập bến bên kia sông.',2600)}},
-    draw(list){drawBoat(list,B,[],[{look:{id:'dan1'},at:seat(B,2)}])},
+    draw(list){drawBoat(list,B,[],[{look:{id:'laido'},at:seat(B,2)}])},
     meSort:()=>MG.phase==='row'?{y:B.y-.44,dy:.32+bob(B)}:null,
     findTarget:()=>null,key:k=>k===' '});
   document.body.classList.add('mg');setKeys(`<span>${f.name}</span><span>Giữ <kbd>Space</kbd> cho thuyền đi nhanh</span>`)}

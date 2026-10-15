@@ -373,7 +373,7 @@
     if (M.sk.filter(s => s.st === 'safe').length !== 1) errs.push('không có đúng một bao thóc giấu sẵn');
     const trai = M.al.filter(a => a.id.startsWith('trai'));
     if (!trai.length) errs.push('kiểu nhân vật thử phải có trai làng');
-    if (trai.some(a => !a.giao || a.look.id !== 'trai_giao')) errs.push('trai làng chưa có giáo');
+    if (trai.some(a => !a.giao || !/_giao$/.test(a.look.id))) errs.push('trai làng chưa có giáo');
     window.__bots.climaxTeleport(true);
     d.mpick(0); // Nhìn lại cuộc đời
     const chron = document.querySelector('#modal').innerText;
@@ -496,7 +496,7 @@
     const fresh = (o) => { d.setS(Object.assign(d.newState('Thử'), {year: 1268, season: 1, quests: {hoc: 'done', trau: 'done'}}, o)); d.startPlay(false); while (d.modalOpen) d.nextModal(); d.closeDialog(); };
     const press = (p) => { d.S.x = p.x; d.S.y = p.y; d.step(DT); ev('e', true); ev('e', false); const ok = d.modalOpen; const txt = ok ? document.querySelector('#modal').innerText : ''; while (d.modalOpen) d.nextModal(); d.closeDialog(); return txt; };
     const want = {tien: S => S.tien >= 8, thuoc: S => S.items.includes('Lá thuốc'), de: S => S.items.includes('Dế chọi'), bia: S => S.van === 32,
-      kiem: S => S.items.includes('Kiếm gỉ'), thuyen: S => S.suc === 3, to: S => S.duc === 1, soi: S => S.items.includes('Sỏi trắng'), do: S => S.van === 31 && S.vo === 1};
+      kiem: S => S.items.includes('Kiếm gỉ'), thuyen: S => S.suc === 3, to: S => S.duc === 1, soi: S => S.items.includes('Sỏi trắng'), do: S => (S.nghe || {}).boi === 1};   // bến đò cũ: tắm sông với lũ trẻ (ông lái đò ra sông Hồng, xem cheo.js)
     for (const p of d.SPOTS) {
       if (p.quest) continue;
       fresh({van: p.id === 'bia' || p.id === 'do' ? 30 : 0, suc: p.id === 'thuyen' ? 2 : 4, year: p.id === 'kiem' ? 1270 : 1268});
@@ -719,16 +719,24 @@
     if (d.S.tieng > d.stats.TIENG_FF_CAP) errs.push(`ở nhà lo việc làng mà Tiếng lên ${d.S.tieng}`);
     // Sức theo thể trạng
     for (const [the, want] of [[30, 3], [55, 4], [80, 5]]) { fresh({the}); season(); if (d.S.suc !== want) errs.push(`thể trạng ${the}: mỗi mùa ${d.S.suc} Sức, mong ${want}`); }
-    // nghề rèn: phụ bác thợ rèn 4 mùa thì biết nghề, giáo rẻ hơn
-    fresh({year: 1279, tien: 50});
-    for (let i = 0; i < 4; i++) { d.talkRen(); if (!choose('Phụ bác quai búa')) errs.push(`mùa ${i + 1}: không phụ được thợ rèn`); closeDialog(); season(); }
-    if (!d.nghe.knows('ren')) errs.push('phụ thợ rèn bốn mùa mà chưa biết nghề rèn');
+    // nghề rèn: quai búa đúng nhịp sáu mùa thì biết nghề, giáo rẻ hơn; quai lệch nhịp thì không tính
+    const ren = (lv) => { d.talkRen(); const ok = choose('Phụ bác quai búa'); window.__bots.dailyAuto(lv); d.dailyFlush(); while (d.modalOpen) d.nextModal(); d.closeDialog(); season(); return ok; };
+    fresh({year: 1279, tien: 50}); ren('kém'); ren('kém');
+    if ((d.S.nghe || {}).ren) errs.push(`quai búa lệch nhịp mà vẫn tính vào nghề rèn (${d.S.nghe.ren})`);
+    for (let i = 0; i < d.nghe.NGHE.ren.need; i++) if (!ren('giỏi')) errs.push(`mùa ${i + 1}: không phụ được thợ rèn`);
+    if (!d.nghe.knows('ren')) errs.push(`phụ thợ rèn ${d.nghe.NGHE.ren.need} mùa đúng nhịp mà chưa biết nghề rèn (${(d.S.nghe || {}).ren})`);
     d.S.year = 1283; const t0 = d.S.tien; d.talkRen(); choose('Rèn giáo'); closeDialog();
     if (t0 - d.S.tien !== 7) errs.push(`biết nghề rèn mà rèn giáo mất ${t0 - d.S.tien} quan (mong 7)`);
-    // chèo thuyền: giúp ông lái đò mỗi mùa một lần
-    fresh({year: 1272, found: {do: 1270}}); const spot = d.SPOTS.find(p => p.id === 'cheo');
-    for (let i = 0; i < 4; i++) { d.S.x = spot.x; d.S.y = spot.y; d.step(DT); ev('e', true); ev('e', false); while (d.modalOpen) d.nextModal(); d.closeDialog(); season(); }
-    if (!d.nghe.knows('cheo')) errs.push(`giúp ông lái đò bốn mùa mà chưa biết chèo thuyền (tiến độ ${(d.S.nghe || {}).cheo})`);
+    // chèo thuyền: cầm chèo cho ông lái đò sông Hồng mỗi mùa một chuyến; buông chèo (hết giờ) thì không tính
+    const cheo = (bot) => { d.cheo.talkLaiDo(); while (d.modalOpen) d.nextModal(); if (!d.dialogOpen) d.cheo.talkLaiDo(); if (!choose('chèo')) { errs.push('ông lái đò không cho cầm chèo'); return; }
+      if (!d.MG || d.MG.type !== 'cheo') { errs.push('không vào được màn chèo đò'); return; }
+      if (bot) window.__bots.cheoBot(bot); else { const M = d.MG; for (let t = 0; t < 120 && d.MG === M; t += DT) d.step(DT); }
+      while (d.modalOpen) d.nextModal(); d.closeDialog(); season(); };
+    fresh({year: 1272}); cheo(null);
+    if ((d.S.nghe || {}).cheo) errs.push('buông chèo cả chuyến mà vẫn tính vào nghề chèo thuyền');
+    for (let i = 0; i < 4; i++) cheo('khá');
+    if (!d.nghe.knows('cheo')) errs.push(`chèo bốn chuyến (bot khá) mà chưa biết chèo thuyền (tiến độ ${(d.S.nghe || {}).cheo})`);
+    if (Math.abs(d.S.x - d.cheo.SHORE_W[0]) > 2) errs.push(`chèo xong mà không về bến làng (${d.S.x.toFixed(1)}, ${d.S.y.toFixed(1)})`);
     // Văn 50: viết đơn cho làng
     fresh({van: 50, year: 1276}); d.talkLy(); if (!choose('Viết đơn')) errs.push('Văn 50 mà cụ xã không cho viết đơn'); closeDialog();
     if (!d.S.flags.don || d.S.tieng < 5) errs.push('viết đơn mà không ghi cờ hoặc không thêm Tiếng');
@@ -739,7 +747,7 @@
     if (!/Chỉ đường/.test(document.getElementById('prompt').innerText)) errs.push(`Đức 25: đứng cạnh mẹ mà không chỉ đường được ("${document.getElementById('prompt').innerText}")`);
     d.setMG(null); M = night({duc: 0}); d.S.x = M.v.find(p => p.id === 'me').x + .4; d.S.y = M.v.find(p => p.id === 'me').y; d.step(DT);
     if (/Chỉ đường/.test(document.getElementById('prompt').innerText)) errs.push('Đức 0 (đường nông) mà vẫn chỉ đường được');
-    d.setMG(null); M = night({nghe: {thuoc: 5}}); M.spawnT = 1e9; M.hp = 1; d.S.x = 20; d.S.y = 60; run(4);
+    d.setMG(null); M = night({nghe: {thuoc: d.nghe.NGHE.thuoc.need}}); M.spawnT = 1e9; M.hp = 1; d.S.x = 20; d.S.y = 60; run(4);
     if (M.hp !== 2) errs.push(`biết thuốc nam mà còn 1 máu không tự băng bó (máu ${M.hp})`);
     d.setMG(null); document.body.classList.remove('mg');
     // bản lưu cũ (chưa tách Đức, Tiếng)
@@ -815,5 +823,84 @@
     return {errs, trai: [n0, n1, n2]};
   }
 
-  window.__checks = {career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  /* Màn chơi giữa game (dịch đậu mùa 1278, sâu 1280, tờ văn tự 1280, toán cướp 1280, đấu vật hội xuân):
+     đứng im thì thua (đúng kết cục), bot dịch chuyển theo MG.goal() thì thắng; kết cục hiện trong biên niên. */
+  function midgame() {
+    const d = D(), errs = [], out = {};
+    const flush = () => { while (d.modalOpen) d.nextModal(); d.closeDialog(); };
+    const fresh = (o) => { d.setS(Object.assign(d.newState('Thử'), {year: 1280, season: 0, cha: true, quests: {hoc: 'done', trau: 'done'}}, o)); d.startPlay(false); flush(); };
+    const idle = (start, maxT = 160) => { d[start](); const M = d.MG; for (let t = 0; t < maxT && d.MG === M; t += DT) d.step(DT); const ended = d.MG !== M; if (!ended) { d.setMG(null); document.body.classList.remove('mg'); } return ended; };
+    // bot: đứng ở mục tiêu kế tiếp, bấm E (cướp: Space); khung có lựa chọn thì chọn theo want(text)
+    const play = (start, want, maxT = 160, pre = 0) => { d[start](); const M = d.MG; let t = 0;
+      for (; t < pre; t += DT) d.step(DT);   // đứng chờ trước (ví dụ đợi nhà bên có người ốm)
+      while (d.MG === M && t < maxT) { const g = M.goal && M.goal(); if (g) { d.S.x = g[0]; d.S.y = g[1] + .3; }
+        for (let i = 0; i < 6; i++) { d.step(DT); t += DT; }
+        if (M.type === 'cuop') { ev(' ', true); ev(' ', false); } else { ev('e', true); ev('e', false); }
+        while (d.modalOpen) { const o = [...document.querySelectorAll('#modal .opt')]; const b = want && o.find(x => want(x.textContent)); if (b) b.click(); else if (o.length > 1) o[0].click(); else d.nextModal(); } }
+      while (d.modalOpen) { const o = [...document.querySelectorAll('#modal .opt')]; const b = want && o.find(x => want(x.textContent)); if (b) b.click(); else d.nextModal(); }
+      return t; };
+    // dịch đậu mùa
+    fresh({year: 1278}); if (!idle('startDich') || d.S.flags.daumua !== 'matcuu' || d.S.cha) errs.push(`dịch: đứng im mà kết cục ${d.S.flags.daumua}, cha ${d.S.cha}`);
+    fresh({year: 1278}); out.dich = play('startDich', null, 160, 26); if (!['cham', 'nam'].includes(d.S.flags.daumua) || !d.S.cha) errs.push(`dịch: bot chạy chữa mà kết cục ${d.S.flags.daumua}`);
+    if (!d.S.flags.dichGiup) errs.push('dịch: bot đi qua nhà chị Lụa mà không cứu đứa nhỏ');
+    // sâu cắn lúa
+    fresh({path: 'nong'}); if (!idle('startSau') || d.S.flags.sau !== 'mat') errs.push(`sâu: đứng im mà kết cục ${d.S.flags.sau}`);
+    fresh({path: 'nong'}); out.sau = play('startSau'); if (d.S.flags.sau !== 'giu') errs.push(`sâu: bot bắt sâu mà kết cục ${d.S.flags.sau}`);
+    // tờ văn tự: chọn sổ ruộng và người làm chứng vắng mặt thì thắng
+    fresh({path: 'van', van: 45}); out.kien = play('startKien', x => /Sổ ruộng|vắng làng/.test(x)); if (d.S.flags.kien !== 'thang') errs.push(`tờ văn tự: bot chọn đúng chứng cứ mà kết cục ${d.S.flags.kien}`);
+    fresh({path: 'van', van: 45}); play('startKien', x => /khóc|Cột mốc/.test(x)); if (d.S.flags.kien !== 'thua') errs.push(`tờ văn tự: chọn chứng cứ yếu mà kết cục ${d.S.flags.kien}`);
+    // toán cướp
+    fresh({path: 'vo', vo: 40}); if (!idle('startCuop') || !['lost', 'nga'].includes(d.S.flags.cuop)) errs.push(`cướp: đứng im mà kết cục ${d.S.flags.cuop}`);
+    fresh({path: 'vo', vo: 40}); out.cuop = play('startCuop'); if (d.S.flags.cuop !== 'win') errs.push(`cướp: bot đuổi đánh mà kết cục ${d.S.flags.cuop}`);
+    // đấu vật: bấm luân phiên A, D thì thắng; đứng im thì thua
+    const vat = (mash) => { d.S.year++; d.hoiVat(); const M = d.MG; let k = 0;
+      for (let t = 0; t < 25 && d.MG === M && !M.over; t += DT) { if (mash && (t * 60 | 0) % 4 === 0) { ev(k++ % 2 ? 'a' : 'd', true); } d.MG && d.MG.tick && d.MG.tick(DT); }
+      d.vatFlush(); flush(); };
+    fresh({year: 1276, season: 0, vo: 40}); vat(false); if (d.S.vat.lost !== 1 || d.S.vat.lv !== 0) errs.push(`vật: đứng im mà thắng (${JSON.stringify(d.S.vat)})`);
+    for (let i = 0; i < 3; i++) vat(true); if (!d.S.vat.do) errs.push(`vật: bấm đều tay ba năm mà chưa thành đô vật (${JSON.stringify(d.S.vat)})`);
+    // đô vật thêm 1 máu đêm 1285
+    const hp = (o) => { d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, path: 'nong', co: 'army', quests: {trau: 'done'}}, o)); d.startClimax(); const h = d.MG.maxhp; d.setMG(null); document.body.classList.remove('mg'); return h; };
+    if (hp({vat: {lv: 2, do: true, won: 3, lost: 0, last: 0}}) !== hp({}) + 1) errs.push('đô vật mà đêm 1285 không thêm máu');
+    // biên niên
+    d.setS(Object.assign(d.newState('Thử'), {flags: {sau: 'giu', kien: 'thang', cuop: 'win'}, vat: {do: true, won: 3, lost: 1}}));
+    const L = d.midChronicle().join(' ');
+    for (const w of ['sâu', 'văn tự', 'cướp', 'đô vật']) if (!L.includes(w)) errs.push(`biên niên thiếu dòng "${w}"`);
+    flush();
+    return {errs, out};
+  }
+
+  /* Mạch anh Ngũ: việc nghe anh ba lần (mỗi năm một lần), tin năm 1278, bãi tập 1283 (mọi mức điểm), bến Đông Bộ Đầu
+     1284 (đường văn, nông), lời nhắc đêm 1285. */
+  function nguArc() {
+    const d = D(), errs = [];
+    const flush = () => { while (d.modalOpen) d.nextModal(); d.closeDialog(); };
+    const fresh = (o) => { d.setS(Object.assign(d.newState('Thử'), {quests: {hoc: 'done', trau: 'done'}, lifeWait: 99}, o)); d.startPlay(false); flush(); };
+    const talk = () => { d.talkNgu(); const b = [...document.querySelectorAll('#dialog .opt')][0]; if (b && !/Đóng|Tạm biệt/.test(b.textContent)) b.click(); flush(); };
+    fresh({year: 1271, season: 3}); d.advanceOne(); flush();
+    if (d.S.quests.ngu !== 'active') errs.push('năm 1272 chưa có việc "Chàng trai đọc sách bên đường"');
+    talk(); talk(); if (d.S.nguN !== 1) errs.push(`một năm nói chuyện hai lần mà tính ${d.S.nguN} lần (mong 1)`);
+    d.S.year = 1273; talk(); d.S.year = 1275; talk();
+    if (d.S.nguN !== 3 || d.S.quests.ngu !== 'done') errs.push(`ba năm nghe anh Ngũ: ${d.S.nguN} lần, việc ${d.S.quests.ngu}`);
+    d.S.year = 1278; d.S.season = 1; d.EVENTS.find(e => e.id === 'ngu').run(); const news = document.querySelector('#modal').innerText; flush();
+    if (!/Phạm Ngũ Lão/.test(news) || !/nợ công danh/.test(news)) errs.push('tin năm 1278 không nêu tên Phạm Ngũ Lão hoặc thiếu câu riêng cho người nghe đủ ba lần');
+    // chưa gặp: hết 1277 thì việc tự bỏ, không có tin 1278
+    fresh({year: 1277, season: 3}); d.S.quests.ngu = 'active'; d.advanceOne(); flush();
+    if (d.S.quests.ngu) errs.push('sang năm 1278 mà việc nghe anh Ngũ còn treo');
+    // bãi tập 1283: đã gặp thì điểm thấp anh vẫn tới
+    fresh({year: 1283, season: 3, path: 'vo', vo: 30, nguMet: true, nguN: 1}); d.startTraining(); const M = d.MG; let saw = false;
+    for (let i = 0; i < 60 * 60 && d.MG === M; i++) { if (M.phase === 'aim' && M.pos > 400) d.tmHit(); if (M.phase === 'ngu') saw = true; d.step(DT); }
+    flush(); if (!saw || !d.S.flags.nguKnows) errs.push(`bãi tập 1283 (điểm ${M.score}): anh Ngũ không tới`);
+    // bến Đông Bộ Đầu 1284: đường văn đã gặp anh bên đường
+    fresh({year: 1284, season: 2, path: 'van', nguMet: true, nguN: 2}); d.EVENTS.find(e => e.id === 'duyetbinh').run(); flush();
+    if (d.S.quests.nguDB !== 'active') errs.push('duyệt binh 1284: đường văn đã gặp anh Ngũ mà không có việc gặp ở bến');
+    const npc = d.NPCS.find(n => n.id === 'ngutuong'); if (!npc || !npc.show()) errs.push('năm 1284 không thấy Phạm Ngũ Lão ở bến');
+    npc.talk(); const b = [...document.querySelectorAll('#dialog .opt')][0]; b && b.click(); flush();
+    if (!d.S.nguDB || !d.S.flags.nguKnows || d.S.quests.nguDB !== 'done') errs.push('nói chuyện ở bến mà chưa ghi đã gặp lại');
+    if (!/bến Đông Bộ Đầu/.test(d.ngu.nguRecall())) errs.push('đêm 1285 lời báo quân tới không nhắc lần gặp ở bến');
+    fresh({year: 1284, season: 2, path: 'vo', nguMet: true, flags: {nguKnows: true}}); d.EVENTS.find(e => e.id === 'duyetbinh').run(); flush();
+    if (d.S.quests.nguDB) errs.push('đã gặp anh ở bãi tập 1283 mà duyệt binh vẫn giao việc gặp ở bến');
+    return {errs};
+  }
+
+  window.__checks = {nguArc, midgame, career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();

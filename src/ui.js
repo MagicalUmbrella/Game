@@ -1,4 +1,5 @@
 /* ================= UI ================= */
+import {mocCross} from './moc.js';
 import {chucName} from './chuc.js';
 import {$,SEASONS,canchi} from './constants.js';
 import {QUESTS,S,age} from './state.js';
@@ -15,7 +16,7 @@ export function setKeys(html){$('keys').innerHTML=html||KEYS_DEFAULT}
 export function toast(msg,ms=3600){const t=$('toast');t.textContent=msg;t.hidden=false;t.style.opacity=1;clearTimeout(toast._t);toast._t=setTimeout(()=>{t.style.opacity=0;setTimeout(()=>t.hidden=true,300)},ms)}
 export function floatAt(txt,x,y,color){const k=floats.filter(f=>f.t<1&&Math.abs(f.x-x)<.6&&Math.abs(f.y-y)<.6).length;floats.push({txt,color:color||'#ece6d4',x,y,t:0,dy:k*22})}   // nhiều chữ cùng chỗ thì xếp lệch dòng
 export function floatText(txt,color){floatAt(txt,S.x,S.y,color)}
-export function gain(k,n){const lab={van:'Văn',vo:'Võ',duc:'Đức',tieng:'Tiếng',tien:'quan'}[k];S[k]=Math.max(0,Math.min(k==='tien'?999:100,(S[k]||0)+n));floatText((n>0?'+':'')+n+' '+lab,{van:'#9cc7e0',vo:'#f0a27f',duc:'#f2a7b5',tieng:'#e2bf72',tien:'#c9e0a0'}[k]);renderHUD()}
+export function gain(k,n){const lab={van:'Văn',vo:'Võ',duc:'Đức',tieng:'Tiếng',tien:'quan'}[k],old=S[k]||0;S[k]=Math.max(0,Math.min(k==='tien'?999:100,old+n));mocCross(k,old,S[k]);floatText((n>0?'+':'')+n+' '+lab,{van:'#9cc7e0',vo:'#f0a27f',duc:'#f2a7b5',tieng:'#e2bf72',tien:'#c9e0a0'}[k]);renderHUD()}
 export function spend(n=1){if(S.suc<n){toast('Bạn đã mệt. Về nhà ngủ để sang mùa mới.');return false}S.suc-=n;renderHUD();return true}
 export function startQuest(id){if(S.quests[id])return;S.quests[id]='active';toast('Việc mới: '+QUESTS[id].title);renderHUD()}
 export function doneQuest(id){S.quests[id]='done';toast('Hoàn thành: '+QUESTS[id].title);renderHUD()}

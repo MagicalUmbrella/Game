@@ -56,6 +56,9 @@
       if (!path || key !== goalKey || (repath -= DT) <= 0 || still > 0.25) {
         path = plan(gx, gy, Math.max(0.6, r - 0.3)); goalKey = key; repath = 0.5; still = 0;
         if (!path) { stop(); return false; }
+        // ô đầu là ô đang đứng: nếu đi thẳng sang ô kế được (lệch trục kia không quá 0,15) thì bỏ đi, kẻo đích di động
+        // (tên cướp, giặc) làm bot cứ quay về tâm ô mãi
+        if (path.length > 1) { const [p0, p1] = path, S = D().S; if ((p1[0] !== p0[0] && Math.abs(S.y - p0[1]) < .15) || (p1[1] !== p0[1] && Math.abs(S.x - p0[0]) < .15)) path.shift(); }
       }
       while (path.length > 1 && Math.abs(path[0][0] - S.x) < 0.15 && Math.abs(path[0][1] - S.y) < 0.15) path.shift();
       const [cx, cy] = path[0];
@@ -237,5 +240,38 @@
     }
   }
 
-  window.__bots = {SKILL, makeWalker, floodBot, floodTeleport, climaxBot, climaxTeleport, dailyAuto, DT};
+  /* ---------- Màn giữa game (dịch, sâu, tờ văn tự, cướp): đi bộ theo MG.goal(), tới nơi thì bấm E (cướp: Space) ---------- */
+  function goalBot(skillName, want, maxT = 200) {
+    const d = D(), skill = SKILL[skillName], w = makeWalker(skill), M0 = d.MG;
+    let t = 0, wait = 0, M;
+    const modal = () => { if (d.dialogOpen) d.closeDialog(); while (d.modalOpen) { const o = [...document.querySelectorAll('#modal .opt')]; const b = want && o.find(x => want(x.textContent)); if (b) b.click(); else if (o.length > 1) o[0].click(); else d.nextModal(); } };
+    d.step(DT);   // cập nhật thứ đang đứng cạnh (bấm E ngay nhịp đầu thì còn nhắm vào cửa nhà)
+    while ((M = d.MG) === M0 && M && t < maxT) {
+      modal();
+      const g = M.goal && M.goal();
+      if (wait > 0) { wait -= DT; w.stop(); }
+      else if (M.type === 'cuop' && M.en.some(e => !e.dead && Math.hypot(e.x - d.S.x, e.y - d.S.y) < 1.2)) { w.stop(); w.tap(' '); wait = skill.react * .5; }   // có kẻ áp sát thì đánh trả
+      else if (g && w.toward(g[0], g[1], 1.1)) { w.tap(M.type === 'cuop' ? ' ' : 'e'); wait = M.type === 'cuop' ? skill.react * .5 : skill.hesitate; }
+      d.step(DT); t += DT;
+    }
+    w.releaseAll(); modal();
+    return +t.toFixed(1);
+  }
+
+  /* ---------- Chèo đò sông Hồng: bấm luân phiên A D theo nhịp tay nghề, giữ W/S để thuyền thẳng bến ---------- */
+  function cheoBot(skillName, maxT = 120) {
+    const d = D(), M0 = d.MG, gap = {'giỏi': .12, 'khá': .2, 'kém': .32}[skillName], slack = {'giỏi': .2, 'khá': .45, 'kém': .8}[skillName];
+    let t = 0, k = 0, nextT = .3, held = null, M;
+    const hold = key => { if (held === key) return; if (held) ev(held, false); held = key; if (key) ev(key, true); };
+    while ((M = d.MG) === M0 && M && t < maxT) {
+      if (M.phase === 'row') {
+        if (t >= nextT) { ev(k++ % 2 ? 'a' : 'd', true); nextT = t + gap; }
+        const off = M.B.y - d.cheo.BEN; hold(off > slack ? 'w' : off < -slack ? 's' : null);
+      } else hold(null);
+      d.step(DT); t += DT;
+    }
+    hold(null); return +t.toFixed(1);
+  }
+
+  window.__bots = {cheoBot, goalBot, SKILL, makeWalker, floodBot, floodTeleport, climaxBot, climaxTeleport, dailyAuto, DT};
 })();

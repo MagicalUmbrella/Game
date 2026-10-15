@@ -1,4 +1,6 @@
 /* ================= state ================= */
+import {nguDBOn,nguQuestHint,talkNguTuong} from './ngu.js';
+import {talkLaiDo} from './minigames/cheo.js';
 import {say} from './ui.js';
 import {pickR,talkBaTu,talkCha,talkCo,talkHocQuan,talkLinh,talkLy,talkMe,talkNgu,talkRen,talkSach,talkSu,talkThao,talkThay,talkTong,talkVo,talkVoQuan} from './dialogs.js';
 import {chainHint} from './chains.js';
@@ -16,10 +18,12 @@ export const QUESTS={
   cco:{title:'Dạy Cò biết chữ',hint:()=>chainHint('co')},
   cthao:{title:'Mái nhà bà Tư',hint:()=>chainHint('thao')},
   cthay:{title:'Chép sách cho thầy',hint:()=>chainHint('thay')},
+  ngu:{title:'Chàng trai đọc sách bên đường',hint:()=>nguQuestHint()},
+  nguDB:{title:'Gặp Phạm Ngũ Lão ở bến Đông Bộ Đầu',hint:'Quân các vương hầu duyệt binh ở bến Đông Bộ Đầu. Phạm Ngũ Lão đứng ở bãi sông dưới chân đê, ngoài tường đông kinh thành. Tới hết năm nay.'},
   lua:{title:'Tấm lụa cho mẹ',hint:'Mua lụa của lái buôn người Tống ở phường Nhai Tuân, mang về biếu mẹ. (Cũng có thể tặng Thảo.)'},
 };
-export function newState(name){return{name,year:1264,season:0,suc:4,van:0,vo:0,duc:0,tieng:0,the:55,nghe:{},statsV:2,tien:3,items:[],quests:{},path:null,ev:{},x:43.5,y:50.4,ate:false,
-  buffalo:{x:44.5,y:58.6,st:'pen',tracks:[],bolts:0},nguMet:false,thayBonus:false,dothi:false,ended:false,
+export function newState(name){return{name,year:1264,season:0,suc:4,van:0,vo:0,duc:0,tieng:0,the:55,nghe:{},ngheV:2,statsV:2,tien:3,items:[],quests:{},path:null,ev:{},x:43.5,y:50.4,ate:false,
+  buffalo:{x:44.5,y:58.6,st:'pen',tracks:[],bolts:0},nguMet:false,nguN:0,nguY:0,thayBonus:false,dothi:false,ended:false,
   rel:{co:2,thao:0},flags:{},ducMerged:true,cha:true,thay:true,co:'village',thao:'none',married:false,child:false,thaoHelped:false,coPlayed:false,paper:false,tonic:false,life:{},lifeWait:2,career:{van:null,hoctro:0,laiN:0,boBut:false,doi:false,ruong:2,mua:0,xa:null},found:{},chains:{},toi:'',pending:null}}
 export function save(){try{localStorage.setItem('dvmd-save',JSON.stringify(S))}catch(e){}}
 export function loadSave(){try{const s=localStorage.getItem('dvmd-save');if(!s)return null;const o=JSON.parse(s),b=newState('');const r=Object.assign(b,o);r.rel=Object.assign(newState('').rel,o.rel||{});r.flags=Object.assign({},o.flags||{});if(!r.buffalo||!r.buffalo.st){r.buffalo={x:44.5,y:58.6,st:'pen',tracks:[],bolts:0};if(r.quests&&r.quests.trau==='active')r._reLose=true}
@@ -30,6 +34,10 @@ export function loadSave(){try{const s=localStorage.getItem('dvmd-save');if(!s)r
   if(!o.statsV){r.tieng=r.duc;r.duc=Math.round(r.duc*.5);r.the=r.flags.daumua==='cham'?50:55;r.nghe={};if(r.found&&r.found.thuoc)r.nghe.thuoc=1;if(r.path==='vo'&&r.year>=1276)r.nghe.ngua=1;r.statsV=2}
   // bản lưu trước khi có thăng tiến: đứng đầu tập trận thì đã là đội trưởng
   if(!o.career){r.career.doi=r.path==='vo'&&r.flags.train==='top'}else r.career=Object.assign(newState('').career,o.career);
+  // bản lưu trước khi nghề khó hơn (10/2026): nghề đã biết theo mức cũ thì vẫn giữ là đã biết
+  if(!o.ngheV){const old={boi:6,cheo:4,thuoc:5,ngua:3,ren:4},nw={boi:8,cheo:4,thuoc:6,ngua:5,ren:6};for(const k in old)if((r.nghe[k]||0)>=old[k])r.nghe[k]=nw[k];r.ngheV=2}
+  // bản lưu trước khi có việc nghe anh Ngũ ba lần: đã gặp thì tính một lần
+  if(r.nguMet&&!o.nguN){r.nguN=1;r.nguY=0}
   // bản lưu cũ đã qua tin Toa Đô mà chưa có việc "Lo trước ngày giặc đến"
   if(r.ev&&r.ev.toado&&!r.quests.lo&&r.year<1285)r.quests.lo='active';
   // bản lưu cũ: việc Tứ thư còn dở khi thầy đã mất, việc lo trước còn dở khi đã sang 1285
@@ -57,7 +65,9 @@ export const NPCS=[
  {id:'linh2',name:'Lính gác',x:55.7,y:20.5,look:{id:'linh'},talk:talkLinh},
  {id:'hocquan',name:'Học quan',x:42.6,y:8.8,look:{id:'hocquan'},talk:talkHocQuan},
  {id:'voquan',name:'Võ quan',x:66.4,y:12.8,look:{id:'voquan'},talk:talkVoQuan},
- {id:'ngu',name:'Chàng trai đọc sách',x:74.5,y:30.4,look:{id:'ngu'},talk:talkNgu,show:()=>S.year>=1272&&S.year<=1277},
+ {id:'laido',name:'Ông lái đò',x:76.6,y:43.5,look:{id:'laido'},talk:talkLaiDo,show:()=>age()>=8},
+ {id:'ngutuong',name:'Phạm Ngũ Lão',x:79.5,y:9.6,look:{id:'ngu_tuong'},talk:()=>talkNguTuong(),show:()=>nguDBOn()},   // năm 1284, bãi sông ngoài tường đông (ngu.js: NGU_DB)
+ {id:'ngu',name:'Chàng trai đọc sách',x:74.5,y:30.4,look:{id:'ngu'},talk:()=>talkNgu(),show:()=>S.year>=1272&&S.year<=1277},
 ];
 export const coLook=()=>age()<14?{id:'co_be',kid:true}:{id:S.year>=1284?'co_do':'co'};
 /* Hình người của NPC lúc này: Cò lớn lên, cha mẹ già đi. */

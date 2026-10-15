@@ -170,7 +170,7 @@ export function drawCamp(list){const x0=Math.floor(camX/T)-1,y0=Math.floor(camY/
   for(const jy of JETTY_Y)for(let x=Math.floor(hongX(jy)+hongEW(jy)-4);x<THUY.x0+2;x++)if(vis(x,jy))for(const dy of [-.08,.98])list.push({y:jy+dy,f:()=>drawSprite(jettyPost(),x+.5,jy+dy+.3)});
   SHIPS.forEach(([x,y],i)=>{if(vis(x,y,5))list.push({y:y-.5,f:()=>{const bob=reduce?0:Math.round(Math.sin(clock*1.2+i*2));drawSprite(shipSprite(),x,y+bob/TS)}})});
 }
-const flips={};function horseDir(c,fr,dir){const sp=horseSprite(c,fr);if(dir!=='right')return sp;const k=c+'_'+fr;return flips[k]||(flips[k]=flip(sp))}
+const flips={};export function horseDir(c,fr,dir){const sp=horseSprite(c,fr);if(dir!=='right')return sp;const k=c+'_'+fr;return flips[k]||(flips[k]=flip(sp))}
 /* cờ lớn, đuốc giặc ở bến Đông Bộ Đầu (đêm 12) */
 export const BEN_FIRES=[[80.5,11.2],[81,14.6]];
 
@@ -182,7 +182,7 @@ function along(pts,t){const L=[];let tot=0;const loop=pts.length>2?[...pts,pts[0
     return {x:a[0]+dx*f,y:a[1]+dy*f,dir:Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up')}}u-=L[i]}return {x:pts[0][0],y:pts[0][1],dir:'down'}}
 /* danh sách người đứng/đi trong trại lúc này (để camp.js vẽ, va chạm thì không cần: họ đi theo đường trống) */
 export function campFolk(){const t=clock;const out=PATROLS.map((p,i)=>{const a=along(p,t*1.3+i*9);return {x:a.x,y:a.y,dir:a.dir,moving:true,look:{id:i%2?'giac_ky':'giac'},torch:true,walk:t*8}});
-  out.push({x:ANVIL[0]+1,y:ANVIL[1]+.1,dir:'left',moving:false,look:{id:'linh'},hammer:true,walk:0});            // thợ rèn (người bị bắt làm thợ)
+  out.push({x:ANVIL[0]+1,y:ANVIL[1]+.1,dir:'left',moving:false,look:{id:'dan_nam1'},hammer:true,walk:0});            // thợ rèn (người bị bắt làm thợ)
   out.push({x:HORSE.gate+.5,y:HORSE.y1+1.7,dir:'up',moving:false,look:{id:'giac_ky'},walk:0});                      // lính giữ ngựa
   out.push({x:TORTURE.x+3.2,y:TORTURE.y+2.6,dir:'left',moving:false,look:{id:'giac'},walk:0});                      // lính ở chỗ tra hỏi
   for(const g of GENS)out.push({x:g.x+.4,y:g.y+g.h+.6,dir:'down',moving:false,look:{id:'giac'},walk:0});           // lính gác lều tướng

@@ -1,4 +1,5 @@
 /* ================= render ================= */
+import {drawMoored} from './minigames/cheo.js';
 import {$,H,T,TS,W,Z,ctx,cv} from './constants.js';
 import {Hs} from './pixel.js';
 import {BUILDINGS,DECOR,SIGNS,TREES,isW,map} from './map.js';
@@ -43,7 +44,7 @@ function render(){
   if(S&&age()<12){ctx.fillStyle='#4a2c1c';for(let x=52;x<=54;x++)ctx.fillRect((x*TS+2)*Z-camX,(19*TS+2)*Z-camY,12*Z,14*Z);for(let y=11;y<=12;y++)ctx.fillRect((70*TS+2)*Z-camX,(y*TS+1)*Z-camY,12*Z,14*Z);ctx.fillStyle='#d9b14a';for(let x=52;x<=54;x++){ctx.fillRect((x*TS+5)*Z-camX,(19*TS+8)*Z-camY,Z,Z);ctx.fillRect((x*TS+10)*Z-camX,(19*TS+8)*Z-camY,Z,Z)}}
   drawTracks();
   const list=[];
-  for(const t of near(TREES,x0-2,y0,x1+2,y1+4))if(t.x>=x0-2&&t.x<=x1+2&&t.y>=y0&&t.y<=y1+4)list.push({y:t.y+.9,f:()=>{const sp=treeSprite(s,t.v),hide=S&&Math.abs(S.x-t.x-.5)<sp.width/TS/2-.3&&S.y<t.y+.9&&S.y>t.y+1-sp.height/TS+.6;
+  for(const t of near(TREES,x0-2,y0,x1+2,y1+4))if(t.x>=x0-2&&t.x<=x1+2&&t.y>=y0&&t.y<=y1+4&&!(MG&&MG.hideTree&&MG.hideTree(t)))list.push({y:t.y+.9,f:()=>{const sp=treeSprite(s,t.v),hide=S&&Math.abs(S.x-t.x-.5)<sp.width/TS/2-.3&&S.y<t.y+.9&&S.y>t.y+1-sp.height/TS+.6;
     if(hide)ctx.globalAlpha=.55;drawSprite(sp,t.x+.5,t.y+1);ctx.globalAlpha=1}});   // bạn đứng sau cây thì cây mờ đi
   for(const w of WALLS)if(w.x>=x0-1&&w.x<=x1+1&&w.y>=y0-1&&w.y<=y1+2)list.push({y:w.y+.99,f:()=>drawSprite(wallSprite(w),w.x+.5,w.y+1)});
   for(const t of TOWERS)if(t.x+t.n>=x0-2&&t.x<=x1+2&&t.y>=y0-2&&t.y<=y1+3)list.push({y:t.y+1.02,f:()=>drawSprite(towerSprite(t),t.x+t.n/2,t.y-.1)});
@@ -53,7 +54,7 @@ function render(){
   for(const sg of near(SIGNS,x0-1,y0-1,x1+1,y1+2))list.push({y:sg.y+1,f:()=>drawSprite(signSprite(),sg.x+.5,sg.y+1)});
   if(S){
     const a=age();
-    if(!MG)exploreDraw(list,clock,camX,camY);
+    if(!MG){exploreDraw(list,clock,camX,camY);drawMoored(list)}   // thuyền ông lái đò đậu ở bến sông Hồng
     for(const n of NPCS){if(!npcOn(n))continue;if(S.res&&S.res.lost&&S.res.lost.includes(n.name))continue;   // người đã bị giặc bắt đi thì không còn ở làng
       if(n.x<x0-2||n.x>x1+2||n.y<y0-2||n.y>y1+2)continue;
       const look=npcLook(n),dpx=S.x-n.x,dpy=S.y-n.y;let dir=n.moving?n.face:'down';
