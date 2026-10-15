@@ -294,5 +294,25 @@ Ai chết **phụ thuộc vào cách chơi**, không viết sẵn một người
 - **Bạch Đằng, nước rút:** từ thuyền nhỏ nhìn cả khúc sông thuyền giặc nghiêng đổ. Toàn thư chép nước sông đỏ ngầu, bắt được bốn trăm thuyền, bắt Ô Mã Nhi.
 - **Về làng:** trẻ con chạy ra đón, mâm cơm có người, có chỗ trống của người không về. Vui và buồn cùng lúc là cảnh kết chương.
 
-### Cân lại vai người chơi cho đúng sử
-Vinh quang của bạn là vinh quang của **người dân binh** giữa trận lớn: người giữ được khúc bến, cứu được người làng, cắm được lá cờ. Không để bạn lập công thay các tướng có tên trong Toàn thư (bắt Ô Mã Nhi là Đỗ Hành, bắt Áo Lỗ Xích là Nguyễn Khoái). Bạn có thể đứng gần, giúp một tay, nhưng công ghi đúng người.
+### Bạn là người lập công (chủ dự án chốt cách A, 15/10/2026)
+Người chơi phải là **người lập công lớn**, nhưng bằng những việc sử không chép tên, không ghi đè lên người có tên trong Toàn thư (bắt Ô Mã Nhi là Đỗ Hành, bắt Áo Lỗ Xích là Nguyễn Khoái). Công của bạn là hư cấu, ghi rõ hư cấu, và đứng cạnh công các tướng chứ không thay.
+
+**Chương Dương:**
+- Bạn dẫn đợt thuyền đầu vào bến, mở đường cho cả đoàn dân binh.
+- Bạn giữ khúc chiến tuyến sắp vỡ.
+- Bạn cắm lá cờ đầu tiên trên gò.
+
+**Tây Kết:** bạn phát hiện chỗ thuyền Toa Đô đậu nhờ dò tin hoặc nhờ thuộc sông, và báo kịp cho quân mai phục. Toàn thư chép Toa Đô bị chém ở Tây Kết, không chép ai chém, nên không gán việc chém cho bạn.
+
+**Vân Đồn:** tin của bạn (chợ, lửa hiệu, cắt neo) là thứ giúp Trần Khánh Dư đánh trúng đoàn thuyền lương.
+
+**Bạch Đằng**, công lớn nhất:
+- Bạn tìm ra chỗ đóng cọc hiểm nhất, nhờ hồi nhỏ chèo đò thuộc con nước (`nghe.cheo`), hoặc nhờ ông lái đò dặn.
+- Bạn chỉ huy chiếc thuyền nhử. Thuyền giặc đuổi theo bạn mà vướng cọc.
+- Bạn cứu Nguyễn Khoái khi ông bị vây trên thuyền giặc, ngay trước lúc ông bắt sống Áo Lỗ Xích.
+- Bạn dồn thuyền Ô Mã Nhi vào chỗ Đỗ Hành ập tới bắt.
+- Bạn bắt sống một tướng giặc hư cấu (đặt tên riêng, ghi rõ hư cấu) và cắm cờ trên thuyền chỉ huy của hắn.
+
+**Câu kết trận:** "Sử sách chép tên các tướng. Làng An Phú nhớ tên bạn." Biên niên liệt kê từng công của bạn.
+
+Đánh kém thì công nhỏ đi (ví dụ không cứu kịp Nguyễn Khoái thì ông vẫn tự thoát và vẫn bắt Áo Lỗ Xích, đúng sử, chỉ là không có bạn). Đánh giỏi thì đủ công.
