@@ -125,22 +125,22 @@ export function talkRen(){if(age()<14)return say('Bác thợ rèn','Lò rèn nó
       startDrill(q=>{if(q>=1){practice('ren');toast(['Bạn gõ búa con theo nhịp búa tạ, không lệch nhát nào.','Bác thợ rèn gật đầu: "Nghe tiếng búa là biết tay có nghề."','Bạn học cách nhìn màu sắt nung mà biết lúc nào đem tôi.','Bác khen: "Tay cậu chắc rồi đấy. Nghề này cậu theo được."','Bạn tự tay tôi một lưỡi liềm.','Bác giao cho bạn rèn nguyên một lưỡi cuốc.'][Math.min(5,(S.nghe.ren||1)-1)],4200)}else toast('Búa lệch nhịp, tóe lửa ra ngoài. Bác thợ rèn lắc đầu: "Hôm nay kéo bễ thôi." (chưa tính vào nghề)',4600)},
         {title:'Quai búa',kicker:'Phụ bác thợ rèn',zw:40,intro:'Bác thợ rèn nện búa tạ, bạn gõ búa con theo. Bấm <kbd>Space</kbd> hoặc <kbd>E</kbd> khi đầu búa ở vùng sáng trên đe. Đạt từ khá trở lên mới tính vào nghề.'})}}]:[])])}
 export function talkTong(){
-  say('Lái buôn người Tống','Nhà tôi vượt biển sang đây, được vua cho ở phường Nhai Tuân này. Tôi bán vải lụa và thuốc bắc.',[
+  say('Lái buôn người Tống',voice('tong'),[
     {label:'Mua thuốc bổ',note:S.tonic?'mùa này đã mua':'5 quan · +2 Sức · khỏe lên · mỗi mùa một lần',disabled:S.tien<5||S.tonic,fn:()=>{S.tien-=5;S.tonic=true;gainThe(2,85);S.suc=Math.min(sucMax(),S.suc+2);renderHUD();floatText('+2 Sức','#9fcaa9')}},
     {label:'Mua tấm lụa',note:'7 quan',disabled:S.tien<7||has('Lụa'),fn:()=>{S.tien-=7;S.items.push('Lụa');renderHUD();toast('Một tấm lụa mềm. Biếu mẹ hay tặng ai đó, tùy bạn.')}}]);
 }
-export function talkLinh(){say('Lính gác',age()<12?'Đứng lại! Trẻ con không được một mình vào kinh. Đợi mười hai tuổi hẵng đến.':'Vào đi. Trong kinh thành phải giữ phép tắc, không được chạy nhảy ồn ào.')}
+export function talkLinh(){say('Lính gác',age()<12?'Đứng lại! Trẻ con không được một mình vào kinh. Đợi mười hai tuổi hẵng đến.':voice('linh','Vào đi. Trong kinh thành phải giữ phép tắc, không được chạy nhảy ồn ào.'))}
 export function talkHocQuan(){
-  if(S.path==='van')return say('Học quan',S.dothi?'Thái học sinh mà vẫn chăm đến đây, tốt lắm.':'Sĩ tử của Quốc học viện phải đọc nhiều, viết nhiều.',(()=>{const hoc=k=>startWriting(q=>{gain('van',k*(dailyReward(3,q)+(S.thayBonus?1:0)));toast(vanLesson())});return[{label:'Học tại Quốc học viện',note:'−1 Sức · tập viết · +3 Văn',fn:()=>{if(!spend())return;hoc(1)}},...allSuc('Học',hoc)]})());
+  if(S.path==='van')return say('Học quan',voice('hocquan',S.dothi?'Thái học sinh mà vẫn chăm đến đây, tốt lắm.':'Sĩ tử của Quốc học viện phải đọc nhiều, viết nhiều.'),(()=>{const hoc=k=>startWriting(q=>{gain('van',k*(dailyReward(3,q)+(S.thayBonus?1:0)));toast(vanLesson())});return[{label:'Học tại Quốc học viện',note:'−1 Sức · tập viết · +3 Văn',fn:()=>{if(!spend())return;hoc(1)}},...allSuc('Học',hoc)]})());
   say('Học quan','Quốc học viện lập từ năm Quý Sửu (1253), thờ Khổng Tử, Chu Công, Mạnh Tử, giảng Tứ thư, Lục kinh. Muốn vào học phải giỏi chữ trước đã.');
 }
 export function talkVoQuan(){
-  if(S.path==='vo')return say('Võ quan','Giảng võ đường lập cùng năm với Quốc học viện. Hương binh giỏi thì được luyện ở đây.',(()=>{const luyen=k=>startDrill(q=>{gain('vo',k*dailyReward(4+(has('Kiếm sắt')?1:0),q,5/6));if(q>=1)practice('ngua',k);toast(voLesson())});return[{label:'Luyện tại Giảng võ đường',note:'−1 Sức · +4 Võ · học cưỡi ngựa',fn:()=>{if(!spend())return;luyen(1)}},...allSuc('Luyện',luyen)]})());
+  if(S.path==='vo')return say('Võ quan',voice('voquan','Giảng võ đường lập cùng năm với Quốc học viện. Hương binh giỏi thì được luyện ở đây.'),(()=>{const luyen=k=>startDrill(q=>{gain('vo',k*dailyReward(4+(has('Kiếm sắt')?1:0),q,5/6));if(q>=1)practice('ngua',k);toast(voLesson())});return[{label:'Luyện tại Giảng võ đường',note:'−1 Sức · +4 Võ · học cưỡi ngựa',fn:()=>{if(!spend())return;luyen(1)}},...allSuc('Luyện',luyen)]})());
   say('Võ quan','Giảng võ đường lập mùa thu năm Quý Sửu (1253). Chỉ người đã vào quân mới được luyện ở đây.');
 }
 export function talkNgu(){
   const first=!S.nguMet;S.nguMet=true;
-  say('Chàng trai đọc sách',first?'Một chàng trai to khỏe đứng tựa gốc cây bên vệ đường đọc sách, thỉnh thoảng lại ngâm nga mấy câu thơ. Anh tên Ngũ, người làng Phù Ủng. Anh bảo làm trai mà chưa lập được công danh thì còn thẹn lắm.':'Anh Ngũ vẫn đứng đọc sách bên đường, miệng ngâm: "Hoành sáo giang sơn cáp kỷ thu..."',
+  say('Chàng trai đọc sách',first?'Một chàng trai to khỏe đứng tựa gốc cây bên vệ đường đọc sách, thỉnh thoảng lại ngâm nga mấy câu thơ. Anh tên Ngũ, người làng Phù Ủng. Anh bảo làm trai mà chưa lập được công danh thì còn thẹn lắm.':'Anh Ngũ ngẩng lên khỏi trang sách: "'+voice('ngu')+'"',
     first?[{label:'Ngồi nghe anh bàn chuyện binh pháp',fn:()=>{gain('vo',2);gain('van',1);toast('Bạn thấy trong lòng sục sôi chí lớn. Anh Ngũ sẽ nhớ mặt bạn.')}}]:[]);
 }
 export const PEN={x:44.5,y:58.6};

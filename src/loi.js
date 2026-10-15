@@ -3,7 +3,7 @@
    mùa, đường đời, chuyện đã qua). voice(id, base) chọn câu để nói khi bắt chuyện:
    1. câu "một lần" (once) hợp hoàn cảnh mà chưa nói: nói ngay, ghi S.loiSeen (những lúc người ta nhắc lại chuyện cũ);
    2. còn lại: câu theo tình hình (base, do dialogs.js đưa vào) hoặc một câu trong kho, tránh lặp câu vừa nói.
-   Giọng: mẹ thương con, hay lo ăn mặc, hay nói ca dao; cha ít lời, nói chuyện trời đất ruộng nương; thầy Chu nho nhã,
+   Giọng: mẹ thương con, hay lo ăn mặc, hay nói ca dao; cha ít lời, nói chuyện trời đất ruộng nương; anh Ngũ (Phạm Ngũ Lão lúc trẻ) mê sách, nói chí lớn, Toàn thư chép ông thích đọc sách, ngâm thơ, có chí lớn, phần còn lại là lời hư cấu; thầy Chu nho nhã,
    hay dẫn sách; lão võ sư cộc, nói ngắn; sư cụ chậm rãi; bà Tư lẩm cẩm, nhớ chồng; cụ xã nói chuyện lệ làng;
    Cò bông lơn, thật bụng; Thảo ít nói. Câu dẫn sách, ca dao là câu ai cũng biết, không bịa lời người xưa. */
 import {S,age} from './state.js';
@@ -125,6 +125,37 @@ export const LOI={
     {t:'Lò rèn nóng lắm, đứng xa ra một chút.'},
     {t:'Sắt tốt hay xấu, nghe tiếng búa là biết. Tiếng trong là sắt tốt, tiếng đục là sắt non.'},
     {t:'Dạo này người ta đặt rèn dao, rèn giáo nhiều hơn rèn cày cuốc. Thời buổi gì không biết.',when:()=>yr(1282)},
+  ],
+  tong:[
+    {t:'Nhà tôi vượt biển sang đây, được vua cho ở phường Nhai Tuân này. Tôi bán vải lụa và thuốc bắc.'},
+    {t:'Thuyền vượt biển mất hơn tháng. Có đêm sóng to, tôi tưởng không bao giờ còn thấy đất liền.'},
+    {t:'Người bên này hiền, ăn trầu đỏ môi, nói tiếng nhanh quá. Tôi học mãi mới mặc cả được.'},
+    {t:'Quân Nguyên đánh bên quê tôi mấy năm nay rồi. Tin về toàn tin dữ.',when:()=>!yr(1279)},
+    {t:'Năm ngoái quân Nguyên đánh ở Nhai Sơn, nhà Tống mất rồi. Tôi chẳng còn quê mà về nữa.',when:()=>yr(1280)&&!yr(1282)},
+    {t:'Người Nguyên lấy được nước tôi rồi, giờ lại dòm sang đây. Cậu nghe tôi: chúng nói một đằng, làm một nẻo.',when:()=>yr(1282)},
+  ],
+  linh:[
+    {t:'Đứng gác từ sáng, chân như cắm rễ xuống đất rồi.',when:()=>age()>=12},
+    {t:'Hôm qua có ông đồ say rượu đòi vào Hoàng thành đọc thơ cho vua nghe. Bọn tôi phải khiêng ra.',when:()=>age()>=12},
+    {t:'Trong kinh đông người, giữ túi tiền cho chặt, cậu ạ.',when:()=>age()>=12},
+    {t:'Từ khi có tin giặc, cửa thành gác ngặt hơn. Ai lạ mặt cũng phải hỏi.',when:()=>yr(1282)&&age()>=12},
+  ],
+  hocquan:[
+    {t:'Viết văn như dựng nhà: ý là móng, lời là vách. Móng không chắc thì vách đẹp mấy cũng đổ.',when:()=>path('van')},
+    {t:'Học trò bây giờ thuộc sách thì nhiều, hiểu sách thì ít.',when:()=>path('van')},
+    {t:'Bài anh viết hôm trước có ý lạ. Ta đọc lại hai lần.',when:()=>path('van')&&S.van>=45},
+  ],
+  voquan:[
+    {t:'Ngựa chưa quen tiếng chiêng trống thì ra trận là hỏng. Người cũng thế.',when:()=>path('vo')},
+    {t:'Triều đình coi văn võ như hai bàn tay. Thiếu bên nào cũng không nắm được việc.',when:()=>path('vo')},
+    {t:'Từ khi có tin Toa Đô, ngày nào cũng có thêm người xin vào luyện.',when:()=>path('vo')&&yr(1282)},
+  ],
+  ngu:[
+    {t:'Người ta bảo con nhà quân ngũ đọc sách làm gì. Ta thì nghĩ: cầm giáo mà không biết vì sao cầm, thì giáo cũng chỉ là cái gậy.'},
+    {t:'Ta đang đọc chuyện Gia Cát Vũ hầu nước Thục. Một người áo vải mà lo được việc thiên hạ.'},
+    {t:'Nhóc con cũng thích nghe chuyện đánh trận à? Ngồi xuống đây, ta kể cho.',when:()=>age()<14},
+    {t:'Cổ tay cậu chắc đấy. Mai kia nước có việc, ta mong gặp lại cậu.',when:()=>S.vo>=30},
+    {t:'Làm trai mà chưa trả xong nợ công danh thì ăn không ngon, ngủ không yên.'},
   ],
   laido:[
     {t:'Sông Hồng hiền lúc cạn, dữ lúc lũ. Sống với nó cả đời mà ta chưa dám nói là hiểu nó.'},
