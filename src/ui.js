@@ -6,7 +6,7 @@ import {QUESTS,S,age} from './state.js';
 import {REGIONS,regionId} from './world.js';
 import {chips,ico} from './icons.js';
 import {banner,portrait} from './portrait.js';
-import {statProgress,sucMax} from './stats.js';
+import {growth,statProgress,sucMax} from './stats.js';
 import {suggestions} from './viec.js';
 
 export let dialogOpen=false,modalOpen=false,curOpts=[],modalQueue=[];
@@ -16,7 +16,11 @@ export function setKeys(html){$('keys').innerHTML=html||KEYS_DEFAULT}
 export function toast(msg,ms=3600){const t=$('toast');t.textContent=msg;t.hidden=false;t.style.opacity=1;clearTimeout(toast._t);toast._t=setTimeout(()=>{t.style.opacity=0;setTimeout(()=>t.hidden=true,300)},ms)}
 export function floatAt(txt,x,y,color){const k=floats.filter(f=>f.t<1&&Math.abs(f.x-x)<.6&&Math.abs(f.y-y)<.6).length;floats.push({txt,color:color||'#ece6d4',x,y,t:0,dy:k*22})}   // nhiều chữ cùng chỗ thì xếp lệch dòng
 export function floatText(txt,color){floatAt(txt,S.x,S.y,color)}
-export function gain(k,n){const lab={van:'Văn',vo:'Võ',duc:'Đức',tieng:'Tiếng',tien:'quan'}[k],old=S[k]||0;S[k]=Math.max(0,Math.min(k==='tien'?999:100,old+n));mocCross(k,old,S[k]);floatText((n>0?'+':'')+n+' '+lab,{van:'#9cc7e0',vo:'#f0a27f',duc:'#f2a7b5',tieng:'#e2bf72',tien:'#c9e0a0'}[k]);renderHUD()}
+/* cộng trừ chỉ số; lap: việc làm lặp lại (học, luyện, giúp làng…) tăng chậm theo growth() ở stats.js */
+export function gain(k,n,lap){const lab={van:'Văn',vo:'Võ',duc:'Đức',tieng:'Tiếng',tien:'quan'}[k],old=S[k]||0,col={van:'#9cc7e0',vo:'#f0a27f',duc:'#f2a7b5',tieng:'#e2bf72',tien:'#c9e0a0'}[k];
+  if(n>0&&k!=='tien'){const g=growth(k,n,lap);S[k]=old+g.d;mocCross(k,old,S[k]);
+    floatText(g.capped?`${lab}: tuổi này chưa tiến thêm được`:g.d?'+'+g.d+' '+lab:'+'+(g.eff<.05?'chút':g.eff.toFixed(1).replace('.',','))+' '+lab,g.capped?'#aab2a2':col);renderHUD();return}
+  S[k]=Math.max(0,Math.min(k==='tien'?999:100,old+n));mocCross(k,old,S[k]);floatText((n>0?'+':'')+n+' '+lab,col);renderHUD()}
 export function spend(n=1){if(S.suc<n){toast('Bạn đã mệt. Về nhà ngủ để sang mùa mới.');return false}S.suc-=n;renderHUD();return true}
 export function startQuest(id){if(S.quests[id])return;S.quests[id]='active';toast('Việc mới: '+QUESTS[id].title);renderHUD()}
 export function doneQuest(id){S.quests[id]='done';toast('Hoàn thành: '+QUESTS[id].title);renderHUD()}

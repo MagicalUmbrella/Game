@@ -16,7 +16,7 @@ tests/checks.js vào trang, rồi chạy:
 Math.random trong trang có seed (--seed) nên kết quả gần như lặp lại được.
 Thoát với mã 1 nếu có lỗi hoặc kiểm tra không đạt.
 """
-import argparse, functools, http.server, os, random, subprocess, sys, tempfile, threading
+import argparse, functools, json, http.server, os, random, subprocess, sys, tempfile, threading
 from playwright.sync_api import sync_playwright
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -134,6 +134,42 @@ def balance(page, fails):
             if home[1] > cap:
                 fails.append(f'cân bằng {name}: tự học vượt trần {cap} ({home[1]})')
     return out
+
+
+CURVE_JS = """(([k,mode,path,q])=>{const D=__dv;D.setS(Object.assign(D.newState('T'),{quests:{hoc:'done',trau:'done'},lifeWait:1e9}));D.S.ev=new Proxy({},{get:()=>1});D.startPlay(false);while(D.modalOpen)D.nextModal();D.closeDialog();
+ const out={};
+ for(let y=1264;y<=1284;y++)for(let s=0;s<4;s++){D.S.year=y;D.S.season=s;D.S.suc=4;if(y>=1274)D.S.path=path;const a=y-1258;
+   const n=mode==='cham'?4:mode==='nua'?2:1;
+   for(let i=0;i<n;i++){
+     if(k==='van'){if(D.S.path==='van')D.talkHocQuan();else D.talkThay();}
+     else if(k==='vo'){if(D.S.path==='vo')D.talkVoQuan();else if(a>=8)D.talkVo();else break;}
+     else {if(a>=10)D.talkLy();else break;}
+     const b=[...document.querySelectorAll('#dialog .opt')].find(x=>/Học|Luyện|Tập trận|Giúp việc làng/.test(x.textContent)&&!/hết Sức/.test(x.textContent));if(b)b.click();else D.closeDialog();
+     if(D.MG&&D.MG.type==='daily'){__bots.dailyAuto(q);D.dailyFlush();}
+     while(D.modalOpen)D.nextModal();D.closeDialog();}
+   if(s===3&&[7,10,12,16,17,20,24,26].includes(a))out[a]=D.S[k];
+   if(mode==='cham'&&s===0&&k==='van'&&!D.S.paper&&a>=10){D.S.tien=99;}
+ }
+ out[27]=D.S[k];return JSON.stringify(out)})"""
+# (chỉ số, cách chơi, đường, tay nghề) -> {tuổi: (thấp nhất, cao nhất)}
+CURVE = [
+    (('van', 'cham', 'van', 'giỏi'), {7: (2, 10), 16: (28, 42), 27: (60, 85)}),
+    (('van', 'vua', 'van', 'khá'), {16: (4, 18), 27: (15, 35)}),
+    (('vo', 'cham', 'vo', 'giỏi'), {16: (28, 42), 27: (60, 85)}),
+    (('tieng', 'cham', 'nong', 'khá'), {16: (20, 38), 27: (50, 75)}),
+]
+
+
+def stat_curve(page, fails):
+    """Nhịp chỉ số theo tuổi: chơi chăm (dồn hết Sức) và chơi lơ là (1 Sức mỗi mùa), từ 1264 đến hết 1284."""
+    for args, want in CURVE:
+        fresh(page)
+        got = json.loads(page.evaluate(CURVE_JS, list(args)))
+        print(f"  {' · '.join(args[:2]):14s} " + '  '.join(f"{a} tuổi: {v}" for a, v in got.items()))
+        for age, (lo, hi) in want.items():
+            v = got[str(age)]
+            if not lo <= v <= hi:
+                fails.append(f"nhịp chỉ số {args[0]} ({args[1]}): {age} tuổi được {v}, mong {lo}–{hi}")
 
 
 def mechanics(page, fails):
@@ -339,6 +375,8 @@ def main():
         print('== Cân bằng (điểm mỗi mùa: đến lớp | tự học ở nhà | giá trị sau khi tự học) ==')
         for k, (c, h, v) in balance(page, fails).items():
             print(f'  {k:28s} {c:5.2f} | {h:5.2f} | {v}')
+        print('== Nhịp chỉ số theo tuổi (chơi chăm | lơ là) ==')
+        stat_curve(page, fails)
         print('== Cơ chế ==')
         mechanics(page, fails)
         print('== Bot dịch chuyển (dùng trong lượt chơi ngẫu nhiên) ==')

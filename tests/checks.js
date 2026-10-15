@@ -473,10 +473,12 @@
     for (const [name, stat, open, want] of cases) for (const lv of ['giỏi', 'khá', 'kém', 'qua']) {
       d.setS(Object.assign(d.newState('Thử'), {year: 1276, path: 'nong', quests: {hoc: 'done', trau: 'done'}, van: 10, vo: 10}));
       d.startPlay(false); while (d.modalOpen) d.nextModal();
-      const v0 = d.S[stat]; open();
+      const full = () => d.S[stat] + ((d.S.frac || {})[stat] || 0);   // chỉ số kể cả phần lẻ (growth ở stats.js)
+      const v0 = full(); open();
       if (!d.MG || d.MG.type !== 'daily') { errs.push(`${name}: không mở màn chơi`); break; }
       window.__bots.dailyAuto(lv); d.dailyFlush();
-      const got = d.S[stat] - v0; (out[name] ||= {})[lv] = got;
+      // học, luyện là việc lặp lại: điểm thô nhân GROW_RATE (Văn, Võ 10 nên chưa chậm dần); đổi ngược về điểm thô để so
+      const got = stat === 'tien' ? d.S[stat] - v0 : Math.round((full() - v0) / d.stats.GROW_RATE); (out[name] ||= {})[lv] = got;
       if (got !== want[lv]) errs.push(`${name}, mức ${lv}: +${got}, mong +${want[lv]}`);
       if (d.MG || d.modalOpen) errs.push(`${name}, mức ${lv}: chơi xong mà màn chơi chưa đóng`);
       while (d.modalOpen) d.nextModal();
@@ -495,11 +497,11 @@
     const d = D(), errs = [];
     const fresh = (o) => { d.setS(Object.assign(d.newState('Thử'), {year: 1268, season: 1, quests: {hoc: 'done', trau: 'done'}}, o)); d.startPlay(false); while (d.modalOpen) d.nextModal(); d.closeDialog(); };
     const press = (p) => { d.S.x = p.x; d.S.y = p.y; d.step(DT); ev('e', true); ev('e', false); const ok = d.modalOpen; const txt = ok ? document.querySelector('#modal').innerText : ''; while (d.modalOpen) d.nextModal(); d.closeDialog(); return txt; };
-    const want = {tien: S => S.tien >= 8, thuoc: S => S.items.includes('Lá thuốc'), de: S => S.items.includes('Dế chọi'), bia: S => S.van === 32,
+    const want = {tien: S => S.tien >= 8, thuoc: S => S.items.includes('Lá thuốc'), de: S => S.items.includes('Dế chọi'), bia: S => S.van >= 31,
       kiem: S => S.items.includes('Kiếm gỉ'), thuyen: S => S.suc === 3, to: S => S.duc === 1, soi: S => S.items.includes('Sỏi trắng'), do: S => (S.nghe || {}).boi === 1};   // bến đò cũ: tắm sông với lũ trẻ (ông lái đò ra sông Hồng, xem cheo.js)
     for (const p of d.SPOTS) {
       if (p.quest) continue;
-      fresh({van: p.id === 'bia' || p.id === 'do' ? 30 : 0, suc: p.id === 'thuyen' ? 2 : 4, year: p.id === 'kiem' ? 1270 : 1268});
+      fresh({van: p.id === 'bia' || p.id === 'do' ? 30 : 0, suc: p.id === 'thuyen' ? 2 : 4, year: p.id === 'kiem' ? 1270 : p.id === 'bia' ? 1278 : 1268});   // đọc bia cần Văn 30: tuổi phải đủ lớn (trần theo tuổi)
       const txt = press(p);
       if (!txt) { errs.push(`${p.name}: đứng tại chỗ bấm E không có gì (hội thoại ${d.dialogOpen ? 'đang mở' : 'đóng'}, gợi ý "${document.getElementById('prompt').innerText}")`); continue; }
       if (!want[p.id](d.S)) errs.push(`${p.name}: chưa có hậu quả đúng (${txt.slice(0, 60)}…)`);
@@ -545,7 +547,7 @@
     fresh({year: 1275, van: 22}); const v0 = d.S.van;
     talk('talkThay', 'Thầy trông mệt', 'Con xin chép');
     for (let i = 0; i < 3; i++) { talk('talkThay', 'Chép sách cho thầy'); season(); }
-    if (d.S.chains.thay.st !== 'done' || d.S.van < v0 + 6) errs.push(`thầy Chu: chép đủ mà chưa xong (${d.S.chains.thay.st}, Văn +${d.S.van - v0})`);
+    if (d.S.chains.thay.st !== 'done' || d.S.van < v0 + 4) errs.push(`thầy Chu: chép đủ mà chưa xong (${d.S.chains.thay.st}, Văn +${d.S.van - v0})`);
     fresh({year: 1280, van: 22}); talk('talkThay', 'Thầy trông mệt', 'Con xin chép'); d.S.thay = false; season();
     if (d.S.chains.thay.st !== 'fail') errs.push('thầy Chu: thầy mất mà chuỗi chưa thành dở dang');
     return {errs};
@@ -710,7 +712,7 @@
     d.S.suc = 0; d.renderHUD(); q = document.getElementById('quests').innerText; if (!/Hết Sức/.test(q)) errs.push('hết Sức mà khung việc không nhắc về ngủ');
     // giúp việc làng: Tiếng tăng, Đức không
     fresh({}); d.talkLy(); choose('Giúp việc làng'); closeDialog();
-    if (d.S.tieng !== 3 || d.S.duc !== 0) errs.push(`giúp việc làng: Tiếng ${d.S.tieng}, Đức ${d.S.duc} (mong Tiếng 3, Đức 0)`);
+    if (!(d.S.tieng + ((d.S.frac || {}).tieng || 0) > 0) || d.S.duc !== 0) errs.push(`giúp việc làng: Tiếng ${d.S.tieng}, Đức ${d.S.duc} (mong Tiếng tăng, Đức không)`);
     // nghe kinh: mỗi mùa một lần
     fresh({}); for (let i = 0; i < 3; i++) { d.talkSu(); choose('Thắp hương'); closeDialog(); }
     if (d.S.duc !== 1) errs.push(`nghe kinh ba lần một mùa được ${d.S.duc} Đức (mong 1)`);
@@ -773,7 +775,7 @@
     if (d.S.career.van !== 'day') errs.push(`chọn dạy học mà career.van = ${d.S.career.van}`);
     if (!/Trợ giáo/.test(hud())) errs.push('dạy học mà bảng trạng thái không ghi Trợ giáo');
     const t0 = d.S.tieng; door('truong'); if (!choose('Dạy lũ trẻ')) errs.push('trợ giáo mà ở trường làng không dạy được'); closeDialog(); flush();
-    if (d.S.career.hoctro !== 1 || d.S.tieng !== t0 + 2) errs.push(`dạy một buổi: ${d.S.career.hoctro} buổi, Tiếng ${t0}→${d.S.tieng}`);
+    if (d.S.career.hoctro !== 1 || !(d.S.tieng + ((d.S.frac || {}).tieng || 0) > t0)) errs.push(`dạy một buổi: ${d.S.career.hoctro} buổi, Tiếng ${t0}→${d.S.tieng}`);
     d.S.year = 1281; d.S.season = 2; d.EVENTS.find(e => e.id === 'thaymat').run(); flush();
     if (!/Thầy đồ làng/.test(hud())) errs.push('thầy Chu mất mà trợ giáo không thành thầy đồ');
     // lại viên: cần Văn 30, làm việc ở nhà ra tiền
