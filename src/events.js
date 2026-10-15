@@ -24,8 +24,14 @@ export function advanceOne(){S.season++;if(S.season>3){S.season=0;S.year++}
   if(S.season===3)harvest();S.suc=sucMax();S.ate=false;S.thaoHelped=false;S.coPlayed=false;S.paper=false;S.tonic=false;if(S.season===0&&S.year>1264)S.tien+=tetMoney();if(S.quests.trau==='active'&&S.buffalo.st!=='follow'){S.tien=Math.max(0,S.tien-1);S._trauNote=true}checkEvents()}
 export function advance(n){S._trauNote=false;
   for(let i=0;i<n;i++){advanceOne();if(modalOpen||S.ended)break}
-  toast(`${SEASONS[S.season]} năm ${canchi(S.year)} (${S.year}). Bạn ${age()} tuổi.`+(S.season===0?(age()<18?' Tết đến, mẹ mừng tuổi 2 quan.':S.married?' Tết đến, cả nhà sum họp bên nồi bánh chưng (+1 quan).':' Tết đến, nhà gói bánh chưng, đi chúc Tết họ hàng (+1 quan).'):'')+(S._trauNote?' Trâu chưa tìm về, ruộng bỏ không (−1 quan).':''));save();renderHUD();
+  toast(`${SEASONS[S.season]} năm ${canchi(S.year)} (${S.year}). Bạn ${age()} tuổi.`+(S.season===0?(age()<18?' Tết đến, mẹ mừng tuổi 2 quan.':S.married?' Tết đến, cả nhà sum họp bên nồi bánh chưng (+1 quan).':' Tết đến, nhà gói bánh chưng, đi chúc Tết họ hàng (+1 quan).'):'')+(S._trauNote?' Trâu chưa tìm về, ruộng bỏ không (−1 quan).':''));save();renderHUD();if(!modalOpen)nguHint();
 }
+/* Gợi ý gặp anh Ngũ (Phạm Ngũ Lão lúc trẻ): 1272–1277 chưa gặp thì cứ xuân, thu, sau thông báo sang mùa, có người
+   trong làng nhắc trên thanh thông báo. Gặp anh là điều kiện để năm 1278 có tin về anh, năm 1283 anh nhận ra bạn,
+   đêm 1285 quân anh kéo tới. */
+export function nguHint(delay=4200){if(S.nguMet||S.year<1272||S.year>1277||S.ended||(S.season!==0&&S.season!==2))return;
+  const who=S.co==='village'?'Cò':'Mẹ',say=['dạo này có anh chàng lạ mặt hay đứng đọc sách dưới gốc cây bên đường lên kinh, phía đông bắc làng. Trông to khỏe mà mê sách lắm.','anh chàng đọc sách bên đường lên kinh hôm nay lại ngâm thơ, nghe hùng lắm. Ra mà xem.','người ta bảo anh chàng đọc sách bên đường lên kinh là người làng Phù Ủng. Chẳng biết lên đây làm gì.'][(S.year+S.season)%3];
+  setTimeout(()=>{if(!S.nguMet)toast(`${who}: "${say.charAt(0).toUpperCase()+say.slice(1)}"`,7000)},delay)}
 const src=t=>`<p class="src">Toàn thư chép: ${t}</p>`;
 export const K=(s,y)=>`${SEASONS[s]} · ${canchi(y)} ${y}`;
 export const EVENTS=[

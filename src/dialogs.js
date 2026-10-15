@@ -7,7 +7,7 @@ import {locked} from './world.js';
 import {bsolid,get,map} from './map.js';
 import {P,S,age,has,save} from './state.js';
 import {doneQuest,floatAt,floatText,gain,modalOpen,renderHUD,say,spend,startQuest,toast} from './ui.js';
-import {advance,advanceOne} from './events.js';
+import {advance,advanceOne,nguHint} from './events.js';
 import {prepChoice} from './prep.js';
 import {dailyReward,startDrill,startField,startFishing,startWriting} from './minigames/daily.js';
 import {keys,solidAt} from './input.js';
@@ -201,6 +201,7 @@ export function fastForward(k){let n=0;
     if(k==='van'||k==='vo'){const c=FF_CAP[k]();if(S[k]<c&&Math.random()<part)S[k]=Math.min(c,S[k]+FF_RATE[k]())}
     else if(k==='tien')S.tien+=Math.round((S.path==='nong'?3+fieldBonus():2)*part);else if(S.tieng<TIENG_FF_CAP&&Math.random()<part)S.tieng=Math.min(TIENG_FF_CAP,S.tieng+2)
     n++;advanceOne();if(modalOpen||S.ended)break}
+  if(!modalOpen)nguHint();
   toast(`${n} mùa trôi qua. Bây giờ là ${SEASONS[S.season].toLowerCase()} năm ${canchi(S.year)} (${S.year}), bạn ${age()} tuổi.`,4600);save();renderHUD()}
 export function fishAction(){if(!spend())return;
   startFishing(q=>{const ok=q==null?Math.random()<.5:q>=1;if(ok)practice('boi');   // lội xuống gỡ cá mới tính vào nghề bơi
