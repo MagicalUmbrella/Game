@@ -13,6 +13,7 @@
    Hết máu: đang đối đầu tên đầu toán (hắn còn sống) thì bị bắt ('captured', how 'fight'); lừa hắn hỏng cũng bị bắt
    (how 'trick'). Lúc khác: còn người cùng đánh đứng được thì được kéo vào rừng ('down'), không còn ai thì bị bắt (how 'down').
    Bị bắt (cả 'surrender') dẫn tới màn bị giải sang trại giặc bên kia sông (src/camp.js) và mở đầu chương hai khác. */
+import {SAVE_KEY} from './state.js';
 import {nguChronicle,nguRecall} from './ngu.js';
 import {midChronicle} from './minigames/chung.js';
 import {careerChronicle,careerTrai,laiFollow} from './chuc.js';
@@ -531,5 +532,5 @@ export function endChapter(res){
     body:`<p>${path}</p><p class="kicker" style="margin-top:6px">Biên niên đời bạn</p><ul style="margin:0;padding-left:18px;display:grid;gap:4px;line-height:1.5">${L.filter(Boolean).map(x=>`<li>${x}</li>`).join('')}</ul>${(()=>{const t=lifeChronicle();return t.length?`<p class="kicker" style="margin-top:6px">Những chuyện nhỏ</p><ul class="note" style="margin:0;padding-left:18px;display:grid;gap:2px;line-height:1.5">${t.map(x=>`<li>${x[0].toUpperCase()+x.slice(1)}.</li>`).join('')}</ul>`:''})()}
      <div class="endstats"><div><b>${S.van}</b><span>Văn</span></div><div><b>${S.vo}</b><span>Võ</span></div><div><b>${S.duc}</b><span>Đức</span></div><div><b>${S.tieng}</b><span>Tiếng</span></div><div><b>${S.tien}</b><span>quan</span></div></div>
      <p class="note">${S.name}, 27 tuổi.</p><p><span class="seal">Hết chương một</span>&nbsp; ${hook}</p>`,
-    choices:[{label:'Bắt đầu một cuộc đời mới',fn:()=>{try{localStorage.removeItem('dvmd-save')}catch(e){}location.reload();return false}}]});
+    choices:[{label:'Bắt đầu một cuộc đời mới',fn:()=>{try{localStorage.removeItem(SAVE_KEY)}catch(e){}location.reload();return false}}]});
 }

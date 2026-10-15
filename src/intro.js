@@ -1,4 +1,5 @@
 /* ================= intro ================= */
+import {THU,thuMenu} from './thu.js';
 import {$} from './constants.js';
 import {S,loadSave,newState,save,setS} from './state.js';
 import {renderHUD,showModal} from './ui.js';
@@ -9,7 +10,7 @@ export function titleScreen(){
   const sv=loadSave(),touch=matchMedia('(pointer:coarse)').matches&&!matchMedia('(pointer:fine)').matches;
   showModal({big:true,kicker:'Một cuộc đời dưới triều Trần',title:'Đại Việt Một Đời',
     body:`<p>Sinh năm Mậu Ngọ 1258, lớn lên ở làng An Phú bên sông Tô Lịch. Học chữ, luyện võ, làm ruộng, thương một người, giữ một người bạn, rồi đứng trước đêm giặc phương bắc kéo đến làng.</p><p class="note">Sự kiện lịch sử trong game theo Đại Việt sử ký toàn thư. Mọi lựa chọn đều có hậu quả.${touch?' Game cần bàn phím, nên chơi trên máy tính.':''}</p>`,
-    choices:[...(sv&&!sv.ended&&sv.name?[{label:'Tiếp tục',note:`${sv.name} · ${sv.year-1258} tuổi`,fn:()=>{setS(sv);startPlay(true)}}]:[]),{label:'Bắt đầu cuộc đời',fn:birthScreen}]});
+    choices:[...(sv&&!sv.ended&&sv.name?[{label:'Tiếp tục',note:`${sv.name} · ${sv.year-1258} tuổi`,fn:()=>{setS(sv);startPlay(true)}}]:[]),{label:'Bắt đầu cuộc đời',fn:birthScreen},...(THU?[{label:'Thử từng phần',note:'chọn một màn để chơi ngay',fn:()=>{setTimeout(thuMenu,0);}}]:[])]});
 }
 function birthScreen(){
   showModal({kicker:'Xuân · Mậu Ngọ 1258',title:'Tiếng khóc chào đời',

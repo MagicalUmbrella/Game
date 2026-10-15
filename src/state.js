@@ -25,8 +25,10 @@ export const QUESTS={
 export function newState(name){return{name,year:1264,season:0,suc:4,van:0,vo:0,duc:0,tieng:0,the:55,nghe:{},ngheV:2,statsV:2,tien:3,items:[],quests:{},path:null,ev:{},x:43.5,y:50.4,ate:false,
   buffalo:{x:44.5,y:58.6,st:'pen',tracks:[],bolts:0},nguMet:false,nguN:0,nguY:0,thayBonus:false,dothi:false,ended:false,
   rel:{co:2,thao:0},flags:{},ducMerged:true,cha:true,thay:true,co:'village',thao:'none',married:false,child:false,thaoHelped:false,coPlayed:false,paper:false,tonic:false,life:{},lifeWait:2,career:{van:null,hoctro:0,laiN:0,boBut:false,doi:false,ruong:2,mua:0,xa:null},found:{},chains:{},toi:'',pending:null}}
-export function save(){try{localStorage.setItem('dvmd-save',JSON.stringify(S))}catch(e){}}
-export function loadSave(){try{const s=localStorage.getItem('dvmd-save');if(!s)return null;const o=JSON.parse(s),b=newState('');const r=Object.assign(b,o);r.rel=Object.assign(newState('').rel,o.rel||{});r.flags=Object.assign({},o.flags||{});if(!r.buffalo||!r.buffalo.st){r.buffalo={x:44.5,y:58.6,st:'pen',tracks:[],bolts:0};if(r.quests&&r.quests.trau==='active')r._reLose=true}
+/* chế độ thử từng phần (?thu, thu.js) lưu riêng, không đè đời đang chơi thật */
+export const SAVE_KEY=typeof location!=='undefined'&&/[?&]thu\b/.test(location.search)?'dvmd-thu':'dvmd-save';
+export function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+export function loadSave(){try{const s=localStorage.getItem(SAVE_KEY);if(!s)return null;const o=JSON.parse(s),b=newState('');const r=Object.assign(b,o);r.rel=Object.assign(newState('').rel,o.rel||{});r.flags=Object.assign({},o.flags||{});if(!r.buffalo||!r.buffalo.st){r.buffalo={x:44.5,y:58.6,st:'pen',tracks:[],bolts:0};if(r.quests&&r.quests.trau==='active')r._reLose=true}
   // bản lưu cũ còn uy tín làng riêng (flags.lang): quy sang Đức, mỗi điểm uy tín bằng 3 Đức
   if(!o.ducMerged){r.duc=Math.max(0,Math.min(100,r.duc+3*(r.flags.lang||0)));r.ducMerged=true}delete r.flags.lang;
   // bản lưu trước khi tách Đức (lòng mình) với Tiếng (uy tín với làng): Đức cũ phần lớn là việc làng nên chuyển sang Tiếng,
