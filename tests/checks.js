@@ -364,7 +364,7 @@
     for (const [talk, text] of [['talkLy', 'dựng lán'], ['talkRen', 'Rèn giáo'], ['talkCha', 'Cất bớt thóc']]) {
       d[talk](); if (!choose(text)) errs.push(`năm 1283 không làm được việc "${text}" (${talk})`); closeDialog();
     }
-    if (S.tien !== 100 - 12 - 10 - 6) errs.push(`tiền sau ba việc là ${S.tien}, mong ${100 - 28}`);
+    if (S.tien !== 100 - 20 - 16 - 10) errs.push(`tiền sau ba việc là ${S.tien}, mong ${100 - 46}`);
     if (!S.flags.lan || !S.flags.giao || !S.flags.catThoc) errs.push('thiếu cờ sau khi làm đủ ba việc');
     S.year = 1285; S.season = 0;
     d.startClimax();
@@ -373,7 +373,7 @@
     if (M.sk.filter(s => s.st === 'safe').length !== 1) errs.push('không có đúng một bao thóc giấu sẵn');
     const trai = M.al.filter(a => a.id.startsWith('trai'));
     if (!trai.length) errs.push('kiểu nhân vật thử phải có trai làng');
-    if (trai.some(a => a.dmg !== 2 || a.look.id !== 'trai_giao')) errs.push('trai làng chưa có giáo');
+    if (trai.some(a => !a.giao || a.look.id !== 'trai_giao')) errs.push('trai làng chưa có giáo');
     window.__bots.climaxTeleport(true);
     d.mpick(0); // Nhìn lại cuộc đời
     const chron = document.querySelector('#modal').innerText;
@@ -724,7 +724,7 @@
     for (let i = 0; i < 4; i++) { d.talkRen(); if (!choose('Phụ bác quai búa')) errs.push(`mùa ${i + 1}: không phụ được thợ rèn`); closeDialog(); season(); }
     if (!d.nghe.knows('ren')) errs.push('phụ thợ rèn bốn mùa mà chưa biết nghề rèn');
     d.S.year = 1283; const t0 = d.S.tien; d.talkRen(); choose('Rèn giáo'); closeDialog();
-    if (t0 - d.S.tien !== 4) errs.push(`biết nghề rèn mà rèn giáo mất ${t0 - d.S.tien} quan (mong 4)`);
+    if (t0 - d.S.tien !== 7) errs.push(`biết nghề rèn mà rèn giáo mất ${t0 - d.S.tien} quan (mong 7)`);
     // chèo thuyền: giúp ông lái đò mỗi mùa một lần
     fresh({year: 1272, found: {do: 1270}}); const spot = d.SPOTS.find(p => p.id === 'cheo');
     for (let i = 0; i < 4; i++) { d.S.x = spot.x; d.S.y = spot.y; d.step(DT); ev('e', true); ev('e', false); while (d.modalOpen) d.nextModal(); d.closeDialog(); season(); }
@@ -794,10 +794,10 @@
     const xa = d.EVENTS.find(e => e.id === 'xachinh');
     fresh({path: 'nong', year: 1283, tieng: 35, duc: 10}); xa.run(); mchoose('Ra nhận'); flush();
     if (d.S.career.xa !== 'win') errs.push(`đường nông Tiếng 35 Đức 10 mà không được chọn (điểm ${C.xaScore()})`);
-    if (d.prepCost('lan') !== 6) errs.push(`làm xã chính mà dựng lán vẫn ${d.prepCost('lan')} quan`);
+    if (d.prepCost('lan') !== 10) errs.push(`làm xã chính mà dựng lán vẫn ${d.prepCost('lan')} quan`);
     fresh({path: 'vo', year: 1283, tieng: 10}); xa.run(); mchoose('Ra nhận'); flush();
     if (d.S.career.xa !== 'lose') errs.push('Tiếng 10 mà vẫn được chọn');
-    if (d.prepCost('lan') !== 12) errs.push('không làm xã chính mà dựng lán rẻ đi');
+    if (d.prepCost('lan') !== 20) errs.push('không làm xã chính mà dựng lán rẻ đi');
     // bỏ bút theo kiếm
     fresh({path: 'van', year: 1283, season: 3, vo: 20}); d.EVENTS.find(e => e.id === 'tietche').run();
     if (!mchoose('Bỏ bút')) errs.push('đường văn Võ 20 mà không bỏ bút theo kiếm được');

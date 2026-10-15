@@ -12,13 +12,15 @@ import {checkChains} from './chains.js';
 import {gainThe,sucMax} from './stats.js';
 import {knows} from './nghe.js';
 
+/* tiền Tết: trẻ con được mẹ mừng tuổi 2 quan, lớn rồi (từ 18 tuổi) chỉ còn 1 */
+const tetMoney=()=>age()<18?2:1;
 export function advanceOne(){S.season++;if(S.season>3){S.season=0;S.year++}
   // thể trạng: dùng cạn Sức mà bỏ bữa thì yếu đi; yếu dưới 50 thì tự hồi dần
   if(S.suc===0&&!S.ate)S.the=Math.max(0,S.the-1);if(S.the<50)S.the++;S.theTrain=false;
-  if(S.season===3)harvest();S.suc=sucMax();S.ate=false;S.thaoHelped=false;S.coPlayed=false;S.paper=false;S.tonic=false;if(S.season===0&&S.year>1264)S.tien+=2;if(S.quests.trau==='active'&&S.buffalo.st!=='follow'){S.tien=Math.max(0,S.tien-1);S._trauNote=true}checkEvents()}
+  if(S.season===3)harvest();S.suc=sucMax();S.ate=false;S.thaoHelped=false;S.coPlayed=false;S.paper=false;S.tonic=false;if(S.season===0&&S.year>1264)S.tien+=tetMoney();if(S.quests.trau==='active'&&S.buffalo.st!=='follow'){S.tien=Math.max(0,S.tien-1);S._trauNote=true}checkEvents()}
 export function advance(n){S._trauNote=false;
   for(let i=0;i<n;i++){advanceOne();if(modalOpen||S.ended)break}
-  toast(`${SEASONS[S.season]} năm ${canchi(S.year)} (${S.year}). Bạn ${age()} tuổi.`+(S.season===0?(age()<18?' Tết đến, mẹ mừng tuổi 2 quan.':S.married?' Tết đến, cả nhà sum họp bên nồi bánh chưng (+2 quan).':' Tết đến, nhà gói bánh chưng, đi chúc Tết họ hàng (+2 quan).'):'')+(S._trauNote?' Trâu chưa tìm về, ruộng bỏ không (−1 quan).':''));save();renderHUD();
+  toast(`${SEASONS[S.season]} năm ${canchi(S.year)} (${S.year}). Bạn ${age()} tuổi.`+(S.season===0?(age()<18?' Tết đến, mẹ mừng tuổi 2 quan.':S.married?' Tết đến, cả nhà sum họp bên nồi bánh chưng (+1 quan).':' Tết đến, nhà gói bánh chưng, đi chúc Tết họ hàng (+1 quan).'):'')+(S._trauNote?' Trâu chưa tìm về, ruộng bỏ không (−1 quan).':''));save();renderHUD();
 }
 const src=t=>`<p class="src">Toàn thư chép: ${t}</p>`;
 export const K=(s,y)=>`${SEASONS[s]} · ${canchi(y)} ${y}`;
