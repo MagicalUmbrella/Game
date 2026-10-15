@@ -41,15 +41,17 @@ export function rowBoat(B,dt){B.t=Math.min(B.dur,B.t+dt);const u=B.t/B.dur,e=u<.
   if(B.moving&&Math.hypot(B.x-ox,B.y-oy)>0){B.wakeT=(B.wakeT||0)-dt;if(B.wakeT<=0){B.wakeT=.12;B.wake.push({x:B.x-(B.dir==='right'?1.4:-1.4)*(B.big?1.6:1),y:B.y+.05,t:0})}}
   for(const w of B.wake)w.t+=dt;B.wake=B.wake.filter(w=>w.t<1.6);return B.t>=B.dur}
 /* Chỗ ngồi thứ i trên thuyền (0 ở mũi). */
+/* toạ độ thuyền khớp lưới điểm ảnh: thân thuyền, người ngồi, người chèo cùng lấy gốc này nên không lệch nhau từng điểm ảnh (hết giật) */
+export const snap=v=>Math.round(v*TS)/TS;
 export function seat(B,i){const n=B.big?6:3,L=B.big?4.2:2,sg=B.dir==='right'?1:-1,k=Math.min(i,n-1);
-  return[B.x+sg*(L/2-.5-k*(L-.8)/(n-1)),B.y-.02]}
+  return[snap(B.x)+snap(sg*(L/2-.5-k*(L-.8)/(n-1))),snap(B.y)-.02]}
 const bob=B=>reduce?0:Math.round(Math.sin(clock*2.2+B.sx)*1)/TS;
 /* Thêm thuyền vào danh sách vẽ. riders: [{look, at:[x,y], dir}] người ngồi; rowers: người đứng chèo ở đuôi (tự vẽ). */
-export function drawBoat(list,B,riders=[],rowers=[]){const [back,front]=sprites(B.big,B.dir),by=B.y+bob(B);
+export function drawBoat(list,B,riders=[],rowers=[]){const [back,front]=sprites(B.big,B.dir),bx=snap(B.x),by=snap(B.y)+bob(B);
   list.push({y:B.y-.6,f:()=>{   // vệt nước, thân thuyền
     for(const w of B.wake){const a=1-w.t/1.6,px=Math.round(w.x*TS),py=Math.round(w.y*TS);ctx.fillStyle=`rgba(225,240,245,${.55*a})`;const sp=Math.round(2+w.t*5);
       ctx.fillRect((px-sp)*Z-camX,(py+1)*Z-camY,Z*2,Z);ctx.fillRect((px+sp)*Z-camX,(py+1)*Z-camY,Z*2,Z)}
-    drawSprite(back,B.x,by)}});
+    drawSprite(back,bx,by)}});
   const sg=B.dir==='right'?1:-1,stroke=Math.sin(clock*(B.moving?5:1.2));
   for(const r of rowers){list.push({y:B.y-.5,f:()=>{   // người chèo đứng ở đuôi, mái chèo khua nước
     const rx=r.at[0],ry=r.at[1]+bob(B);drawSprite(personSprite(r.look,B.dir,B.moving?[1,0,2,0][Math.floor(clock*5)%4]:0),rx,ry);
@@ -57,7 +59,7 @@ export function drawBoat(list,B,riders=[],rowers=[]){const [back,front]=sprites(
     ctx.strokeStyle='#6e4a2a';ctx.lineWidth=Z;ctx.beginPath();ctx.moveTo(hx*Z-camX,hy*Z-camY);ctx.lineTo(wx*Z-camX,wy*Z-camY);ctx.stroke();
     ctx.fillStyle='#8a6238';ctx.fillRect((wx-2)*Z-camX,(wy-1)*Z-camY,Z*4,Z*2)}})}
   riders.forEach((r,i)=>list.push({y:B.y-.45+i*.001,f:()=>drawSprite(personSprite(r.look,r.dir||B.dir,0),r.at[0],r.at[1]+bob(B)+.32)}));
-  list.push({y:B.y-.3,f:()=>drawSprite(front,B.x,by)});
+  list.push({y:B.y-.3,f:()=>drawSprite(front,bx,by)});
 }
 
 /* ---------- bến đò (khi đã mở vùng bên kia) ---------- */
