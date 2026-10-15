@@ -29,7 +29,7 @@ const pmod=(a,m)=>((a%m)+m)%m;
 
 function render(){
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.imageSmoothingEnabled=false;
-  const fx=S?S.x:titleCam,fy=S?S.y:30;
+  const cm=MG&&MG.cam?MG.cam():null,fx=cm?cm[0]:S?S.x:titleCam,fy=cm?cm[1]:S?S.y:30;   // màn chơi có thể đặt chỗ máy quay nhìn (MG.cam)
   camX=Math.max(0,Math.min(W*T-VW,fx*T-VW/2));camY=Math.max(0,Math.min(H*T-VH,fy*T-VH/2));
   camX=Math.round(camX/Z)*Z;camY=Math.round(camY/Z)*Z;
   if(MG&&MG.shake>0&&!reduce){const k=MG.shake*7;camX+=Math.round((Math.random()-.5)*k)*Z;camY+=Math.round((Math.random()-.5)*k)*Z}   // rung màn hình khi trúng đòn, nhà cháy
@@ -45,7 +45,7 @@ function render(){
     if(hide)ctx.globalAlpha=.55;drawSprite(sp,t.x+.5,t.y+1);ctx.globalAlpha=1}});   // bạn đứng sau cây thì cây mờ đi
   for(const w of WALLS)if(w.x>=x0-1&&w.x<=x1+1&&w.y>=y0-1&&w.y<=y1+2)list.push({y:w.y+.99,f:()=>drawSprite(wallSprite(w),w.x+.5,w.y+1)});
   for(const t of TOWERS)if(t.x+t.n>=x0-2&&t.x<=x1+2&&t.y>=y0-2&&t.y<=y1+3)list.push({y:t.y+1.02,f:()=>drawSprite(towerSprite(t),t.x+t.n/2,t.y-.1)});
-  for(const p of PROPS)if(p.x>=x0-1&&p.x<=x1+1&&p.y>=y0&&p.y<=y1+2){const [px,py]=propAt(p);list.push({y:py-.05,f:()=>drawSprite(propSprite(p,s),px,py)})}
+  for(const p of PROPS)if(p.x>=x0-1&&p.x<=x1+1&&p.y>=y0&&p.y<=y1+2&&!(MG&&MG.hideProp&&MG.hideProp(p))){const [px,py]=propAt(p);list.push({y:py-.05,f:()=>drawSprite(propSprite(p,s),px,py)})}
   for(const b of BUILDINGS){if(b.x>x1+2||b.x+b.w<x0-2||b.y>y1+3||b.y+b.h<y0-2)continue;list.push({y:b.y+b.h,f:()=>{const c=buildingSprite(b);blit(c,b.x*TS-c.ox,b.y*TS-c.oy)}})}
   for(const d of DECOR){if(d.x<x0-3||d.x>x1+3||d.y<y0-3||d.y>y1+3)continue;list.push({y:d.y+(d.kind==='boat'?.4:1),f:()=>{if(d.kind==='banyan')drawSprite(banyanSprite(s),d.x+.5,d.y+1);else if(d.kind==='well')drawSprite(wellSprite(),d.x+.5,d.y+1);else{const bob=reduce?0:Math.round(Math.sin(clock*1.5+d.x));drawSprite(boatSprite(),d.x+.5,d.y+.6+bob/TS)}}})}
   for(const sg of SIGNS)list.push({y:sg.y+1,f:()=>drawSprite(signSprite(),sg.x+.5,sg.y+1)});
@@ -83,7 +83,7 @@ function render(){
   drawMini();
 }
 const mini=$('mini'),mctx=mini.getContext('2d');
-function drawMini(){mctx.imageSmoothingEnabled=true;mctx.drawImage(ground(season()),0,0,192,144);mctx.fillStyle='#6b3a28';for(const b of BUILDINGS)mctx.fillRect(b.x*2,b.y*2,b.w*2,b.h*2);
+function drawMini(){mctx.imageSmoothingEnabled=true;mctx.drawImage(ground(season()),0,0,W*2,H*2);mctx.fillStyle='#6b3a28';for(const b of BUILDINGS)mctx.fillRect(b.x*2,b.y*2,b.w*2,b.h*2);
   mctx.strokeStyle='rgba(255,255,255,.6)';mctx.strokeRect(camX/T*2+.5,camY/T*2+.5,VW/T*2,VH/T*2);
   if(MG&&MG.mini)MG.mini(mctx);mctx.fillStyle='#fff';mctx.fillRect(S.x*2-2,S.y*2-2,4,4);mctx.fillStyle='#000';mctx.fillRect(S.x*2-1,S.y*2-1,2,2);}
 

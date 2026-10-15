@@ -230,6 +230,18 @@
    "name": "Cu Tí nhà bên",
    "kid": true,
    "fight": false
+  },
+  "o_ma_nhi": {
+   "row": 35,
+   "name": "Ô Mã Nhi",
+   "kid": false,
+   "fight": false
+  },
+  "khac_chung": {
+   "row": 36,
+   "name": "Đỗ Khắc Chung",
+   "kid": false,
+   "fight": false
   }
  }
 }

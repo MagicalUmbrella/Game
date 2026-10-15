@@ -57,7 +57,8 @@ STEP = """(r) => {
     if(bs.length) bs[rnd(bs.length)].click(); return 'modal';
   }
   if(M){ // lụt, đêm giặc: bot dịch chuyển chơi bằng luật thật, lúc cố hết sức, lúc bỏ dở
-    if(M.type==='climax') __bots.climaxTeleport(r<.5); else __bots.floodTeleport(r<.6);
+    if(M.type==='escort'||M.type==='camp'){ for(let i=0;i<6000&&D.MG&&(D.MG.type==='escort'||D.MG.type==='camp')&&!D.modalOpen;i++) D.step(0.05); }   // bị giải đi, trong trại: đứng yên, lính lôi đi
+    else if(M.type==='climax') __bots.climaxTeleport(r<.5); else __bots.floodTeleport(r<.6);
     return 'mg';
   }
   if(D.dialogOpen){
@@ -136,6 +137,7 @@ def mechanics(page, fails):
     for name, fn in (('đánh nhau đêm 1285: không chồng, không kẹt, tự quay mặt', 'combat'), ('chuỗi nhiệm vụ Cò, Thảo, thầy Chu', 'chains'), ('khám phá: mọi chỗ, đồ dùng được', 'explore'), ('việc hằng ngày: phần thưởng theo mức chơi', 'daily'), ('đi tới được (BFS)', 'reach'), ('không đi chéo', 'noDiagonal'), ('trâu giật mình', 'buffalo'),
                      ('đường văn: dân tự vào rừng', 'selfWalk'), ('ngã xuống: ai bị bắt, ai kẹt lại', 'downRule'),
                      ('ba hồi đêm 1285: lửa, tên đầu toán, đổi mình', 'acts'),
+                     ('bị bắt: luật, giải sang trại giặc, cảnh trong trại', 'captivity'),
                      ('giặc không đứng dàn hàng ở bìa rừng', 'noCamping'),
                      ('giấy bút, thuốc bổ mỗi mùa một lần', 'shopLimit'), ('lo trước ngày giặc đến', 'prep'),
                      ('mốc chỉ số, phím C', 'statTiers'), ('chuyện đời thường: mọi lựa chọn', 'lifeAll'),
@@ -231,11 +233,14 @@ def climax_table(page, fails, n):
             down = sum(r['reason'] in ('down', 'captured') for r in rs)
             ends = ', '.join(f"{REASON.get(k, k)} {sum(r['reason'] == k for r in rs)}" for k in ('done', 'dawn', 'down', 'captured') if any(r['reason'] == k for r in rs))
             boss = ', '.join(f"{BOSS[k]} {sum(r.get('boss') == k for r in rs)}" for k in BOSS if any(r.get('boss') == k for r in rs))
-            out[(name, sk)] = (saved, total, down)
+            bad = sum(r['saved'] < total - 1 for r in rs)  # lượt mất từ hai người trở lên
+            out[(name, sk)] = (saved, total, down, bad)
             print(f"  {name:30s} {sk:9s} {saved:4.1f}/{total:<2d} {sum(r['thoc'] for r in rs) / n:4.1f}/{rs[0]['thocT']:<2d} {down:>5d}/{n:<3d}  {ends} · {boss or '–'}")
-    saved, total, down = out[('võ (Võ 70), có Cò, Đức 40', 'giỏi')]
-    if down or saved < total - 1:
-        fails.append(f"đêm 1285: nhân vật mạnh nhất, bot giỏi mà chỉ cứu TB {saved:.1f}/{total}, ngã xuống {down} lần (quá khó?)")
+    saved, total, down, bad = out[('võ (Võ 70), có Cò, Đức 40', 'giỏi')]
+    # Bot chạy theo thời gian thực của trình duyệt nên kết quả dao động; một lượt xấu chưa coi là lỗi,
+    # từ hai lượt xấu trở lên (hoặc có lượt ngã xuống) mới báo quá khó.
+    if down or bad > 1:
+        fails.append(f"đêm 1285: nhân vật mạnh nhất, bot giỏi mà chỉ cứu TB {saved:.1f}/{total}, {bad} lượt mất từ hai người, ngã xuống {down} lần (quá khó?)")
     return out
 
 

@@ -1,5 +1,6 @@
 /* ================= constants ================= */
-export const TS=16, Z=3, T=TS*Z, W=96, H=72;
+/* W0: bề ngang phần bản đồ gốc (sinh bằng RNG seed 1258); từ W0 trở đi là bờ đông sông Hồng (doanh trại giặc năm 1285). */
+export const TS=16, Z=3, T=TS*Z, W0=96, W=128, H=72;
 export const G=0,WA=1,FI=2,PA=3,TR=4,MO=5,WL=6,SA=8,BR=9,ST=10,GA=11,WR=12,DK=13;
 export const SEASONS=['Xuân','Hạ','Thu','Đông'];
 const CAN=['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý'];

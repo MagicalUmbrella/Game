@@ -2,7 +2,7 @@
    Mỗi hàm trả về danh sách lỗi (mảng chuỗi rỗng là đạt) kèm vài số liệu. */
 (() => {
   const D = () => window.__dv;
-  const W = 96, H = 72, DT = 1 / 60;
+  const W = 128, H = 72, DT = 1 / 60;
   const ev = (k, down) => window.dispatchEvent(new KeyboardEvent(down ? 'keydown' : 'keyup', {key: k}));
   const run = (sec, dt = DT) => { for (let t = 0; t < sec; t += dt) D().step(dt); };
 
@@ -207,7 +207,7 @@
     M.hp = 0; d.step(DT);
     const r = S.res || {};
     if (r.reason !== 'captured') errs.push(`hết máu, không ai đỡ mà không bị bắt (${r.reason})`);
-    if (!S.capt || S.capt.how !== 'captured') errs.push('bị bắt mà chưa ghi S.capt cho chương hai');
+    if (!S.capt || S.capt.how !== 'down') errs.push(`ngã xuống không ai đỡ mà S.capt.how là ${S.capt && S.capt.how} (mong 'down')`);
     if (!/trại giặc/.test(document.querySelector('#modal').innerText)) errs.push('bị bắt mà không có lựa chọn giải về trại giặc');
     if (a.st !== 'lost') errs.push(`người đang đi theo (${a.name}) phải bị bắt, thực tế ${a.st}`);
     if (b.st !== 'left') errs.push(`người đang tự đi (${b.name}) phải kẹt lại trong làng, thực tế ${b.st}`);
@@ -242,7 +242,7 @@
     if (!M.fire.size) errs.push('nhà cháy mà không có lửa chặn lối');
     // lửa không được cắt đường vào rừng của bất kỳ ai còn ngoài làng
     const seen = new Set([`${Z.x0 + 3},${Z.y0 + 5}`]), q = [[Z.x0 + 3, Z.y0 + 5]], now = M.T - M.t;
-    const fire = (x, y) => { const e = M.fire.get(y * 96 + x); return e != null && e > now; };
+    const fire = (x, y) => { const e = M.fire.get(y * W + x); return e != null && e > now; };
     while (q.length) { const [x, y] = q.pop(); for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const k = `${x + a},${y + b}`; if (!seen.has(k) && d.walkable(x + a, y + b) && !fire(x + a, y + b)) { seen.add(k); q.push([x + a, y + b]); } } }
     const near = (o) => { for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (seen.has(`${Math.floor(o.x) + dx},${Math.floor(o.y) + dy}`)) return true; return false; };
     for (const p of M.v) if (['wait', 'follow', 'self'].includes(p.st) && !near(p)) errs.push(`lửa cắt đường vào rừng của ${p.name}`);
@@ -281,8 +281,9 @@
         if (r.reason !== 'surrender') errs.push(`đổi mình mà kết thúc là ${r.reason}`);
         if (!r.saved || !r.saved.includes(h.name)) errs.push(`đổi mình mà ${h.name} không được thả vào rừng`);
         if (!S.capt || S.capt.for !== h.name) errs.push('đổi mình mà chưa ghi S.capt.for');
-        // cảnh trại giặc rồi biên niên
-        d.mpick(0); d.mpick(0); d.mpick(1); d.mpick(0);
+        // bị giải sang trại giặc (màn chơi), đứng yên cho lính lôi đi, chọn im lặng khi sứ giả đi ngang, rồi biên niên
+        d.mpick(0);
+        for (let i = 0; i < 20000 && (d.MG || d.modalOpen) && !/Hết chương một/.test(document.querySelector('#modal').innerText); i++) { if (d.modalOpen) d.mpick(1); else d.step(0.05); }
         const txt = document.querySelector('#modal').innerText;
         if (!/Hết chương một/.test(txt)) errs.push('sau cảnh trại giặc không tới màn hết chương');
         if (!/đổi mình lấy/.test(txt)) errs.push('biên niên thiếu dòng đổi mình');
@@ -591,5 +592,64 @@
     return {errs, out};
   }
 
-  window.__checks = {acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  /* Bị bắt: đánh thua tên đầu toán (còn người cùng đánh) vẫn bị bắt; lừa hỏng thì bị bắt. Rồi màn bị giải đi
+     (đứng yên, lính lôi đi: không xuyên tường, sông, rào trại), qua sông, vào bãi tù, lính khám tay, Đỗ Khắc Chung,
+     lựa chọn, rạng sáng, hết chương với biên niên đúng nhánh. */
+  function captivity() {
+    const d = D(), errs = [], out = {};
+    const night = (build) => { d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, cha: true, thao: 'wife', child: true, co: 'village', rel: {co: 5, thao: 0}, duc: 45, quests: {trau: 'done'}}, build));
+      d.S.ev.thao = 1; d.S.flags.tolich = 'done'; d.S.flags.de = 'saved'; d.startClimax(); const M = d.MG; M.spawnT = 1e9; M.t = 45.01; d.step(DT);
+      for (let i = 0; i < 60 * 60 && d.MG === M && !(M.boss && M.boss.cap); i++) d.step(DT); return M; };
+    // 1. đánh thua tên đầu toán khi Cò, trai làng còn đứng: vẫn bị bắt
+    let M = night({path: 'vo', vo: 30}), S = d.S;
+    if (!M.boss || !M.boss.cap) errs.push('đánh thua: tên đầu toán không bắt được con tin');
+    else {
+      if (!M.al.some(a => !a.down)) errs.push('kiểu nhân vật thử phải có người cùng đánh còn đứng');
+      S.x = M.boss.x + .7; S.y = M.boss.y; M.hp = 0; d.step(DT);
+      if ((S.res || {}).reason !== 'captured' || !S.capt || S.capt.how !== 'fight') errs.push(`đánh thua tên đầu toán mà không bị bắt (reason ${(S.res || {}).reason}, how ${S.capt && S.capt.how})`);
+    }
+    // màn bị giải đi tới hết chương, ghi lại đường đi
+    if (d.modalOpen && /trại giặc/.test(document.querySelector('#modal').innerText)) {
+      d.mpick(0);
+      const E = d.MG; if (!E || E.type !== 'escort') errs.push(`bấm "Bị giải về trại giặc" mà không vào màn áp giải (${E && E.type})`);
+      let bad = 0, crossed = false, camp = false, insp = false, kc = false, choice = false, t = 0; const where = new Set();
+      for (let i = 0; i < 30000 && !/Hết chương một/.test(document.querySelector('#modal').innerText); i++) {
+        if (d.modalOpen) { if (/Sứ giả/.test(document.querySelector('#modal').innerText)) choice = true; d.mpick(1); continue; }
+        if (!d.MG) break;
+        d.step(0.05); t += 0.05; const Mx = d.MG; if (!Mx) continue;
+        if (Mx.type === 'escort' && Mx.crossed) crossed = true;
+        if (Mx.type === 'camp') { camp = true; if (Mx.ev.inspDone) insp = true; if (Mx.kc) kc = true;
+          if (Math.floor(S.x) < 101 || Math.floor(S.x) > 105 || Math.floor(S.y) < 15 || Math.floor(S.y) > 17) { bad++; where.add(`ra ngoài bãi tù ${S.x.toFixed(1)},${S.y.toFixed(1)}`); } }
+        if (!d.walkable(Math.floor(S.x), Math.floor(S.y))) { bad++; where.add(`${Mx.type} ô cấm ${Math.floor(S.x)},${Math.floor(S.y)}`); }
+      }
+      out.seconds = Math.round(t);
+      if (!crossed) errs.push('màn áp giải không tới được bến, không qua sông');
+      if (!camp) errs.push('không vào tới trại giặc');
+      if (!insp) errs.push('không có cảnh lính khám tay tìm chữ Sát Thát');
+      if (!kc) errs.push('không có cảnh Đỗ Khắc Chung vào trại');
+      if (!choice) errs.push('không hỏi lựa chọn khi sứ giả đi ngang bãi tù');
+      if (bad) errs.push(`${bad} lần người chơi đứng sai chỗ: ${[...where].slice(0, 4).join('; ')}`);
+      if (!S.capt || !S.capt.map) errs.push('chọn im lặng ghi nhớ mà chưa ghi S.capt.map');
+      const txt = document.querySelector('#modal').innerText;
+      if (!/Hết chương một/.test(txt)) errs.push(`màn trại giặc không kết thúc ở màn hết chương (sau ${out.seconds} giây)`);
+      if (!/đánh nhau với tên đầu toán/.test(txt)) errs.push('biên niên thiếu dòng đánh thua tên đầu toán');
+      if (!/ghi nhớ/.test(txt)) errs.push('biên niên thiếu dòng ghi nhớ trại giặc');
+      if (out.seconds > 200) errs.push(`màn bị bắt kéo dài ${out.seconds} giây khi đứng yên (quá lâu?)`);
+      while (d.modalOpen) d.nextModal();
+    } else errs.push('bị bắt mà không có lựa chọn giải về trại giặc');
+    if (d.MG) { d.setMG(null); document.body.classList.remove('mg'); }
+    // 2. lừa hỏng: bị bắt ngay
+    M = night({path: 'van', van: 0, vo: 10}); S = d.S;
+    if (M.boss && M.boss.cap) {
+      S.x = M.boss.x + 1; S.y = M.boss.y; const tg = M.findTarget(); const rnd = Math.random; Math.random = () => .999;
+      if (tg) { tg.act(); const i = [...document.querySelectorAll('#modal .opt')].findIndex(b => /Lừa/.test(b.textContent)); if (i < 0) errs.push('đường văn không có lựa chọn lừa tên đầu toán'); else d.mpick(i); }
+      Math.random = rnd;
+      if ((S.res || {}).reason !== 'captured' || !S.capt || S.capt.how !== 'trick') errs.push(`lừa hỏng mà không bị bắt (reason ${(S.res || {}).reason}, how ${S.capt && S.capt.how})`);
+      while (d.modalOpen) d.nextModal();
+    } else errs.push('lừa: tên đầu toán không bắt được con tin');
+    if (d.MG) { d.setMG(null); document.body.classList.remove('mg'); }
+    return {errs, out};
+  }
+
+  window.__checks = {captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();

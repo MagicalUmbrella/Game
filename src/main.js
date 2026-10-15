@@ -16,6 +16,8 @@ import {startExam} from './minigames/exam.js';
 import {startTraining,tmHit} from './minigames/training.js';
 import {dailyFlush} from './minigames/daily.js';
 import {startClimax,finishClimax,ZONE} from './climax.js';
+import {startEscort} from './camp.js';
+import {W,H} from './constants.js';
 import {personSprite} from './sprites.js';
 import {loadPeople} from './person.js';
 import {ground} from './ground.js';
@@ -31,5 +33,5 @@ const hook=import.meta.env.MODE==='test'&&{
   get S(){return state.S},get MG(){return state.MG},setS:state.setS,setMG:state.setMG,newState:state.newState,P:state.P,NPCS:state.NPCS,
   get modalOpen(){return ui.modalOpen},renderHUD:ui.renderHUD,get dialogOpen(){return ui.dialogOpen},pick:ui.pick,closeDialog:ui.closeDialog,mpick:ui.mpick,nextModal:ui.nextModal,startQuest:ui.startQuest,
   advance,advanceOne,EVENTS,LIFE,SPOTS,runLife,lifeChronicle,fastForward,chooseFocus,talkThay,talkVo,talkLy,talkRen,talkCha,talkMe,talkSach,talkTong,talkCo,talkThao,startPlay,fieldAction,fishAction,
-  startFlood,endFlood,startExam,startTraining,tmHit,startClimax,finishClimax,
+  startFlood,endFlood,startExam,startTraining,tmHit,startClimax,finishClimax,startEscort,W,H,
   dailyFlush,step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY,personSprite,ground};

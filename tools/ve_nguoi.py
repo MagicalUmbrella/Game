@@ -304,6 +304,9 @@ PEOPLE = [
     # đêm 1285, hồi ba (hư cấu): tên đầu toán giặc áo đỏ thẫm, đai vàng; cu Tí con nhà hàng xóm
     ('giac_dau', 'Tên đầu toán', dict(hair='knot', hat='mugiac', plume=True, beard='full', torso='armor', legs='boots', weapon='dao', pal={**C('#7a2622'), **B2('#d9b25a'), **P2('#241f1e')})),
     ('ti', 'Cu Tí nhà bên', dict(hair='kid', torso='shirt', legs='bare', kid=True, pal={**C('#5a7890'), **B2('#33404e'), **P2('#4a4440')})),
+    # trại giặc đêm 12 tháng giêng 1285: tướng Nguyên Ô Mã Nhi (giáp xanh thẫm, đai vàng), Đỗ Khắc Chung (quan văn nước ta)
+    ('o_ma_nhi', 'Ô Mã Nhi', dict(hair='knot', hat='mugiac', plume=True, beard='full', torso='armor', legs='boots', pal={**C('#283652'), **B2('#e9b93a'), **P2('#1e1c22')})),
+    ('khac_chung', 'Đỗ Khắc Chung', dict(hair='knot', hat='quan', beard='goat', torso='robe', legs='feet', pal={**C('#2f6a5e'), **B2('#d9b25a'), 'A': '#e9b93a', 'a': '#a87d1e'})),
 ]
 
 # ---------------------------------------------------------------- ghép một khung

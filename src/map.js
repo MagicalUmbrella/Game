@@ -1,5 +1,5 @@
 /* ================= map ================= */
-import {BR,DK,FI,G,GA,H,MO,PA,SA,ST,TR,W,WA,WL,WR} from './constants.js';
+import {BR,DK,FI,G,GA,H,MO,PA,SA,ST,TR,W,W0,WA,WL,WR} from './constants.js';
 import {Hs} from './pixel.js';
 
 export const map=new Uint8Array(W*H),bsolid=new Uint8Array(W*H);
@@ -12,6 +12,8 @@ export const isW=t=>t===WA||t===WR;
 /* cống qua đê: ô cầu (BR) nằm trên đê, chỗ sông Tô Lịch chảy ra sông Hồng */
 export const CULVERT=new Set();
 export const tolichY=x=>24+2*Math.sin(x/7),hongX=y=>84+3*Math.sin(y/9);
+/* Doanh trại quân Nguyên bên bờ đông sông Hồng, đối diện bến Đông Bộ Đầu (chỉ dựng lên từ đêm 1285, xem src/camp.js). */
+export const CAMP={x0:99,y0:4,x1:121,y1:22};
 
 export const BUILDINGS=[
  {id:'home',name:'Nhà mình',x:41,y:46,w:5,h:3,kind:'house'},
@@ -41,7 +43,7 @@ export const SIGNS=[
 export function road(x0,y0,x1,y1){for(let y=Math.min(y0,y1);y<=Math.max(y0,y1);y++)for(let x=Math.min(x0,x1);x<=Math.max(x0,x1);x++){const t=get(x,y);if(isW(t))set(x,y,BR);else if(t!==ST&&t!==GA&&t!==BR&&t!==WL)set(x,y,PA)}}
 function buildMap(){
   map.fill(G);
-  for(let i=0;i<260;i++)set(Math.floor(R()*W),Math.floor(R()*H),TR);
+  for(let i=0;i<260;i++)set(Math.floor(R()*W0),Math.floor(R()*H),TR);   // W0: giữ nguyên chuỗi RNG nên phần bản đồ gốc không đổi
   for(let y=0;y<H;y++){const m=4+Math.round(2*Math.sin(y/5)+R()*2);for(let x=0;x<m;x++)set(x,y,MO)}
   for(let x=0;x<34;x++){const m=2+Math.round(R()*2);for(let y=0;y<m;y++)set(x,y,MO)}
   for(let y=28;y<H;y++)for(let x=5;x<24;x++)if(R()<0.62-(x-5)*0.014)set(x,y,TR);
@@ -65,6 +67,12 @@ function buildMap(){
   for(const y of[57,61,65])road(30,y,58,y);
   road(53,20,53,31);road(24,31,79,31);road(24,15,24,31);road(40,31,40,66);road(50,53,50,66);road(30,44,52,44);road(52,20,54,20);road(71,11,82,12);road(24,61,30,61);
   road(8,44,29,44);road(14,44,14,58);road(14,58,29,58);road(8,36,8,44);road(8,36,23,36);road(23,31,23,36);
+  // bờ đông sông Hồng (x từ W0): bãi Gia Lâm, cây thưa theo hash; chỗ đất trống cho doanh trại năm 1285, đường từ bến lên trại
+  for(let y=0;y<H;y++)for(let x=W0;x<W;x++)if(Hs(x,y,41)<.07&&!(x>=CAMP.x0-2&&x<=CAMP.x1+2&&y>=CAMP.y0-2&&y<=CAMP.y1+2))set(x,y,TR);
+  for(let y=0;y<H;y++)for(let x=W-3;x<W;x++)if(Hs(x,y,43)<.5+(x-W+3)*.25)set(x,y,MO);   // rìa bản đồ phía đông
+  fill(CAMP.x0-1,CAMP.y0-1,CAMP.x1+1,CAMP.y1+1,G);
+  for(let x=Math.ceil(hongX(12)+3.8);x<CAMP.x0;x++)for(const y of[11,12,13])if(get(x,y)===TR)set(x,y,G);
+  road(Math.ceil(hongX(12)+3.8),12,CAMP.x0,12);
   for(const b of BUILDINGS)for(let y=b.y;y<b.y+b.h;y++)for(let x=b.x;x<b.x+b.w;x++)bsolid[y*W+x]=1;
   for(const d of DECOR)if(d.solid)bsolid[d.y*W+d.x]=1;
   for(const s of SIGNS)bsolid[s.y*W+s.x]=1;

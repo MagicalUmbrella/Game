@@ -10,8 +10,9 @@
            Trời sáng mà con tin còn trong tay hắn thì người ấy bị bắt đi.
    Đã gặp anh Ngũ: khoảng giây 80 nghe tù và quân ta từ xa; còn 30 giây thì quân Phạm Ngũ Lão tới đánh giặc
    (không làm giặc bỏ chạy ngay); họ để tên đầu toán cho bạn.
-   Hết máu: có người cùng đánh còn đứng thì được kéo vào rừng ('down'); không còn ai thì bị bắt ('captured').
-   Bị bắt (cả 'surrender') dẫn tới cảnh trại giặc đêm 12 tháng giêng (campScene) và mở đầu chương hai khác. */
+   Hết máu: đang đối đầu tên đầu toán (hắn còn sống) thì bị bắt ('captured', how 'fight'); lừa hắn hỏng cũng bị bắt
+   (how 'trick'). Lúc khác: còn người cùng đánh đứng được thì được kéo vào rừng ('down'), không còn ai thì bị bắt (how 'down').
+   Bị bắt (cả 'surrender') dẫn tới màn bị giải sang trại giặc bên kia sông (src/camp.js) và mở đầu chương hai khác. */
 import {$,T,TS,W,H,WA,Z,ctx} from './constants.js';
 import {Hs} from './pixel.js';
 import {BUILDINGS,get,tolichY} from './map.js';
@@ -29,6 +30,7 @@ import {followFast,traiFromDuc,voDmg,voFast,voHp} from './stats.js';
 import {lifeChronicle,lifeClimax} from './life.js';
 import {exploreChronicle} from './explore.js';
 import {chainChronicle} from './chains.js';
+import {startEscort} from './camp.js';
 
 export const ZONE={x0:23,y0:54,x1:29,y1:66};
 const inZone=(x,y)=>x>=ZONE.x0&&x<=ZONE.x1+1&&y>=ZONE.y0&&y<=ZONE.y1+1;
@@ -204,12 +206,12 @@ function bossUpdate(b,dt){const M=MG,now=M.T-M.t;b.flash=Math.max(0,b.flash-dt);
     if(b.st!=='flee'&&meOut&&dp<.9&&M.inv<=0){M.hp--;M.inv=1.1;b.swing=.3;b.cd=b.rage?1.1:1.8;b.dir=dirOf(S.x-b.x,S.y-b.y);M.shake=Math.max(M.shake,.6);const [ux,uy]=axisDir(S.x-b.x,S.y-b.y),nx=S.x+ux*1.1,ny=S.y+uy*1.1;if(canStand(nx,ny)){S.x=nx;S.y=ny}floatText('−1 máu','#e07f6b');
       if(M.carry){M.carry.st='wait';M.carry.x=S.x;M.carry.y=S.y;M.carry=null}}
     else if(b.st!=='flee')for(const a of M.al)if(!a.down&&!a.quan&&a.inv<=0&&Math.hypot(a.x-b.x,a.y-b.y)<.9){a.hp-=1;a.inv=1;b.swing=.3;b.cd=b.rage?1.1:1.8;b.dir=dirOf(a.x-b.x,a.y-b.y);if(a.hp<=0){a.down=true;toast(a.name+' bị tên đầu toán chém ngã!',3800)}break}}}
-/* Đường văn: lừa tên đầu toán (hư cấu). Thành thì hắn bỏ con tin mà chạy; hỏng thì hắn nổi giận, chém nhanh hơn. Chỉ một lần. */
+/* Đường văn: lừa tên đầu toán (hư cấu). Thành thì hắn bỏ con tin mà chạy; hỏng thì bạn bị bắt. Chỉ một lần. */
 const trickChance=()=>Math.min(.9,.35+S.van/100+(S.dothi?.1:0));
 function trick(b){const M=MG;b.tricked=true;
   if(Math.random()<trickChance()){const h=b.cap;h.st='wait';h.x=b.x;h.y=b.y;b.cap=null;b.st='flee';M.bossOut='tricked';M.shake=.4;
     say(b,'Quân Trần? Rút! Rút mau!',3);say(h,'Chú ơi!',2.5);toast('Tên đầu toán tin là quân Trần đã vây làng, bỏ con tin mà chạy về phía sông!',4600)}
-  else{b.rage=true;say(b,'Láo! Mày tưởng ta là trẻ con à?',3.4);toast('Hắn không tin. Tên đầu toán nổi giận, vung đao nhanh hơn!',4000)}}
+  else{M.captureHow='trick';finishClimax('captured')}}   // lừa hỏng: hắn biết bạn nói dối, sai lính trói bạn lại
 function surrender(){const M=MG,h=M.boss&&M.boss.cap;if(!h)return;M.surrenderFor=h;finishClimax('surrender')}
 
 function clUpdate(dt){
@@ -294,7 +296,7 @@ function clUpdate(dt){
     a.moving=false;if(d>(tg?.7:1)){const st=nextStep(a,tx,ty,okAlly,M.T-M.t);if(st){const fin=st[0]===tx&&st[1]===ty,sd=Math.hypot(st[0]-a.x,st[1]-a.y),m=Math.min(sd-(fin?.6:0),a.sp*dt);if(m>0){const [mx,my]=stepTo(a,st,m,okAlly);a.x+=mx;a.y+=my;a.moving=true;a.walk+=dt*9;a.dir=dirOf(mx,my)}}}
     if(tg&&d<1.1&&a.cd<=0){a.cd=a.quan?.5:.9;a.slash=.15;a.swing=.24;a.dir=dirOf(dx,dy);hitEnemy(tg,a.dmg,a.x,a.y)}}
   M.en=M.en.filter(e=>!e.dead);
-  if(M.hp<=0)return finishClimax(M.al.some(a=>!a.down)?'down':'captured');
+  if(M.hp<=0){const boss=M.boss&&!M.boss.dead&&M.boss.st!=='flee';M.captureHow=boss?'fight':'down';return finishClimax(boss||!M.al.some(a=>!a.down)?'captured':'down')}
   if(M.t<=0)return finishClimax('dawn');
   if(M.act===3&&(!M.boss||M.boss.dead||!M.boss.cap)&&allIn())finishClimax('done');
 }
@@ -302,7 +304,7 @@ function clTarget(){const M=MG;let best=1.4,t=null;
   const b=M.boss;if(b&&!b.dead&&b.cap&&Math.hypot(b.x-S.x,b.y-S.y)<1.8){const h=b.cap;return{label:`Đổi mình lấy ${lc(h.name)}`,act:()=>{if(b.dead||b.cap!==h)return;showModal({kicker:'Sân đình',title:`Đổi mình lấy ${lc(h.name)}?`,
     body:`<p>Tên đầu toán sẽ thả ${lc(h.name)} chạy vào rừng, còn bạn bị trói giải về trại giặc. Những ai còn ngoài rừng phải tự lo lấy thân.</p>`,
     choices:[{label:'Bước ra, đổi mình',note:'bạn bị bắt',fn:surrender},
-      ...(S.path==='van'&&!b.tricked?[{label:'Lừa hắn: hô to quân Trần đã vây kín làng',note:`đường văn · được ăn cả ngã về không (${Math.round(100*trickChance())}%)`,fn:()=>trick(b)}]:[]),
+      ...(S.path==='van'&&!b.tricked?[{label:'Lừa hắn: hô to quân Trần đã vây kín làng',note:`đường văn · hỏng thì bị bắt (${Math.round(100*trickChance())}% thành)`,fn:()=>trick(b)}]:[]),
       {label:'Chưa, còn đánh được'}]})}}}
   for(const p of M.v)if(p.st==='wait'){const d=Math.hypot(p.x-S.x,p.y-S.y);if(d<best){best=d;t=S.path==='van'?{label:'Chỉ đường cho '+p.name+' vào rừng',act:()=>{p.st='self';p.path=null;p.dest=zoneSpot(p);floatAt(p.name+' tự tìm đường vào rừng',p.x,p.y,'#9fcaa9');say(p,leadLine(p))}}
         :{label:'Dẫn '+p.name+' đi',act:()=>{p.st='follow';floatAt(p.name+' đi theo bạn',p.x,p.y,'#9fcaa9');say(p,leadLine(p))}}}}
@@ -310,18 +312,18 @@ function clTarget(){const M=MG;let best=1.4,t=null;
   return t}
 
 /* ---------- vẽ ---------- */
-function torchFx(x,y,big){const sx=Math.round(x*TS),sy=Math.round(y*TS);ctx.fillStyle='#5a3f25';ctx.fillRect(sx*Z-camX,(sy-10)*Z-camY,Z,10*Z);
+export function torchFx(x,y,big){const sx=Math.round(x*TS),sy=Math.round(y*TS);ctx.fillStyle='#5a3f25';ctx.fillRect(sx*Z-camX,(sy-10)*Z-camY,Z,10*Z);
   const n=big?14:6;for(let i=0;i<n;i++){const ph=(clock*3+i*.29)%1,fx=sx-(big?5:2)+Math.floor(Hs(i,3,9)*(big?10:5)),fy=sy-12-Math.floor(ph*(big?14:7));ctx.fillStyle=ph<.4?'#ffe08a':ph<.7?'#f2913a':'#b8322a';ctx.fillRect(fx*Z-camX,fy*Z-camY,Z*(big?2:1),Z*(big?2:1))}}
 /* Lưỡi lửa: chân ở (px, py) tính bằng pixel game, cao h, rộng w; ba lớp đỏ, cam, vàng thuôn dần lên, lay động. */
-function tongue(px,py,h,w,ph){const f=Math.max(3,Math.round(h*(.78+.22*Math.sin(clock*9+ph)))),
+export function tongue(px,py,h,w,ph){const f=Math.max(3,Math.round(h*(.78+.22*Math.sin(clock*9+ph)))),
   layer=(ww,hh,col)=>{ctx.fillStyle=col;for(let y=0;y<hh;y++){const k=1-y/hh,half=Math.max(1,Math.round(ww/2*Math.sqrt(k))),sway=Math.round(Math.sin(clock*7+ph+y*.45)*(1-k)*2);ctx.fillRect((px-half+sway)*Z-camX,(py-y-1)*Z-camY,half*2*Z,Z)}};
   layer(w,f,'#b8322a');layer(w-2,Math.round(f*.72),'#f2913a');layer(Math.max(2,w-4),Math.round(f*.42),'#ffe08a')}
 /* Bóng sạm đúng hình ngôi nhà (không phủ ra khoảng trống quanh nhà). */
 const charC={};
-function charred(b,c){if(charC[b.id])return charC[b.id];const d=document.createElement('canvas');d.width=c.width;d.height=c.height;const g=d.getContext('2d');
+export function charred(b,c){if(charC[b.id])return charC[b.id];const d=document.createElement('canvas');d.width=c.width;d.height=c.height;const g=d.getContext('2d');
   g.drawImage(c,0,0);g.globalCompositeOperation='source-atop';g.fillStyle='#1a0d08';g.fillRect(0,0,d.width,d.height);return charC[b.id]=d}
 /* Khói xám bốc lên, trôi sang bên (vẽ trước lớp bóng đêm nên chỉ thấy quanh chỗ sáng). */
-function smoke(px,py,seed,n=8){for(let i=0;i<n;i++){const ph=(clock*.28+Hs(i,seed,7))%1,x=px+Math.round(Math.sin(clock*.8+i)*3+ph*8+(Hs(i,seed,3)-.5)*8),y=py-Math.round(ph*40),r=1+Math.round(ph*2);
+export function smoke(px,py,seed,n=8){for(let i=0;i<n;i++){const ph=(clock*.28+Hs(i,seed,7))%1,x=px+Math.round(Math.sin(clock*.8+i)*3+ph*8+(Hs(i,seed,3)-.5)*8),y=py-Math.round(ph*40),r=1+Math.round(ph*2);
   ctx.fillStyle=`rgba(58,54,52,${.42*(1-ph)})`;ctx.fillRect((x-r)*Z-camX,(y-r)*Z-camY,r*2*Z,r*2*Z)}}
 /* Lửa trên ô đất trước cửa nhà cháy. */
 function groundFire(x,y,i){const px=x*TS,py=(y+1)*TS-2;ctx.fillStyle='rgba(60,20,10,.55)';ctx.fillRect(px*Z-camX,(py-3)*Z-camY,TS*Z,4*Z);
@@ -414,10 +416,13 @@ export function finishClimax(reason){const M=MG;setMG(null);setKeys();document.b
     thoc:M.sk.filter(s=>s.st==='safe').length,thocT:M.sk.length,kills:M.kills,coDown:M.al.some(a=>a.id==='co'&&a.down),coThere:M.al.some(a=>a.id==='co'),nLang:M.nLang,ngu:M.ngu===true,
     boss:M.bossOut||(reason==='surrender'?'surrender':hostage?'took':M.boss?'alive':null),hostage:reason==='surrender'?M.surrenderFor.name:hostage?hostage.name:null,ti:ti?ti.st:null};
   S.res=res;
-  if(captured)S.capt={how:reason,for:reason==='surrender'?M.surrenderFor.name:null};
+  if(captured)S.capt={how:reason==='surrender'?'surrender':M.captureHow||'down',for:reason==='surrender'?M.surrenderFor.name:null};
+  res.how=S.capt&&captured?S.capt.how:null;res.burnt=M.burn.map(x=>x.b.id);res.lostWho=M.v.filter(p=>p.st==='lost').map(p=>({id:p.id,name:p.name,look:p.look}));
   const rescuer=M.ngu===true?'quân của Phạm Ngũ Lão':M.al.some(a=>a.id==='co'&&!a.down)?'Cò':allyUp?'trai làng':'mấy người làng liều mình quay lại';
   const lead={down:`<p>Một nhát giáo sượt qua, bạn ngã xuống bờ ruộng. Lúc mở mắt ra, ${rescuer} đã kéo bạn vào bìa rừng.</p>`,
-    captured:'<p>Một nhát giáo sượt qua, bạn ngã xuống bờ ruộng. Quanh bạn không còn ai đứng dậy được. Lúc tỉnh lại, tay bạn đã bị trói giật cánh khuỷu, sợi thừng buộc vào yên ngựa giặc.</p>',
+    captured:{fight:'<p>Đao tên đầu toán quật ngang, bạn ngã sấp giữa sân đình. Hắn đặt chân lên lưng bạn, quát lính trói lại. Lúc tỉnh hẳn, tay bạn đã bị trói giật cánh khuỷu.</p>',
+      trick:'<p>Tên đầu toán bật cười: hắn đã nghe tiếng tù và của quân mình gọi rút, biết chẳng có quân Trần nào vây làng. Hắn quát lính quật bạn xuống, trói giật cánh khuỷu.</p>',
+      down:'<p>Một nhát giáo sượt qua, bạn ngã xuống bờ ruộng. Quanh bạn không còn ai đứng dậy được. Lúc tỉnh lại, tay bạn đã bị trói giật cánh khuỷu, sợi thừng buộc vào yên ngựa giặc.</p>'}[M.captureHow||'down'],
     surrender:`<p>Bạn ném gậy xuống đất, bước ra giữa sân đình. Tên đầu toán cười khẩy, đẩy ${lc(res.hostage)} về phía bìa rừng rồi quăng thừng trói bạn lại. ${res.hostage} ngoái lại nhìn bạn rồi chạy vào rừng.</p>`,
     dawn:'<p>Trời hửng sáng. Tiếng tù và của giặc vang lên gọi quân rút về phía bến sông.</p>',
     done:res.lost.length?`<p>Những người còn lại đã vào rừng, bao thóc cuối cùng đã giấu kỹ. Bạn đứng ở bìa rừng, nhìn về phía làng đang cháy, nghĩ đến ${names(res.lost)} đã bị giặc bắt đi.</p>`:'<p>Người cuối cùng đã vào rừng, bao thóc cuối cùng đã giấu kỹ. Bạn đứng ở bìa rừng, nhìn về phía làng đang cháy.</p>'}[reason];
@@ -425,29 +430,10 @@ export function finishClimax(reason){const M=MG;setMG(null);setKeys();document.b
   const title={done:res.lost.length?'Rút vào rừng':'Không bỏ lại ai',down:'Ngã xuống',captured:'Bị bắt',surrender:'Đổi mình',dawn:'Bình minh'}[reason];
   showModal({kicker:reason==='down'||captured?'Đêm ngày 12 tháng giêng':'Rạng sáng ngày 13 tháng giêng',title,body:lead+bossLine+
     `<p><b>An toàn trong rừng:</b> ${names(res.saved)||'không ai'}.</p>${res.left.length?`<p><b>Kẹt lại trong làng</b> (thoát nạn nhưng nhà cửa bị đốt): ${names(res.left)}.</p>`:''}${res.lost.length?`<p><b>Bị giặc bắt đi:</b> ${names(res.lost)}.</p>`:''}<p>Thóc giấu được ${res.thoc}/${res.thocT} bao. ${res.kills?`Bạn và mọi người đánh hạ ${res.kills} tên giặc.`:'Không hạ được tên giặc nào.'}${res.coDown?' Cò bị thương nặng nhưng còn sống.':''}</p>`,
-    choices:[captured?{label:'Bị giải về trại giặc',fn:()=>campScene(res)}:{label:'Nhìn lại cuộc đời',fn:()=>endChapter(res)}]});
+    choices:[captured?{label:'Bị giải về trại giặc',fn:()=>startEscort(res)}:{label:'Nhìn lại cuộc đời',fn:()=>endChapter(res)}]});
   save()}
 
-/* Cảnh trại giặc đêm 12 tháng giêng (khi bạn bị bắt). Nhân vật có mặt trong trại là hư cấu; việc Đỗ Khắc Chung
-   vào trại Ô Mã Nhi, lời đối đáp, giờ ông về theo Toàn thư (mục tháng giêng năm Ất Dậu 1285). */
-function campScene(res){
-  const others=res.lost.length?`<p>Trong đám người bị trói quanh bạn có ${names(res.lost)}.</p>`:'<p>Quanh bạn là người mấy làng ven sông bị bắt trong đêm, không ai quen mặt.</p>';
-  const tattoo=S.path==='vo'?'<p>Một tên lính giật tay áo bạn lên, thấy hai chữ "Sát Thát" thích bằng mực. Hắn gầm lên, đạp bạn ngã sấp xuống bùn.</p>':'<p>Lính giặc lần lượt giật tay áo từng người. Thấy cánh tay nào có chữ "Sát Thát", chúng gầm lên rồi đánh túi bụi.</p>';
-  showModal({kicker:'Đêm ngày 12 tháng giêng · hư cấu',title:'Trại giặc bên sông',
-    body:`<p>Bạn bị giải qua cầu, về đám trại quân Nguyên dựng bên bến Đông Bộ Đầu. Lửa trại cháy khắp bãi sông.</p>${others}${tattoo}
-      ${src('tháng giêng năm 1285, giặc bắt được quân ta, thấy người nào cũng thích chữ "Sát Thát" vào cánh tay thì tức giận, giết hại rất nhiều.')}`,
-    choices:[{label:'Nằm im, nghe ngóng',fn:()=>{showModal({kicker:'Gần sáng · ngày 13 tháng giêng',title:'Sứ giả trong đêm',
-      body:`<p>Gần sáng, có một viên quan nước ta mang thư vào trại, đi ngang ngay chỗ bạn bị trói. Lính giặc thì thầm: đó là Đỗ Khắc Chung, chức chi hậu cục thủ, tự xin vua cho vào dò xét quân giặc.</p>
-        <p>Trước trướng, Ô Mã Nhi quát hỏi vì sao quân Nam dám thích chữ "Sát Thát", coi thường quân trời. Khắc Chung đáp bình thản: chó nhà thấy người lạ thì cắn, đâu phải tại chủ; đó là lòng căm giận của quân sĩ, vua tôi không biết. Rồi ông nói mình là cận thần, sao lại không có, và vén tay áo cho xem chữ trên cánh tay mình.</p>
-        <p>Khi ông đi rồi, Ô Mã Nhi bảo các tướng: nước này còn có người giỏi, chưa dễ tính chuyện được.</p>
-        ${src('vua sai Đỗ Khắc Chung mang thư vào trại Ô Mã Nhi; bị hỏi về chữ "Sát Thát", ông ứng đối không chịu nhún, giơ cánh tay mình cho xem; Ô Mã Nhi khen nước Nam còn người giỏi. Giờ Mão ngày 13, ông về.')}
-        <p class="note">Bạn có mặt trong trại lúc ấy là hư cấu. Lời đối đáp theo Toàn thư, viết lại bằng lời thường.</p>`,
-      choices:[
-        {label:'Gọi to tên mình khi ông đi ngang',note:'triều đình biết bạn còn sống · giặc để mắt tới bạn',fn:()=>{S.capt.seen=true;showModal({kicker:'Rạng sáng',title:'Một cái gật đầu',body:'<p>Đỗ Khắc Chung khựng lại nửa bước, liếc về phía bạn, khẽ gật đầu rồi đi tiếp. Tên lính canh quất roi vào lưng bạn, từ đó không rời mắt khỏi bạn.</p>',choices:[{label:'Nhìn lại cuộc đời',fn:()=>endChapter(res)}]})}},
-        {label:'Im lặng, ghi nhớ trại giặc bố trí ra sao',note:'+3 Văn · biết đường trong trại',fn:()=>{S.capt.map=true;gain('van',3);showModal({kicker:'Rạng sáng',title:'Ghi nhớ',body:'<p>Bạn cúi đầu, đếm từng đống lửa, nhớ chỗ cột ngựa, chỗ chất lương, lối ra bãi sông. Một ngày nào đó, những điều này sẽ có ích.</p>',choices:[{label:'Nhìn lại cuộc đời',fn:()=>endChapter(res)}]})}}]})}}]});
-}
-
-function endChapter(res){
+export function endChapter(res){
   res=res||S.res||{saved:[],left:[],lost:[],thoc:0,thocT:4,kills:0};
   S.ended=true;save();const F=S.flags,L=[];
   L.push({but:'Năm một tuổi, bạn bốc cây bút lông.',kiem:'Năm một tuổi, bạn bốc thanh kiếm gỗ.',lua:'Năm một tuổi, bạn bốc bông lúa.',hat:'Năm một tuổi, bạn bốc chuỗi tràng hạt.'}[S.toi]||'');
@@ -474,7 +460,7 @@ function endChapter(res){
   else if(res.boss==='tricked')L.push('Đêm giặc đến, bạn hô to quân Trần đã vây làng. Tên đầu toán tin thật, bỏ con tin mà chạy.');
   else if(res.boss==='alive')L.push('Đêm giặc đến, bạn đưa được mọi người vào rừng trước khi tên đầu toán kịp bắt ai.');
   if(res.ti)L.push(res.ti==='safe'?'Bạn cứu được cu Tí nhà bên khỏi xóm cháy.':res.ti==='lost'?'Cu Tí nhà bên bị giặc bắt đi.':'Cu Tí nhà bên kẹt lại trong xóm cháy, sáng ra mới được người làng tìm thấy.');
-  if(res.reason==='captured')L.push('Bạn ngã xuống mà không còn ai đỡ, bị giặc trói giải đi.');
+  if(res.reason==='captured')L.push({fight:'Bạn đánh nhau với tên đầu toán giữa sân đình, thua, bị hắn trói giải đi.',trick:'Bạn hô quân Trần đã vây làng, nhưng tên đầu toán không tin. Hắn trói bạn giải đi.'}[res.how]||'Bạn ngã xuống mà không còn ai đỡ, bị giặc trói giải đi.');
   if(S.capt)L.push(S.capt.seen?'Trong trại giặc, bạn gọi tên mình cho sứ giả Đỗ Khắc Chung nghe.':S.capt.map?'Trong trại giặc, bạn lặng lẽ ghi nhớ từng đống lửa, từng lối đi.':'');
   const path=res.captured?'Rạng sáng ngày 13, đoàn giặc lùa những người bị bắt ra bãi sông. Bạn đi giữa họ, hai tay bị trói, ngoái nhìn khói làng An Phú bốc lên phía tây.':
     {van:S.dothi?'Là Thái học sinh, bạn được giao việc thảo văn thư, theo xa giá triều đình rời Thăng Long khi giặc áp sát.':'Không đỗ đạt, bạn ở lại làng dạy chữ cho trẻ. Khi giặc áp sát, bạn giúp các bô lão chép sổ đinh, đưa dân đi lánh nạn.',
