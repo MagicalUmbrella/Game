@@ -19,7 +19,7 @@ import {darkPost,endMG,goalArrow} from './chung.js';
 
 /* Độ khó (chỉnh bằng bot): tốc độ tên dắt trâu, tốc độ hai tên chặn, máu mỗi tên, khoảng cách bắt đầu chặn,
    nhịp đánh của cướp. */
-export const CUOP={LEAD_SP:1.25,GUARD_SP:2.6,HP:4,AGGRO:4.5,HIT_CD:1.15,MY_CD:.36};
+export const CUOP={LEAD_SP:1.35,GUARD_SP:2.6,HP:5,AGGRO:4.5,HIT_CD:1.05,MY_CD:.36};   // 10/2026: khó hơn (trước LEAD_SP 1.25, HP 4, HIT_CD 1.15)
 const BOAT={x:81.2,y:57.5},START={x:43.5,y:49.8};
 const okW=(x,y)=>!solidAt(x+.5,y+.5);
 const pDmg=()=>1+(S.vo>=50?1:0)+(has('Kiếm sắt')?1:0);
