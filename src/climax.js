@@ -297,8 +297,10 @@ function clUpdate(dt){
     const okE=fireAt(Math.floor(e.x),Math.floor(e.y))?okEnemyFire:okEnemy;
     if(d>.05){const st=nextStep(e,tx,ty,okE,M.T-M.t);if(st){const [mx,my]=stepTo(e,st,e.sp*dt*(e.st==='flee'?1.15:1)*(wading(e)?.5:1),okE),nx=e.x+mx,ny=e.y+my;if(!(inZone(nx,ny)&&e.st!=='flee')){e.x=nx;e.y=ny}e.walk+=dt*9;if(mx||my)e.dir=dirOf(mx,my)}}
     // kẹt (đứng im lâu mà chưa tới nơi): tìm đường lại; đang đi lục lọi thì đổi chỗ
-    if(d>1.2&&e.lx!=null&&Math.hypot(e.x-e.lx,e.y-e.ly)<.004){if((e.stuck=(e.stuck||0)+dt)>1.2){e.stuck=0;e.path=null;if(e.loot)e.loot=pickLoot(e);if(e.guard)e.guard=false;
-      if((e.stuckN=(e.stuckN||0)+1)>=2){e.stuckN=0;for(let k=0;k<12;k++){const x=Math.floor(e.x)+Math.floor(Math.random()*7)-3,y=Math.floor(e.y)+Math.floor(Math.random()*7)-3;if(okEnemy(x,y)&&!inZone(x+.5,y+.5)){e.detour=[x+.5,y+.5];e.detourT=1.6;e.path=null;break}}}}}   // lính canh kẹt (lửa chặn đường về đình): thôi canh, đi đánhelse e.stuck=0;
+    // giặc đang rút chạy về thì chờ ít hơn và đi vòng ngay (hai tên rút ngược chiều nhau từng chắn nhau mãi ở lối hẹp)
+    const fl=e.st==='flee';
+    if(d>1.2&&e.lx!=null&&Math.hypot(e.x-e.lx,e.y-e.ly)<.004){if((e.stuck=(e.stuck||0)+dt)>(fl?.7:1.2)){e.stuck=0;e.path=null;if(e.loot)e.loot=pickLoot(e);if(e.guard)e.guard=false;
+      if((e.stuckN=(e.stuckN||0)+1)>=(fl?1:2)){e.stuckN=0;for(let k=0;k<12;k++){const x=Math.floor(e.x)+Math.floor(Math.random()*7)-3,y=Math.floor(e.y)+Math.floor(Math.random()*7)-3;if(okEnemy(x,y)&&!inZone(x+.5,y+.5)){e.detour=[x+.5,y+.5];e.detourT=1.6;e.path=null;break}}}}}   // lính canh kẹt (lửa chặn đường về đình): thôi canh, đi đánhelse e.stuck=0;
     e.lx=e.x;e.ly=e.y;
     if(e.cap){e.cap.x=e.x+.45;e.cap.y=e.y+.15}
     if(e.st==='flee'&&d<.3){e.dead=true;if(e.cap){e.cap.st='lost';toast(e.cap.name+' đã bị giặc bắt đi mất...',4200);e.cap=null}continue}
