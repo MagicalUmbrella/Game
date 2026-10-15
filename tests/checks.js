@@ -145,8 +145,10 @@
     S.x = (Z.x0 + Z.x1) / 2 + .5; S.y = (Z.y0 + Z.y1) / 2 + .5;
     let bad = 0, wade = 0, samples = 0, south = 0;
     const where = new Set();
+    // bài này chỉ xem giặc đi đúng địa hình: bạn đứng yên không ngã (giặc đông, khỏe hơn từ 10/2026 từng hạ bạn sớm,
+    // màn kết thúc trước khi giặc kịp sang bờ nam, test báo lỗi chập chờn)
     for (let i = 0; i < 70 * 60 && d.MG === M; i++) {
-      d.step(DT);
+      M.hp = 99; d.step(DT);
       for (const o of M.en.concat(M.al)) {
         if (o.dead || o.down) continue;
         samples++;

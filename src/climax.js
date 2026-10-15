@@ -86,6 +86,8 @@ function pickLoot(e){let p;do p=LOOT[Math.floor(Math.random()*LOOT.length)];whil
    spin: đi vòng quanh điểm ấy (quanh đuốc: dáo dác tìm quân mai phục). */
 function around(p,e,r,spin=0){if(e.slot==null)e.slot=Math.random()*Math.PI*2;const a=e.slot+spin*(MG.T-MG.t),x=p.x+Math.cos(a)*r,y=p.y+Math.sin(a)*r;
   return okEnemy(Math.floor(x),Math.floor(y))&&!inZone(x,y)?{x,y}:p}
+/* các phía vây: null là đi thẳng tới, còn lại là chỗ đứng chặn phía đông, tây, nam, bắc của người bị đuổi */
+const FLANK=[null,[1.6,0],[-1.6,0],[0,1.6],[0,-1.6]];
 /* Giặc đứng gần nhau quá thì đẩy nhau ra (không vào ô cấm, không vào rừng). */
 function separate(en){const R=.7;
   for(let i=0;i<en.length;i++)for(let j=i+1;j<en.length;j++){const a=en[i],b=en[j];let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);if(d>=R)continue;
@@ -168,7 +170,7 @@ function spawnEnemy(stage){const M=MG,pts=[[53.5,21.8],[24.5,20.4]];
   if(S.flags.tolich!=='done')for(let k=0;k<10;k++){const x=30+Math.floor(Math.random()*30),y=tolichY(x)-2.4;if(walkable(x,Math.floor(y))){pts.push([x+.5,y]);break}}
   if(M.T-M.t>40)pts.push([79.5,31.5]);
   const p=stage?stagePos():pts[Math.floor(Math.random()*pts.length)],ky=Math.random()<KY;
-  const e={x:p[0],y:p[1],home:stage?[53.5,21.8]:p,hp:ky?EN_HP+1:EN_HP,sp:ky?KY_SP:FOOT_SP,ky,st:stage?'stage':'hunt',cap:null,walk:0,dir:'down',flash:0,dead:false};
+  const e={x:p[0],y:p[1],home:stage?[53.5,21.8]:p,hp:ky?EN_HP+1:EN_HP,sp:(ky?KY_SP:FOOT_SP)*(.9+Math.random()*.2),ky,st:stage?'stage':'hunt',cap:null,walk:0,dir:'down',flash:0,dead:false};
   if(stage)e.tgt={x:e.x,y:e.y};M.en.push(e);return e}
 export const dirOf=(dx,dy)=>Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
 
@@ -295,13 +297,28 @@ function clUpdate(dt){
         else if(Math.hypot(e.loot[0]-e.x,e.loot[1]-e.y)<.6&&(e.lootT-=dt)<=0)e.loot=pickLoot(e);
         tg=around({x:e.loot[0],y:e.loot[1]},e,.9)}
       else e.loot=null;
-      e.tgt=tg;tx=tg.x;ty=tg.y}
+      e.tgt=tg;tx=tg.x;ty=tg.y;
+      // vây: đuổi bạn hay dân làng thì mỗi tên nhắm một phía (FLANK theo e.side), tới gần mới áp vào, nên không dồn một cục
+      // đi cùng một đường; phía ấy là ô cấm hay trong rừng thì đi thẳng tới
+      const prey=M.v.includes(tg)||(Math.abs(tg.x-S.x)<1e-6&&Math.abs(tg.y-S.y)<1e-6);
+      if(prey){if(e.side==null)e.side=(M.sideN=(M.sideN||0)+1)%FLANK.length;const o=FLANK[e.side];
+        if(o&&Math.hypot(tg.x-e.x,tg.y-e.y)>1.7){const fx=tg.x+o[0],fy=tg.y+o[1];if(okEnemy(Math.floor(fx),Math.floor(fy))&&!inZone(fx,fy)){tx=fx;ty=fy}}}}
     // kẹt nhiều lần liền (bị người khác chắn lối hẹp): đi vòng sang một chỗ trống gần đó một lúc rồi mới quay lại đích
     if(e.detour){if((e.detourT-=dt)>0){tx=e.detour[0];ty=e.detour[1]}else e.detour=null}
+    // như người thật: tới sát bạn thì khựng lại lấy đà (wind) rồi lao vào (lunge); chém trúng thì lùi ra một chút (back)
+    // rồi mới áp lại, không dính chặt vào bạn
+    let mul=1,hold=false;
+    const meT=!e.boss&&e.st!=='flee'&&e.tgt&&Math.abs(e.tgt.x-S.x)<1e-6&&Math.abs(e.tgt.y-S.y)<1e-6;
+    if(meT){const dm=Math.hypot(S.x-e.x,S.y-e.y);
+      if(e.back>0){e.back-=dt;tx=e.x+(e.x-S.x)*2;ty=e.y+(e.y-S.y)*2;mul=.75}
+      else if(e.wind>0){e.wind-=dt;hold=true;e.dir=dirOf(S.x-e.x,S.y-e.y);if(e.wind<=0)e.lunge=.45}
+      else if(e.lunge>0){e.lunge-=dt;mul=1.7;tx=S.x;ty=S.y}
+      else if(dm<1.3&&e.stun<=0){e.wind=.2+Math.random()*.15;hold=true}}
+    else{e.wind=0;e.lunge=0;e.back=0}
     const dx=tx-e.x,dy=ty-e.y,d=Math.hypot(dx,dy);
     // đứng giữa ô lửa (lửa bén lên chỗ đang đứng): được bước xuyên lửa ra ngoài, không thì kẹt tới khi lửa tàn
     const okE=fireAt(Math.floor(e.x),Math.floor(e.y))?okEnemyFire:okEnemy;
-    if(d>.05){const st=nextStep(e,tx,ty,okE,M.T-M.t);if(st){const [mx,my]=stepTo(e,st,e.sp*dt*(e.st==='flee'?1.15:1)*(wading(e)?.5:1),okE),nx=e.x+mx,ny=e.y+my;if(!(inZone(nx,ny)&&e.st!=='flee')){e.x=nx;e.y=ny}e.walk+=dt*9;if(mx||my)e.dir=dirOf(mx,my)}}
+    if(d>.05&&!hold){const st=nextStep(e,tx,ty,okE,M.T-M.t);if(st){const [mx,my]=stepTo(e,st,e.sp*mul*dt*(e.st==='flee'?1.15:1)*(wading(e)?.5:1),okE),nx=e.x+mx,ny=e.y+my;if(!(inZone(nx,ny)&&e.st!=='flee')){e.x=nx;e.y=ny}e.walk+=dt*9;if(mx||my)e.dir=dirOf(mx,my)}}
     // kẹt (đứng im lâu mà chưa tới nơi): tìm đường lại; đang đi lục lọi thì đổi chỗ
     // giặc đang rút chạy về thì chờ ít hơn và đi vòng ngay (hai tên rút ngược chiều nhau từng chắn nhau mãi ở lối hẹp)
     const fl=e.st==='flee';
@@ -312,7 +329,7 @@ function clUpdate(dt){
     if(e.st==='flee'&&d<.3){e.dead=true;if(e.cap){e.cap.st='lost';toast(e.cap.name+' đã bị giặc bắt đi mất...',4200);e.cap=null}continue}
     if(e.st!=='flee'){
       if(e.stun<=0)for(const p of M.v)if((p.st==='wait'||p.st==='self'||(p.st==='follow'&&e.tgt===p))&&Math.hypot(p.x-e.x,p.y-e.y)<.55){p.st='cap';p.path=null;e.cap=p;e.st='flee';toast(p.name+' bị giặc bắt! Đuổi theo đánh hạ tên lính để cứu.',3800);say(p,'Cứu với!',2.4);break}
-      if(!e.cap&&M.inv<=0&&Math.hypot(S.x-e.x,S.y-e.y)<.6){M.hp--;M.inv=HIT_INV;M.shake=Math.max(M.shake,.45);e.swing=.3;e.dir=dirOf(S.x-e.x,S.y-e.y);const [ux,uy]=axisDir(S.x-e.x,S.y-e.y),nx=S.x+ux*.9,ny=S.y+uy*.9;if(canStand(nx,ny)){S.x=nx;S.y=ny}
+      if(!e.cap&&M.inv<=0&&Math.hypot(S.x-e.x,S.y-e.y)<.6){M.hp--;M.inv=HIT_INV;M.shake=Math.max(M.shake,.45);e.swing=.3;e.back=.35+Math.random()*.3;e.lunge=0;e.dir=dirOf(S.x-e.x,S.y-e.y);const [ux,uy]=axisDir(S.x-e.x,S.y-e.y),nx=S.x+ux*.9,ny=S.y+uy*.9;if(canStand(nx,ny)){S.x=nx;S.y=ny}
         if(M.carry){M.carry.st='wait';M.carry.x=S.x;M.carry.y=S.y;M.carry=null;toast('Bạn bị đánh trúng, đánh rơi bao thóc!')}floatText('−1 máu','#e07f6b')}
       for(const a of M.al)if(!a.down&&!a.quan&&a.inv<=0&&Math.hypot(a.x-e.x,a.y-e.y)<.6){a.hp--;a.inv=1;e.swing=.3;e.dir=dirOf(a.x-e.x,a.y-e.y);if(a.hp<=0){a.down=true;toast(a.name+' bị thương nặng, ngã xuống!',3800);if(a.id==='co')say(a,'Đừng... đừng lo cho tớ! Đi đi!',3.6)}}}}
   M.en=M.en.filter(e=>!e.dead);
@@ -375,7 +392,7 @@ function clDraw(list){const M=MG,fr=o=>o.swing>0?swingFr(o,.17):o.moving?[1,0,2,
   for(const s of M.sk)if(s.st!=='carry')list.push({y:s.y,f:()=>{drawSprite(sackSprite(),s.x,s.y);if(s.st==='wait')mark(s.x,s.y-.9,'#e2bf72')}});
   for(const p of M.v){if(p.st==='lost')continue;list.push({y:p.y,f:()=>{shadow(p.x,p.y,10);drawSprite(personSprite(p.look,p.dir,fr(p)),p.x,p.y);if(p.st==='wait')mark(p.x,p.y-(isKid(p.look)?1.6:2.1),'#e2bf72');if(p.st==='cap'||p.st==='hostage')mark(p.x,p.y-1.75,'#e07f6b')},lab:p.st!=='safe'&&p.st!=='hostage'&&Math.hypot(p.x-S.x,p.y-S.y)<4?[p.name,p.x,p.y-(isKid(p.look)?1.55:2)]:null})}
   for(const e of M.en)list.push({y:e.y,f:()=>{if(e.boss){ctx.fillStyle='rgba(184,50,42,.35)';const sx=Math.round(e.x*TS),sy=Math.round(e.y*TS);ctx.fillRect((sx-8)*Z-camX,(sy-1)*Z-camY,16*Z,3*Z)}
-      shadow(e.x,e.y,e.boss?14:10);if(e.flash>0)ctx.globalAlpha=.45;drawSprite(personSprite(enLook(e),e.dir,e.swing>0?swingFr(e,.2):[1,0,2,0][Math.floor(e.walk)%4]),e.x,e.y);ctx.globalAlpha=1},
+      shadow(e.x,e.y,e.boss?14:10);if(e.flash>0)ctx.globalAlpha=.45;drawSprite(personSprite(enLook(e),e.dir,e.wind>0?'a0':e.swing>0?swingFr(e,.2):[1,0,2,0][Math.floor(e.walk)%4]),e.x,e.y);ctx.globalAlpha=1},
     lab:e.boss&&Math.hypot(e.x-S.x,e.y-S.y)<7?['Tên đầu toán',e.x,e.y-2.05]:null});
   for(const a of M.al)list.push({y:a.y,f:()=>{shadow(a.x,a.y,10);if(a.down)ctx.globalAlpha=.5;drawSprite(personSprite(a.look,a.down?'down':a.dir,a.down?0:fr(a)),a.x,a.y);ctx.globalAlpha=1;if(a.slash>0)slashFx(a.x,a.y,a.dir)},lab:Math.hypot(a.x-S.x,a.y-S.y)<4?[a.name+(a.down?' (bị thương)':''),a.x,a.y-2]:null});
   if(M.carry)list.push({y:S.y+.01,f:()=>drawSprite(sackSprite(),S.x,S.y-1.55)});
