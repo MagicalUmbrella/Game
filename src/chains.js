@@ -30,15 +30,15 @@ export function chainChoices(npc){
     if(c.st==='off'&&age()>=10&&age()<=13&&S.van>=10&&S.co==='village')ch.push({label:'Sao trông cậu buồn thế?',fn:()=>say('Cò','Tớ cũng muốn biết chữ như cậu. Nhưng nhà tớ nghèo, cha bảo đi học thì ai chăn trâu.',[
       {label:'Để tớ dạy cậu',note:'mỗi mùa một buổi, ba buổi',fn:()=>{begin('co');say('Cò','Thật hả? Thế thì tớ chăn trâu xong sẽ sang tìm cậu!')}},
       {label:'Tớ bận lắm',fn:()=>{c.st='no';S.rel.co=Math.max(0,S.rel.co-1);renderHUD()}}])});
-    if(c.st==='on')ch.push({label:`Dạy Cò học chữ (${c.n}/3)`,note:c.last===now()?'mùa này đã dạy':'−1 Sức',disabled:c.last===now(),fn:()=>{if(!step('co'))return;gain('duc',1);
-      if(c.n>=3){finish('co');S.rel.co+=3;gain('duc',2);say('Cò','Cò cầm que vạch lên vách đất hai chữ tên mình, nét xiêu vẹo. Nó nhìn mãi, rồi quay sang bạn cười toe.')}
+    if(c.st==='on')ch.push({label:`Dạy Cò học chữ (${c.n}/3)`,note:c.last===now()?'mùa này đã dạy':'−1 Sức',disabled:c.last===now(),fn:()=>{if(!step('co'))return;
+      if(c.n>=3){finish('co');S.rel.co+=3;gain('duc',3);say('Cò','Cò cầm que vạch lên vách đất hai chữ tên mình, nét xiêu vẹo. Nó nhìn mãi, rồi quay sang bạn cười toe.')}
       else toast(c.n===1?'Bạn dạy Cò mấy nét đầu tiên trên khay cát.':'Cò đã đọc được mấy chữ trên câu đối ở đình.')}});
   }
   if(npc==='thao'){const c=C('thao');
     if(c.st==='off'&&S.year>=1272&&S.year<=1277&&S.thao==='none')ch.push({label:'Em có chuyện gì lo à?',fn:()=>say('Thảo','Mái nhà bà dột hết rồi anh ạ. Sắp đến mùa mưa, mà em không biết chặt tre lợp lại.',[
       {label:'Để anh lo',note:'chặt 3 bó tre, rồi cùng lợp mái',fn:()=>{begin('thao');say('Thảo','Em cảm ơn anh. Bụi tre to nhất ở bìa rừng phía tây đấy.')}},
       {label:'Anh bận lắm',fn:()=>{c.st='no'}}])});
-    if(c.st==='on'&&c.n>=3)ch.push({label:'Cùng Thảo lợp lại mái nhà',note:S.suc<2?'cần 2 Sức':'−2 Sức',disabled:S.suc<2,fn:()=>{if(!spend(2))return;finish('thao');S.rel.thao+=3;gain('duc',2);
+    if(c.st==='on'&&c.n>=3)ch.push({label:'Cùng Thảo lợp lại mái nhà',note:S.suc<2?'cần 2 Sức':'−2 Sức',disabled:S.suc<2,fn:()=>{if(!spend(2))return;finish('thao');S.rel.thao+=3;gain('tieng',2);gain('duc',1);
       say('Thảo','Hai người lợp xong mái lúc trời chạng vạng. Bà Tư đứng dưới sân, nhìn lên mà rơm rớm nước mắt. Thảo lau mồ hôi, cười: "Mưa bao nhiêu cũng không sợ nữa."')}});
   }
   if(npc==='thay'){const c=C('thay');
@@ -46,7 +46,7 @@ export function chainChoices(npc){
       {label:'Con xin chép giúp thầy',note:'mỗi mùa một buổi, ba buổi',fn:()=>{begin('thay');say('Thầy đồ Chu','Tốt lắm. Chép sách cũng là học, con ạ.')}},
       {label:'Con bận việc nhà',fn:()=>{c.st='no'}}])});
     if(c.st==='on')ch.push({label:`Chép sách cho thầy (${c.n}/3)`,note:c.last===now()?'mùa này đã chép':'−1 Sức · +1 Văn',disabled:c.last===now(),fn:()=>{if(!step('thay'))return;gain('van',1);
-      if(c.n>=3){finish('thay');gain('van',3);gain('duc',2);say('Thầy đồ Chu','Thầy lật từng trang bản chép, gật gù. "Chữ con đã ra chữ rồi. Sau này thầy không còn, con giữ lấy bộ sách này."')}
+      if(c.n>=3){finish('thay');gain('van',3);gain('duc',1);say('Thầy đồ Chu','Thầy lật từng trang bản chép, gật gù. "Chữ con đã ra chữ rồi. Sau này thầy không còn, con giữ lấy bộ sách này."')}
       else toast('Bạn ngồi chép bên ngọn đèn dầu đến khuya.')}});
   }
   return ch;

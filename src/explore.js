@@ -8,6 +8,8 @@ import {S,age,has} from './state.js';
 import {gain,renderHUD,showModal,toast} from './ui.js';
 import {tre} from './chains.js';
 import {TREES} from './map.js';
+import {knows,practice} from './nghe.js';
+import {sucMax} from './stats.js';
 
 const src=t=>`<p class="src">Toàn thư chép: ${t}</p>`;
 const now=()=>S.year*4+S.season;
@@ -19,7 +21,7 @@ export const SPOTS=[
   {id:'tien',x:15.5,y:37.5,name:'Gốc tre già',when:()=>age()>=8,
     act:()=>{gain('tien',5);return'Dưới gốc tre có một cái hũ sành vỡ miệng, bên trong còn mấy xâu tiền đồng đã xỉn màu. Chẳng biết ai chôn từ bao giờ. Bạn được 5 quan.'}},
   {id:'thuoc',x:10.5,y:59.5,name:'Bụi lá thuốc',once:false,when:()=>age()>=8,ready:()=>S.found.thuoc!==S.year&&!has('Lá thuốc'),
-    act:()=>{S.found.thuoc=S.year;return give('Lá thuốc','Bụi lá thuốc sư cụ vẫn hay hái mọc um tùm dưới tán cây. Bạn hái một nắm mang về. Mỗi năm cây lại ra lá mới.')}},
+    act:()=>{S.found.thuoc=S.year;practice('thuoc');return give('Lá thuốc','Bụi lá thuốc sư cụ vẫn hay hái mọc um tùm dưới tán cây. Bạn hái một nắm mang về. Mỗi năm cây lại ra lá mới.')}},
   {id:'de',x:29.5,y:55.5,name:'Hang dế bờ ruộng',when:()=>age()<=14,
     act:()=>give('Dế chọi','Bạn đổ nước vào hang, một con dế than cánh bóng nhảy vọt ra. Cò mà thấy con này chắc mê lắm.')},
   {id:'bia',x:19.5,y:12.5,name:'Tấm bia đá',ready:()=>!S.found.bia,
@@ -27,8 +29,8 @@ export const SPOTS=[
       gain('van',2);return'Bia ghi công dân làng đời trước góp sức đắp đê, dặn con cháu năm nào cũng phải giữ đê cho chắc. Đọc xong, bạn đứng lặng một lúc lâu.'}},
   {id:'kiem',x:10.5,y:40.5,name:'Bụi rậm chân núi',when:()=>age()>=10,
     act:()=>give('Kiếm gỉ','Trong bụi rậm có một thanh kiếm gỉ sét, chuôi đã mục. Mang ra lò rèn, có khi rèn lại được.')},
-  {id:'thuyen',x:79.5,y:46.5,name:'Thuyền nan trên bãi',once:false,ready:()=>S.found.thuyen!==now()&&S.suc<4,
-    act:()=>{S.found.thuyen=now();S.suc=Math.min(4,S.suc+1);renderHUD();return'Bạn nằm trên chiếc thuyền nan ai bỏ lại trên bãi, nghe sóng sông Hồng vỗ mạn. Mệt mỏi tan dần. (+1 Sức, mỗi mùa một lần)'}},
+  {id:'thuyen',x:79.5,y:46.5,name:'Thuyền nan trên bãi',once:false,ready:()=>S.found.thuyen!==now()&&S.suc<sucMax(),
+    act:()=>{S.found.thuyen=now();S.suc=Math.min(sucMax(),S.suc+1);renderHUD();return'Bạn nằm trên chiếc thuyền nan ai bỏ lại trên bãi, nghe sóng sông Hồng vỗ mạn. Mệt mỏi tan dần. (+1 Sức, mỗi mùa một lần)'}},
   {id:'to',x:37.5,y:43.6,name:'Tổ chim trên cây đa',when:()=>age()<=12,
     act:()=>{gain('duc',1);return'Bạn trèo lên cây đa, thấy tổ chim có ba quả trứng lốm đốm. Bạn chỉ nhìn rồi trèo xuống, không động vào.'}},
   {id:'soi',x:51.5,y:27.5,name:'Bãi sỏi ven sông',
@@ -37,6 +39,10 @@ export const SPOTS=[
   {id:'tre',x:17.5,y:49.5,name:'Bụi tre',quest:true,once:false,when:()=>tre().st==='on'&&tre().n<3,ready:()=>tre().last!==now(),
     act:()=>{if(S.suc<1)return{text:'Bạn mệt rồi, về nghỉ đã rồi hãy chặt.',keep:true};const c=tre();S.suc--;c.n++;c.last=now();renderHUD();
       return c.n<3?`Bạn chặt được một bó tre thẳng, vác về đầu ngõ nhà bà Tư. Đã có ${c.n}/3 bó (mỗi mùa chặt một bó).`:'Đủ ba bó tre rồi. Sang nhà bà Tư cùng Thảo lợp mái thôi.'}},
+  // giúp ông lái đò chèo đò (học nghề chèo thuyền), mỗi mùa một lần, sau khi đã nghe ông kể chuyện; không tính vào số nơi khám phá
+  {id:'cheo',x:55.5,y:27.5,name:'Bến đò',quest:true,once:false,when:()=>S.found.do!=null&&age()>=12&&!knows('cheo'),ready:()=>S.cheoAt!==now(),
+    act:()=>{if(S.suc<1)return{text:'Bạn mệt rồi, hôm khác hãy giúp ông chèo đò.',keep:true};S.suc--;S.cheoAt=now();renderHUD();practice('cheo');const n=S.nghe.cheo;
+      return['Ông lái đò đưa mái chèo cho bạn: "Đứng vững, đẩy bằng cả người chứ đừng bằng tay." Con đò chòng chành, lượn vòng giữa sông.','Bạn chèo một chuyến khách sang sông. Đò còn lệch, nhưng không ai phải ướt chân.','Ông chỉ cho bạn cách nhìn sóng mà biết chỗ nước xiết, chỗ có cọc ngầm.','Bạn tự chèo một mạch sang bờ bên kia rồi quay về. Ông lái đò gật gù: "Được rồi đấy. Sông nào cũng là sông."'][Math.min(3,n-1)]}},
   {id:'do',x:55.5,y:27.5,name:'Bến đò',when:()=>age()>=8,
     act:()=>{gain('van',1);gain('vo',1);return'Ông lái đò già ngồi hút thuốc lào, kể chuyện năm bạn ra đời: vua Thái Tông cùng Thái tử ngự lâu thuyền xuôi dòng, đánh tan quân Mông Cổ ở bến Đông Bộ Đầu. "Thuyền của ta khi ấy cũng chở quân đấy," ông cười.'+src('vua Trần Thái Tông cùng Thái tử ngự lâu thuyền tiến đến bến Đông Bộ Đầu, phá tan quân Mông Cổ.')}},
 ];

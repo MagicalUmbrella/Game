@@ -59,7 +59,7 @@ kbd{font-family:var(--body);font-size:11px;font-weight:600;border:2px solid var(
 .opt small{color:var(--muted);margin-left:auto;font-size:12px;display:inline-flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:3px 4px}
 .ico{image-rendering:pixelated;vertical-align:middle;flex:none}
 .chip{display:inline-flex;align-items:center;gap:3px;padding:0 5px 0 3px;border:1px solid currentColor;font-size:11.5px;font-weight:600;line-height:17px;white-space:nowrap}
-.chip.van{color:#9cc7e0}.chip.vo{color:#f0a27f}.chip.duc{color:#e2bf72}.chip.suc{color:#9fcaa9}.chip.tien{color:#c9e0a0}.chip.down{color:#e07f6b;border-style:dashed}
+.chip.van{color:#9cc7e0}.chip.vo{color:#f0a27f}.chip.duc{color:#f2a7b5}.chip.tieng{color:#e2bf72}.chip.suc{color:#9fcaa9}.chip.tien{color:#c9e0a0}.chip.down{color:#e07f6b;border-style:dashed}
 #modal{position:fixed;inset:0;display:grid;place-items:center;background:rgba(10,13,11,.58);z-index:10;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px;overflow:auto}
 #modal .card{position:relative;width:min(600px,100%);padding:26px 28px 22px;display:grid;gap:14px;max-height:calc(100vh - 32px);overflow-y:auto}
 #modal .banner{height:110px;margin:-26px -28px 0;background-size:cover;background-position:center;image-rendering:pixelated;border-bottom:3px solid var(--edge);box-shadow:0 2px 0 var(--inlay)}
@@ -91,6 +91,7 @@ kbd{font-family:var(--body);font-size:11px;font-weight:600;border:2px solid var(
 .stat-block li b{flex:none;white-space:nowrap;min-width:40px;text-align:right;font-variant-numeric:tabular-nums}
 .stat-block li.got{color:var(--ink)}.stat-block li.got b::before{content:'✓ ';color:var(--jade)}
 .stat-block li.next{color:var(--gold)}
+.stat-block.nghe li b{min-width:34px}.stat-block.nghe .nm{min-width:0;text-align:left;color:var(--ink)}.stat-block.nghe .nm::before{content:none}
 body.mg #toast{top:104px}
 @media (max-width:960px){#quests{display:none}#toast{max-width:calc(100% - 300px)}}
 @media (max-width:640px){#toast{max-width:calc(100% - 32px);top:auto;bottom:160px}#keys{display:none}}

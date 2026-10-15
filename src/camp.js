@@ -21,6 +21,8 @@ import {nextStep,stepTo} from './pathfind.js';
 import {VH,VW,camX,camY,clock,drawSprite,reduce,shadow} from './render.js';
 import {charred,dirOf,endChapter,smoke,tongue,torchFx} from './climax.js';
 import {hudBox} from './minigames/flood.js';
+import {ducShield,ducTrust,gainThe} from './stats.js';
+import {knows} from './nghe.js';
 import {BEN_FIRES,BIGFLAG,CAMP,FIRES,KC_AT,OMN_AT,PEN,PENS,PEN_DOOR,PEN_IN,THUY,T_FIRES,campFolk,campMini,campSolid,drawCamp,flagFx,hideProp,inRect} from './trai.js';
 
 const src=t=>`<p class="src">Toàn thư chép: ${t}</p>`;
@@ -78,6 +80,7 @@ function escortUpdate(dt){const M=MG;M.clock+=dt;
   if(M.phase==='cross'){M.fade+=dt;if(M.fade>=1.4&&!M.crossed){M.crossed=true;
       const [lx,ly]=LANDING;S.x=lx;S.y=ly+.2;M.lead.x=lx+1.3;M.lead.y=ly;M.guards[0].x=lx-1;M.guards[0].y=ly-.6;M.guards[1].x=lx-.8;M.guards[1].y=ly+1;M.caps.forEach((c,i)=>{c.x=lx-1.6-i*.5;c.y=ly+.5+(i%2)*.4;c.path=null});
       for(const o of [M.lead,...M.guards])o.path=null;M.goal=PEN_DOOR}
+    if(M.fade>=2.8&&(knows('cheo')||knows('boi'))&&!M.river){M.river=true;S.capt.river=true;setTimeout(()=>toast('Bạn quen sông nước: lúc ngồi trên thuyền giặc, bạn nhớ con nước đang ròng, thuyền đi chếch về phía hạ lưu.',5000),5600)}
     if(M.fade>=2.8){M.phase='walk2';M.fade=0;toast('Thuyền cập cầu tàu thủy trại giặc ở bờ đông. Thuyền chiến neo kín bến, lính canh đứng sau hàng cọc.',5200)}
     return}
   const L=M.lead,dp=Math.hypot(S.x-L.x,S.y-L.y),[gx,gy]=M.goal;
@@ -118,7 +121,7 @@ function escortDraw(list){const M=MG;
 function startCamp(){const M=MG,res=M.res;
   const caps=M.caps,px=PEN.x0,py=PEN.y0;caps.push(walker('la1','Người làng bên',{id:'trai'},px+3.6,py+.4,{tat:true}),walker('la2','Người làng bên',{id:'dan1'},px+.6,py+2.2,{}));
   const spots=[[px+.6,py+.6],[px+4.2,py+1.8],[px+1.4,py+2.4],[px+3.4,py+2.6],[px+.4,py+1.6],[px+4.4,py+.6]];caps.forEach((c,i)=>{if(c.id.startsWith('cap')){const p=spots[i%spots.length];c.x=p[0];c.y=p[1]}c.path=null;c.moving=false;c.dir='down'});
-  S.x=PEN_IN[0];S.y=PEN_IN[1];P.dir='down';
+  S.x=PEN_IN[0];S.y=PEN_IN[1];P.dir='down';if(ducTrust())S.capt.trust=true;if(knows('ngua'))S.capt.horse=true;
   const guards=[walker('gd1','Lính canh',{id:'giac'},PEN_DOOR[0]-.8,PEN_DOOR[1]-.2,{torch:true}),walker('gd2','Lính canh',{id:'giac'},CAMP.x0+1.4,12.6,{torch:true})];
   // người bị bắt ở các chuồng khác (hư cấu)
   const others=[];PENS.filter(p=>!p.main).forEach((p,j)=>{const ids=['dan1','trai','gom','dan1'];for(let i=0;i<3+j;i++)others.push(walker('o'+j+i,'Người bị bắt',{id:ids[(i+j)%ids.length]},p.x0+.6+((i*1.7)%4.2),p.y0+.5+(i%3)*.8,{dir:i%2?'up':'down'}))});
@@ -145,6 +148,9 @@ function campUpdate(dt){const M=MG;M.clock+=dt;M.c+=dt;const c=M.c;
   if(M.insp&&!M.ev.inspDone){const tg=S.path==='vo'?{x:S.x+.8,y:S.y}:M.caps.find(o=>o.tat)||{x:S.x+.8,y:S.y};const arrived=goTo(M.insp,tg.x,tg.y-.2,2.6,dt,okGuard);
     if(arrived)ev('inspDone',true,()=>{M.inspAt=c;const who=S.path==='vo'?null:M.caps.find(o=>o.tat);say(M.insp,'Sát Thát! Lại Sát Thát!',3);M.shake=.6;
       if(!who){toast('Tên lính giật tay áo bạn lên, thấy hai chữ "Sát Thát" thích bằng mực. Hắn gầm lên, đạp bạn ngã sấp xuống bùn.',5200);sayMe('...',1)}
+      else if(ducShield())showModal({kicker:'Trong chuồng tù',title:'Chữ "Sát Thát"',body:'<p>Tên lính giật tay áo một người làng bên, thấy hai chữ "Sát Thát". Hắn rút roi ngựa, gầm lên.</p>',
+        choices:[{label:'Bước lên chắn trước người ấy',note:'Đức 60 · bạn chịu đòn, yếu đi',fn:()=>{S.capt.shield=true;gainThe(-4);M.shake=.7;toast('Bạn bước lên chắn trước người ấy. Ngọn roi quất xuống lưng bạn, rát buốt. Tên lính chửi một tràng rồi bỏ đi.',5200);say(who,'Anh... ơn này tôi nhớ.',3.6)}},
+          {label:'Đứng yên',fn:()=>{toast('Tên lính quật người ấy ngã sấp.',4000);say(who,'Giết thì giết, chữ thì vẫn còn đây!',3.6)}}]});
       else{toast('Tên lính giật tay áo một người làng bên, thấy chữ "Sát Thát". Hắn gầm lên, quật người ấy ngã sấp.',5000);say(who,'Giết thì giết, chữ thì vẫn còn đây!',3.6)}
       note('giặc bắt được quân ta, thấy người nào cũng thích chữ "Sát Thát" vào cánh tay thì tức giận, giết hại rất nhiều.',9)})}
   if(M.ev.inspDone&&M.insp&&c>(M.inspAt||0)+3.5){if(goTo(M.insp,PEN_DOOR[0]+1,PEN_DOOR[1]-1.2,2.6,dt,okGuard))M.insp=null}
@@ -187,8 +193,8 @@ function captiveLine(o){const id=o.look&&o.look.id;
   if(id==='batu')return 'Già rồi, chết cũng chẳng sao. Chỉ thương lũ trẻ.';
   if(id==='ly')return 'Làng còn người thì còn làng. Cháu phải sống mà về.';
   if(id==='ti')return 'Chú ơi, mẹ cháu có chạy thoát không?';
-  if(o.tat)return 'Chữ khắc vào tay rồi thì khắc vào lòng. Chúng đánh được thân chứ đánh sao được chữ.';
-  if(o.id==='la2')return 'Làng tôi bên Đông Ngàn, chúng đốt từ hôm kia...';
+  if(o.tat)return S.capt&&S.capt.shield?'Cái roi ấy lẽ ra là của tôi. Anh liều quá.':'Chữ khắc vào tay rồi thì khắc vào lòng. Chúng đánh được thân chứ đánh sao được chữ.';
+  if(o.id==='la2')return S.capt&&S.capt.trust?'Làng tôi bên Đông Ngàn. Anh tính gì thì bảo, chúng tôi theo anh.':'Làng tôi bên Đông Ngàn, chúng đốt từ hôm kia...';
   return 'Có nhau cả đây.'}
 function campDraw(list){const M=MG;drawCamp(list);drawFolk(list);
   for(const o of M.others)drawWalker(list,o,false);

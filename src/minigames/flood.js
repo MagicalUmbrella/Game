@@ -9,6 +9,7 @@ import {VH,VW,camX,camY,clock,drawSprite,reduce,shadow} from '../render.js';
 import {personSprite} from '../sprites.js';
 import {isKid} from '../person.js';
 import {solidAt} from '../input.js';
+import {knows,practice} from '../nghe.js';
 import {dirOf} from '../climax.js';
 import {nextStep,stepTo} from '../pathfind.js';
 
@@ -19,7 +20,7 @@ export function hudBar(x,y,w,frac,col){ctx.fillStyle='#0b0d0c';ctx.fillRect(x,y,
 export function startFlood(){
   const xs=[31,37,44,50,57];
   setMG({type:'flood',carry:false,level:0,coT:4,co:S.rel.co>=3?{x:43.5,y:34.6,dir:'up',walk:0,moving:false,bag:false,tgt:null,pause:0}:null,hide:['co'],br:xs.map(x=>({x:x+.5,y:Math.floor(tolichY(x)+2.6)+.5,got:0})),pile:{x:41.5,y:33.4},
-    update:floodUpdate,findTarget:floodTarget,draw:floodDraw,hud:floodHud,post:rainPost,speedMul:()=>MG.carry?.75:1});
+    update:floodUpdate,findTarget:floodTarget,draw:floodDraw,hud:floodHud,post:rainPost,speedMul:()=>MG.carry?(knows('boi')?.9:.75):1});   // biết bơi: quen nước, lội lụt vác bao nhanh hơn
   S.x=41.5;S.y=34.8;P.dir='up';document.body.classList.add('mg');
   setKeys('<span><kbd>E</kbd> vác bao đất ở đống đất, đắp vào chỗ đê vỡ</span><span><kbd>Shift</kbd> chạy</span><span>Mỗi chỗ vỡ cần 2 bao</span>');
 }
@@ -57,7 +58,7 @@ function floodHud(){const M=MG,w=Math.min(420,VW-32),x=Math.round(VW/2-w/2);hudB
   const open=M.br.filter(b=>b.got<2).length;ctx.fillStyle='#efe8d4';ctx.fillText(`Chỗ đê vỡ còn ${open}/5`,x+12,56);ctx.textAlign='right';ctx.fillStyle=M.carry?'#e2bf72':'#aab2a2';ctx.fillText(M.carry?'Đang vác bao đất':'Ra đống đất lấy bao',x+w-12,56)}
 function rainPost(){ctx.fillStyle='rgba(30,50,90,.3)';ctx.fillRect(0,0,VW,VH);if(reduce)return;ctx.fillStyle='rgba(205,220,245,.45)';
   for(let i=0;i<140;i++){const rx=(Hs(i,1,2)*VW+clock*200*(.8+Hs(i,2,3)*.4))%VW,ry=(Hs(i,3,4)*VH+clock*620*(.8+Hs(i,5,6)*.4))%VH;ctx.fillRect(Math.round(rx/Z)*Z,Math.round(ry/Z)*Z,Z,Z*3)}}
-export function endFlood(win){setMG(null);setKeys();document.body.classList.remove('mg');S.pending=null;
-  if(win){S.flags.de='saved';gain('duc',7);gain('tien',2);showModal({kicker:'Thu · Canh Ngọ 1270',title:'Đê đã giữ được',body:`<p>Bao đất cuối cùng được đắp xuống lúc nước vừa chạm mặt đê. Ruộng lúa làng An Phú thoát nạn. Sáng hôm sau, cụ lý trưởng đến tận nhà cảm ơn.</p>${S.rel.co>=3?'<p>Cò lấm lem bùn đất, cười hề hề: "Nhớ đấy, công tớ một nửa!"</p>':''}<p class="note">Cả làng nhớ việc này. Sau này làng có biến, sẽ có người đứng ra giúp bạn.</p>`})}
+export function endFlood(win){setMG(null);setKeys();document.body.classList.remove('mg');S.pending=null;practice('boi',2);
+  if(win){S.flags.de='saved';gain('tieng',7);gain('tien',2);showModal({kicker:'Thu · Canh Ngọ 1270',title:'Đê đã giữ được',body:`<p>Bao đất cuối cùng được đắp xuống lúc nước vừa chạm mặt đê. Ruộng lúa làng An Phú thoát nạn. Sáng hôm sau, cụ lý trưởng đến tận nhà cảm ơn.</p>${S.rel.co>=3?'<p>Cò lấm lem bùn đất, cười hề hề: "Nhớ đấy, công tớ một nửa!"</p>':''}<p class="note">Cả làng nhớ việc này. Sau này làng có biến, sẽ có người đứng ra giúp bạn.</p>`})}
   else{S.flags.de='lost';S.tien=Math.max(0,S.tien-3);renderHUD();showModal({kicker:'Thu · Canh Ngọ 1270',title:'Nước tràn qua đê',body:'<p>Nước sông Tô Lịch tràn qua chỗ đê vỡ, ruộng làng An Phú ngập trắng. Vụ thu mất trắng, nhà bạn phải bán bớt đồ để có gạo ăn qua đông (−3 quan).</p><p class="note">Bạn đã cố hết sức. Người làng không trách, nhưng năm ấy ai cũng đói.</p>'})}
   save()}

@@ -27,7 +27,8 @@ import {bfs,walkable} from './dialogs.js';
 import {nextStep,step4,stepTo} from './pathfind.js';
 import {prepChronicle,prepClimax} from './prep.js';
 import {VH,VW,camX,camY,clock,drawSprite,reduce,shadow} from './render.js';
-import {followFast,traiFromDuc,voDmg,voFast,voHp} from './stats.js';
+import {carryWeak,ducKin,followFast,soulChronicle,theHp,traiFromTieng,voDmg,voFast,voHp} from './stats.js';
+import {knows,ngheChronicle} from './nghe.js';
 import {lifeChronicle,lifeClimax} from './life.js';
 import {exploreChronicle} from './explore.js';
 import {chainChronicle} from './chains.js';
@@ -101,7 +102,7 @@ function leadLine(p){const F=S.flags;
 /* Câu mở màn của người cùng đánh. */
 function allyLine(a){const F=S.flags;
   if(a.id==='co')return F.exam==='khoe'?'Ông Thái học sinh cũng biết cầm gậy cơ à? Thôi, đánh đã!':F.dieu==='di'?'Như hồi trốn học thả diều nhé: cậu chạy trước, tớ đỡ sau!':'Tớ ở đây. Cậu cứ lo cho mọi người.';
-  if(a.id==='trai0')return F.de==='saved'?'Năm nước to cậu giữ đê cho làng. Giờ đến lượt bọn tớ!':S.duc>=60?'Cả làng theo cậu!':'Bọn tớ đứng cùng cậu!';
+  if(a.id==='trai0')return F.de==='saved'?'Năm nước to cậu giữ đê cho làng. Giờ đến lượt bọn tớ!':S.tieng>=60?'Cả làng theo cậu!':'Bọn tớ đứng cùng cậu!';
   return null}
 
 export function startClimax(){
@@ -116,10 +117,10 @@ export function startClimax(){
   const sk=[[42.3,50.3],[44.9,50.3],[33.4,37.4],[35.3,37.5]];if(S.flags.duyet==='giu')sk.push([43.6,51.4]);
   const al=[];
   if(S.co==='village')al.push({id:'co',name:'Cò',x:38.5,y:45.2,look:{id:'co_do'},hp:S.rel.co>=4?6:4,dmg:1,cd:0,sp:4,inv:0,dir:'down',walk:0});
-  // trai làng: theo Đức (src/stats.js), thêm một nếu giữ được đê 1270, một nếu theo đường nông; nói "hòa" thì bớt một; tối đa 4
-  const nLang=Math.min(4,traiFromDuc()+(S.flags.de==='saved'?1:0)+(S.path==='nong'?1:0)-(S.flags.dh==='hoa'?1:0));
+  // trai làng: theo Tiếng (src/stats.js), thêm một nếu giữ được đê 1270, một nếu theo đường nông; nói "hòa" thì bớt một; tối đa 4
+  const nLang=Math.min(4,traiFromTieng()+(S.flags.de==='saved'?1:0)+(S.path==='nong'?1:0)-(S.flags.dh==='hoa'?1:0));
   for(let i=0;i<Math.max(0,nLang);i++)al.push({id:'trai'+i,name:'Trai làng',x:39+i*2,y:44.6,look:{id:'trai'},hp:4,dmg:1,cd:0,sp:3.6,inv:0,dir:'down',walk:0});
-  const maxhp=4+(S.path==='vo'?2:0)+(S.flags.train==='top'?1:0)+voHp();
+  const maxhp=Math.max(2,4+(S.path==='vo'?2:0)+(S.flags.train==='top'?1:0)+voHp()+theHp());
   setMG({type:'climax',T:150,t:150,act:1,hp:maxhp,maxhp,v,sk:sk.map(([x,y])=>({x,y,st:'wait'})),carry:null,en:[],al,spawnT:2,decoy:null,decoys:torches(),cd:0,inv:0,slash:0,kills:0,ngu:false,horn:false,nLang:Math.max(0,nLang),
     fire:new Map(),burn:[],burnI:0,fireT:0,bub:[],banner:{act:1,t:3.2},shake:0,boss:null,bossOut:null,
     hideNPC:true,mini:clMini,update:clUpdate,findTarget:clTarget,draw:clDraw,hud:clHud,post:nightPost,key:clKey,blockAt:fireAt,speedMul:()=>MG.carry?(S.path==='nong'?.92:.74):1});
@@ -132,6 +133,7 @@ export function startClimax(){
   const me=v.find(p=>p.id==='me'),M0=MG;setTimeout(()=>{if(MG===M0&&me)say(me,S.cha?'Con ơi! Giặc đến thật rồi sao?':'Con ơi... giặc đến rồi!',3.6)},3300);
   al.forEach((a,i)=>{const l=allyLine(a);if(l)setTimeout(()=>{if(MG===M0)say(a,l,4)},5000+i*1800)});
   if(S.path==='van'){const n=MG.decoys,M=MG;setTimeout(()=>{if(MG===M)toast(`Dân làng tin người có chữ: bấm E để chỉ đường, họ tự tìm vào rừng. Bạn có ${n} cây đuốc nghi binh (Q).`,6000)},5400)}
+  else if(ducKin()){const M=MG;setTimeout(()=>{if(MG===M)toast('Người nhà tin lời bạn: bấm E chỉ đường là cha mẹ, vợ con tự tìm vào rừng. Người khác thì phải dẫn.',6000)},5400)}
 }
 const pDmg=()=>1+(S.path==='vo'?1:0)+(has('Kiếm sắt')?1:0)+voDmg();
 function clKey(k){if(k===' '){clAttack();return true}if(k==='q'&&MG.decoys>0){if(inZone(S.x,S.y)){toast('Trong rừng giặc không dám vào, cắm đuốc ở đây chẳng dụ được ai. Ra ngoài làng mà cắm.');return true}MG.decoys--;MG.decoy={x:S.x,y:S.y,t:TORCH_T};toast('Bạn cắm đuốc, hò hét giả làm quân mai phục. Giặc kéo về phía ánh lửa!');return true}return false}
@@ -221,6 +223,8 @@ function clUpdate(dt){
   const M=MG;M.t-=dt;M.cd=Math.max(0,M.cd-dt);M.inv=Math.max(0,M.inv-dt);M.slash=Math.max(0,M.slash-dt);M.swing=Math.max(0,(M.swing||0)-dt);M.shake=Math.max(0,M.shake-dt*1.6);
   if(!M.banner){for(const b of M.bub)b.t-=dt;M.bub=M.bub.filter(b=>b.t>0)}else if((M.banner.t-=dt)<=0)M.banner=null;
   if(M.decoy){M.decoy.t-=dt;if(M.decoy.t<=0)M.decoy=null}
+  // biết thuốc nam: còn 1 máu thì một lần tự băng bó, ít giây sau hồi 1 máu
+  if(knows('thuoc')&&!M.healed&&M.hp===1&&M.maxhp>1){M.healT=(M.healT||0)+dt;if(M.healT>3){M.healed=true;M.hp++;floatAt('tự băng bó vết thương',S.x,S.y,'#9fcaa9')}}
   const allIn=()=>M.v.every(p=>p.st==='safe'||p.st==='lost')&&M.sk.every(s=>s.st==='safe')&&inZone(S.x,S.y);
   /* --- nhịp ba hồi --- */
   if(M.act===1){
@@ -248,7 +252,7 @@ function clUpdate(dt){
         opts.sort((a,b)=>{const g=o=>(o[0]&&o[0]===Math.sign(lead.x-p.x))||(o[1]&&o[1]===Math.sign(lead.y-p.y))?1:0,w=o=>o[0]?Math.abs(p.x-en.x):Math.abs(p.y-en.y);return g(b)-g(a)||w(b)-w(a)});
         for(const [ux,uy] of opts){const nx=p.x+ux*m,ny=p.y+uy*m;if(okAlly(Math.floor(nx),Math.floor(ny))){p.x=nx;p.y=ny;break}}
         lead=p;continue}
-      const d=Math.hypot(lead.x-p.x,lead.y-p.y);if(d>.9){followTrail(p,lead,Math.min(d-.85,4.3*p.slow*(followFast()?1.15:1)*(d>3?1.3:1)*dt));p.moving=true;p.walk+=dt*8}else p.moving=false;lead=p;
+      const d=Math.hypot(lead.x-p.x,lead.y-p.y);if(d>.9){followTrail(p,lead,Math.min(d-.85,4.3*(carryWeak()?Math.max(p.slow,1):p.slow)*(followFast()?1.15:1)*(d>3?1.3:1)*dt));p.moving=true;p.walk+=dt*8}else p.moving=false;lead=p;
       if(inZone(p.x,p.y))reachSafe(p)}
     else if(p.st==='self'){const st=p.dest&&nextStep(p,p.dest[0],p.dest[1],okAlly,M.T-M.t);
       if(st){const [mx,my]=stepTo(p,st,4.3*p.slow*SELF_SPEED*dt,okAlly);p.x+=mx;p.y+=my;p.moving=true;p.walk+=dt*8;p.dir=dirOf(mx,my)}else p.moving=false;
@@ -297,7 +301,7 @@ function clUpdate(dt){
     if(!tg){const fx=S.x+(a.id==='co'?-1.3:1.3),fy=S.y+.7;if(!a.fol||Math.hypot(a.fol[0]-fx,a.fol[1]-fy)>1)a.fol=[fx,fy]}
     const tx=tg?tg.x:a.fol[0],ty=tg?tg.y:a.fol[1],dx=tx-a.x,dy=ty-a.y,d=Math.hypot(dx,dy);
     a.moving=false;if(d>(tg?.7:1)){const st=nextStep(a,tx,ty,okAlly,M.T-M.t);if(st){const fin=st[0]===tx&&st[1]===ty,sd=Math.hypot(st[0]-a.x,st[1]-a.y),m=Math.min(sd-(fin?.6:0),a.sp*dt);if(m>0){const [mx,my]=stepTo(a,st,m,okAlly);a.x+=mx;a.y+=my;a.moving=true;a.walk+=dt*9;a.dir=dirOf(mx,my)}}}
-    if(tg&&d<1.1&&a.cd<=0){a.cd=a.quan?.5:.9;a.slash=.15;a.swing=.24;a.dir=dirOf(dx,dy);hitEnemy(tg,a.dmg,a.x,a.y)}}
+    if(tg&&d<1.1&&a.cd<=0){a.cd=a.quan?.5:(a.id.startsWith('trai')&&(S.flags.doi||0)>=3)?.65:.9;a.slash=.15;a.swing=.24;a.dir=dirOf(dx,dy);hitEnemy(tg,a.dmg,a.x,a.y)}}
   M.en=M.en.filter(e=>!e.dead);
   if(M.hp<=0){const boss=M.boss&&!M.boss.dead&&M.boss.st!=='flee';M.captureHow=boss?'fight':'down';return finishClimax(boss||!M.al.some(a=>!a.down)?'captured':'down')}
   if(M.t<=0)return finishClimax('dawn');
@@ -309,7 +313,7 @@ function clTarget(){const M=MG;let best=1.4,t=null;
     choices:[{label:'Bước ra, đổi mình',note:'bạn bị bắt',fn:surrender},
       ...(S.path==='van'&&!b.tricked?[{label:'Lừa hắn: hô to quân Trần đã vây kín làng',note:`đường văn · hỏng thì bị bắt (${Math.round(100*trickChance())}% thành)`,fn:()=>trick(b)}]:[]),
       {label:'Chưa, còn đánh được'}]})}}}
-  for(const p of M.v)if(p.st==='wait'){const d=Math.hypot(p.x-S.x,p.y-S.y);if(d<best){best=d;t=S.path==='van'?{label:'Chỉ đường cho '+p.name+' vào rừng',act:()=>{p.st='self';p.path=null;p.dest=zoneSpot(p);floatAt(p.name+' tự tìm đường vào rừng',p.x,p.y,'#9fcaa9');say(p,leadLine(p))}}
+  for(const p of M.v)if(p.st==='wait'){const d=Math.hypot(p.x-S.x,p.y-S.y);if(d<best){best=d;t=S.path==='van'||(ducKin()&&['me','cha','thao','sen'].includes(p.id))?{label:'Chỉ đường cho '+p.name+' vào rừng',act:()=>{p.st='self';p.path=null;p.dest=zoneSpot(p);floatAt(p.name+' tự tìm đường vào rừng',p.x,p.y,'#9fcaa9');say(p,leadLine(p))}}
         :{label:'Dẫn '+p.name+' đi',act:()=>{p.st='follow';floatAt(p.name+' đi theo bạn',p.x,p.y,'#9fcaa9');say(p,leadLine(p))}}}}
   if(!M.carry)for(const s of M.sk)if(s.st==='wait'){const d=Math.hypot(s.x-S.x,s.y-S.y);if(d<best){best=d;t={label:'Vác bao thóc',act:()=>{s.st='carry';M.carry=s}}}}
   return t}
@@ -445,7 +449,7 @@ export function endChapter(res){
   if(S.path==='van')L.push(F.exam==='pass'||F.exam==='khoe'?`Năm 1275 đỗ Thái học sinh${F.exam==='khoe'?', nhưng để bạn cũ đứng ngoài ngõ':''}.`:'Năm 1275 lều chõng đi thi nhưng không đỗ.');
   if(S.path==='vo')L.push(F.train==='top'?'Năm 1283 đứng đầu buổi tập trận'+(F.nguKnows?', được Phạm Ngũ Lão nhớ mặt.':'.'):F.train==='ok'?'Năm 1283 tập trận đạt yêu cầu.':'Năm 1283 tập trận còn vụng về.');
   if(S.ev.thao)L.push(S.thao==='wife'?`Bạn cưới Thảo${S.child?', có bé Sen':''}${F.vay?', nhà phải vay tiền làm sính lễ':''}.`:S.thao==='co'?(F.rival?'Bạn nói lời thương nhưng Thảo chọn Cò.':'Bạn nhường Thảo cho Cò'+(F.cuoiCo==='vang'?', rồi không đến dự đám cưới.':', và làm phù rể cho bạn mình.')):'Thảo theo chồng về làng bên, không ai giữ lại.');
-  if(F.daumua)L.push(F.daumua==='mat'?'Năm dịch đậu mùa, bạn mải lo việc riêng. Cha mất cuối xuân Mậu Dần.':F.daumua==='cham'?'Năm dịch đậu mùa, bạn bỏ hết mọi việc ở nhà chăm cha. Cha qua khỏi.':'Năm dịch đậu mùa, bạn lên kinh mua thuốc cứu được cha.');
+  if(F.daumua)L.push(F.daumua==='mat'?'Năm dịch đậu mùa, bạn mải lo việc riêng. Cha mất cuối xuân Mậu Dần.':F.daumua==='cham'?'Năm dịch đậu mùa, bạn bỏ hết mọi việc ở nhà chăm cha. Cha qua khỏi.':F.daumua==='nam'?'Năm dịch đậu mùa, bạn tự sắc thuốc nam chữa cho cha. Cha qua khỏi, hàng xóm học cách sắc thuốc của bạn.':'Năm dịch đậu mùa, bạn lên kinh mua thuốc cứu được cha.');
   if(F.tang)L.push(F.tang==='lo'?'Thầy đồ Chu mất, bạn đứng ra lo tang cho thầy.':'Thầy đồ Chu mất, bạn chỉ gửi chút tiền phúng viếng.');
   if(S.co==='army')L.push('Bạn tiễn Cò theo cờ "Phá cường địch, báo hoàng ân" của Hoài Văn hầu.');else if(F.coStay)L.push('Bạn khuyên Cò ở lại giữ làng'+(res.coThere?', và đêm ấy Cò đứng cạnh bạn.':'.'));
   if(F.tolich)L.push(F.tolich==='done'?'Bạn cùng làng vét sông Tô Lịch. Đêm giặc đến, chúng chỉ qua được bằng hai cây cầu.':'Bạn không ra vét sông Tô Lịch. Đêm giặc đến, chúng lội qua được chỗ sông nông.');
@@ -454,7 +458,12 @@ export function endChapter(res){
   L.push(...prepChronicle(res.nLang||0));
   L.push(...exploreChronicle());
   L.push(...chainChronicle());
-  L.push(S.duc>=60?'Cả làng tin bạn. Đêm giặc đến, trai làng theo bạn đông nhất.':S.duc>=20?'Làng quý bạn. Có việc, người ta sẵn lòng theo.':'Làng ít ai nghe bạn. Đêm giặc đến, bạn phải tự xoay xở nhiều.');
+  if(F.don)L.push('Bạn viết đơn cho làng xin quan trên giảm sưu thuế năm mất mùa.');
+  if((F.doi||0)>=3)L.push('Bạn luyện trai làng thành đội, đêm giặc đến họ đánh theo hiệu lệnh.');
+  L.push(S.tieng>=60?'Cả làng nể bạn. Đêm giặc đến, trai làng theo bạn đông nhất.':S.tieng>=20?'Làng quý bạn. Có việc, người ta sẵn lòng theo.':'Làng ít ai nghe bạn. Đêm giặc đến, bạn phải tự xoay xở nhiều.');
+  L.push(soulChronicle());
+  L.push(ngheChronicle());
+  L.push(S.the>=75?'Bạn khỏe mạnh, mỗi mùa làm được nhiều việc hơn người.':S.the<40?'Những năm thức khuya, đói kém làm bạn gầy yếu đi.':'');
   if(S.nguMet)L.push('Bạn từng ngồi nghe anh Ngũ bàn binh pháp bên đường. Đêm giặc đến, anh ấy dẫn quân tới.');
   // đêm tháng giêng: tên đầu toán, cu Tí, bị bắt
   if(res.boss==='killed')L.push('Đêm giặc đến, bạn hạ tên đầu toán giữa sân đình.');
@@ -464,16 +473,18 @@ export function endChapter(res){
   else if(res.boss==='alive')L.push('Đêm giặc đến, bạn đưa được mọi người vào rừng trước khi tên đầu toán kịp bắt ai.');
   if(res.ti)L.push(res.ti==='safe'?'Bạn cứu được cu Tí nhà bên khỏi xóm cháy.':res.ti==='lost'?'Cu Tí nhà bên bị giặc bắt đi.':'Cu Tí nhà bên kẹt lại trong xóm cháy, sáng ra mới được người làng tìm thấy.');
   if(res.reason==='captured')L.push({fight:'Bạn đánh nhau với tên đầu toán giữa sân đình, thua, bị hắn trói giải đi.',trick:'Bạn hô quân Trần đã vây làng, nhưng tên đầu toán không tin. Hắn trói bạn giải đi.'}[res.how]||'Bạn ngã xuống mà không còn ai đỡ, bị giặc trói giải đi.');
+  if(S.capt){if(S.capt.shield)L.push('Trong trại giặc, bạn bước lên nhận đòn thay người làng bên có chữ "Sát Thát" trên tay.');if(S.capt.trust)L.push('Những người bị bắt cùng tin bạn. Có chuyện gì, họ nhìn bạn mà làm theo.');
+    if(S.capt.river)L.push('Lúc bị giải qua sông, bạn ghi nhớ con nước, hướng thuyền.');if(S.capt.horse)L.push('Nhìn bãi ngựa trong trại, bạn ước được quân số kỵ binh giặc.')}
   if(S.capt)L.push(S.capt.seen?'Trong trại giặc, bạn gọi tên mình cho sứ giả Đỗ Khắc Chung nghe.':S.capt.map?'Trong trại giặc, bạn lặng lẽ ghi nhớ từng đống lửa, từng lối đi.':'');
   const path=res.captured?'Rạng sáng ngày 13, đoàn giặc lùa những người bị bắt ra bãi sông. Bạn đi giữa họ, hai tay bị trói, ngoái nhìn khói làng An Phú bốc lên phía tây.':
     {van:S.dothi?'Là Thái học sinh, bạn được giao việc thảo văn thư, theo xa giá triều đình rời Thăng Long khi giặc áp sát.':'Không đỗ đạt, bạn ở lại làng dạy chữ cho trẻ. Khi giặc áp sát, bạn giúp các bô lão chép sổ đinh, đưa dân đi lánh nạn.',
     vo:'Như các quân sĩ khác, trên cánh tay bạn thích hai chữ <b>Sát Thát</b> bằng mực. Bạn theo cờ Hưng Đạo Vương ra trận'+(F.nguKnows?', vào đội quân của Phạm Ngũ Lão.':'.'),
     nong:'Bạn dẫn dân làng vào rừng dựng lán, cất giấu lương thực. Giặc đến chỉ thấy làng không.'}[S.path||'nong'];
-  const hook=res.captured?`Chương hai bắt đầu trong trại giặc bên bến Đông Bộ Đầu: sống sót, tìm đường trốn thoát và đem tin về cho quân ta${res.lost.length?`; ${names(res.lost)} cũng đang trong tay giặc`:''}.`
+  const hook=res.captured?`Chương hai bắt đầu trong doanh trại giặc ở Gia Lâm: sống sót, tìm đường trốn thoát và đem tin về cho quân ta${res.lost.length?`; ${names(res.lost)} cũng đang trong tay giặc`:''}.`
     :res.lost.length?`Chương hai: ${names(res.lost)} đang trong tay giặc. Bạn phải tìm cách cứu ${res.lost.length>1?'họ':'người ấy'}, trong khi cuộc kháng chiến dẫn tới trận Bạch Đằng năm 1288.`:'Chương hai: cuộc kháng chiến, dẫn tới trận Bạch Đằng năm 1288.';
   showModal({kicker:'Xuân · Ất Dậu 1285',title:'Hết chương một',
     body:`<p>${path}</p><p class="kicker" style="margin-top:6px">Biên niên đời bạn</p><ul style="margin:0;padding-left:18px;display:grid;gap:4px;line-height:1.5">${L.filter(Boolean).map(x=>`<li>${x}</li>`).join('')}</ul>${(()=>{const t=lifeChronicle();return t.length?`<p class="kicker" style="margin-top:6px">Những chuyện nhỏ</p><ul class="note" style="margin:0;padding-left:18px;display:grid;gap:2px;line-height:1.5">${t.map(x=>`<li>${x[0].toUpperCase()+x.slice(1)}.</li>`).join('')}</ul>`:''})()}
-     <div class="endstats"><div><b>${S.van}</b><span>Văn</span></div><div><b>${S.vo}</b><span>Võ</span></div><div><b>${S.duc}</b><span>Đức</span></div><div><b>${S.tien}</b><span>quan</span></div></div>
+     <div class="endstats"><div><b>${S.van}</b><span>Văn</span></div><div><b>${S.vo}</b><span>Võ</span></div><div><b>${S.duc}</b><span>Đức</span></div><div><b>${S.tieng}</b><span>Tiếng</span></div><div><b>${S.tien}</b><span>quan</span></div></div>
      <p class="note">${S.name}, 27 tuổi.</p><p><span class="seal">Hết chương một</span>&nbsp; ${hook}</p>`,
     choices:[{label:'Bắt đầu một cuộc đời mới',fn:()=>{try{localStorage.removeItem('dvmd-save')}catch(e){}location.reload();return false}}]});
 }
