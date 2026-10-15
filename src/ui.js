@@ -1,6 +1,7 @@
 /* ================= UI ================= */
 import {$,SEASONS,canchi} from './constants.js';
 import {QUESTS,S,age} from './state.js';
+import {REGIONS,regionId} from './world.js';
 import {chips,ico} from './icons.js';
 import {banner,portrait} from './portrait.js';
 import {statProgress} from './stats.js';
@@ -54,7 +55,7 @@ export function renderHUD(){
   const rel=(name,v)=>`<span class="rel">${name} ${typeof v==='string'?v:hearts(v)}</span>`;
   const rels=[S.co==='village'||S.co==='army'?rel('Cò',S.rel.co):'',S.ev.thao&&S.thao!=='gone'?rel('Thảo',S.thao==='wife'?'(vợ)':S.thao==='co'?'(vợ Cò)':S.rel.thao):''].filter(Boolean).join('');
   const stat=(k,lab,val)=>{const p=statProgress(k);return`<div class="stat">${ico(k,1)}<span>${lab}</span><b>${val}</b>${p?`<i class="bar" title="${p.next?'mốc kế tiếp: '+p.next:'đã qua mọi mốc'}"><i style="width:${p.pct}%"></i></i>`:''}</div>`};
-  $('status').innerHTML=`<div><div class="name"></div><div class="sub"><span>${a} tuổi</span><span>Làng An Phú</span></div></div>
+  $('status').innerHTML=`<div><div class="name"></div><div class="sub"><span>${a} tuổi</span><span>${REGIONS[regionId(Math.floor(S.x),Math.floor(S.y))].short}</span></div></div>
    <div class="date">${ico('s'+S.season,2)}<span>${SEASONS[S.season]} · ${canchi(S.year)} ${S.year}</span></div>
    <div class="suc"><span>Sức</span>${[0,1,2,3].map(i=>ico(i<S.suc?'suc':'sucEmpty',2)).join('')}</div>
    <div class="stats">${stat('van','Văn',S.van)}${stat('vo','Võ',S.vo)}${stat('duc','Đức',S.duc)}${stat('tien','Tiền',S.tien+' quan')}</div>

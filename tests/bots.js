@@ -32,11 +32,11 @@
     // Ô đi được, tới được, gần điểm đích nhất (tâm ô cách đích không quá r).
     function plan(gx, gy, r) {
       const d = D(), S = d.S, sx = Math.floor(S.x), sy = Math.floor(S.y);
-      const prev = d.bfs(sx, sy), W = 128, c = [];
+      const prev = d.bfs(sx, sy), W = d.W, H = d.H, c = [];
       for (let y = Math.floor(gy - r - 1); y <= gy + r + 1; y++)
         for (let x = Math.floor(gx - r - 1); x <= gx + r + 1; x++) {
           const dist = Math.hypot(x + .5 - gx, y + .5 - gy);
-          if (dist <= r && x >= 0 && y >= 0 && x < W && y < 72 && (prev[y * W + x] !== -2)) c.push([dist, x, y]);
+          if (dist <= r && x >= 0 && y >= 0 && x < W && y < H && (prev[y * W + x] !== -2)) c.push([dist, x, y]);
         }
       if (!c.length) return null;
       c.sort((a, b) => a[0] - b[0]);

@@ -2,7 +2,7 @@
    Mỗi hàm trả về danh sách lỗi (mảng chuỗi rỗng là đạt) kèm vài số liệu. */
 (() => {
   const D = () => window.__dv;
-  const W = 128, H = 72, DT = 1 / 60;
+  const W = 480, H = 240, DT = 1 / 60;   // bản đồ thế giới (src/constants.js); bài world() kiểm tra lại
   const ev = (k, down) => window.dispatchEvent(new KeyboardEvent(down ? 'keydown' : 'keyup', {key: k}));
   const run = (sec, dt = DT) => { for (let t = 0; t < sec; t += dt) D().step(dt); };
 
@@ -32,7 +32,7 @@
     Object.assign(S, {year: 1264, thao: 'none', co: 'village'});
     for (const b of d.BUILDINGS) if (['home', 'cung', 'chua', 'dinh', 'truong', 'thap'].includes(b.id))
       need(`cửa ${b.name || b.id}`, b.x + Math.floor(b.w / 2) + .5, b.y + b.h + .3, 1.0);
-    for (const s of d.SIGNS) need(`biển ${s.name}`, s.x + .5, s.y + 1.2, 1.2);
+    for (const s of d.SIGNS) if (d.world.regionId(s.x, s.y) === 'anphu') need(`biển ${s.name}`, s.x + .5, s.y + 1.2, 1.2);   // biển vùng khác: bài world()
     need('chuồng trâu', d.PEN.x, d.PEN.y, 1.2);
     for (const p of d.SPOTS) need(`khám phá: ${p.name}`, p.x, p.y, 1.1);
     // lụt 1270
@@ -619,7 +619,7 @@
         d.step(0.05); t += 0.05; const Mx = d.MG; if (!Mx) continue;
         if (Mx.type === 'escort' && Mx.crossed) crossed = true;
         if (Mx.type === 'camp') { camp = true; if (Mx.ev.inspDone) insp = true; if (Mx.kc) kc = true;
-          if (Math.floor(S.x) < 101 || Math.floor(S.x) > 105 || Math.floor(S.y) < 15 || Math.floor(S.y) > 17) { bad++; where.add(`ra ngoài bãi tù ${S.x.toFixed(1)},${S.y.toFixed(1)}`); } }
+          const P = d.trai.PEN; if (Math.floor(S.x) < P.x0 || Math.floor(S.x) > P.x1 || Math.floor(S.y) < P.y0 || Math.floor(S.y) > P.y1) { bad++; where.add(`ra ngoài bãi tù ${S.x.toFixed(1)},${S.y.toFixed(1)}`); } }
         if (!d.walkable(Math.floor(S.x), Math.floor(S.y))) { bad++; where.add(`${Mx.type} ô cấm ${Math.floor(S.x)},${Math.floor(S.y)}`); }
       }
       out.seconds = Math.round(t);
@@ -651,5 +651,43 @@
     return {errs, out};
   }
 
-  window.__checks = {captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  /* Bản đồ thế giới: kích thước; chương một không bước ra khỏi vùng An Phú (khóa vùng) và BFS không lan ra ngoài;
+     mở hết các vùng thì đi bộ cộng đi đò tới được mọi biển địa danh, đầu đò, cổng doanh trại; trong doanh trại
+     từ cổng tây tới được cửa chuồng tù, cổng đông, cổng nam; vẽ một mảnh nền không quá lâu. */
+  function world() {
+    const d = D(), errs = [], out = {}, wd = d.world;
+    if (d.W !== W || d.H !== H) errs.push(`checks.js ghi bản đồ ${W}×${H} nhưng game là ${d.W}×${d.H}`);
+    d.setS(Object.assign(d.newState('Thử'), {year: 1270, season: 0, quests: {trau: 'done'}}));
+    let S = d.S, prev = d.bfs(43, 50), leak = 0;
+    for (let i = 0; i < W * H; i++) if (prev[i] !== -2 && wd.regionId(i % W, (i / W) | 0) !== 'anphu') leak++;
+    if (leak) errs.push(`chương một: BFS từ nhà lan ra ${leak} ô ngoài vùng An Phú`);
+    // đi thẳng xuống nam ở mép dưới vùng An Phú, đi sang đông ở bến Đông Bộ Đầu: phải dừng ở ranh
+    S.x = 40.5; S.y = 70.5; ev('s', true); run(3); ev('s', false);
+    if (S.y >= 72) errs.push(`chương một mà đi được xuống phía nam ra ngoài vùng (y ${S.y.toFixed(1)})`);
+    if (!/chưa tới lúc/.test(document.getElementById('toast').innerText)) errs.push('chạm ranh vùng chưa mở mà không có lời nhắc');
+    // mở hết các vùng: tới được mọi nơi (đi bộ + đò)
+    S.regions = Object.keys(wd.REGIONS); S.res = null;
+    const seen = new Int32Array(W * H).fill(-2), comp = [[43, 50]];
+    const used = new Set();
+    while (comp.length) { const [sx, sy] = comp.pop(); const p = d.bfs(sx, sy); for (let i = 0; i < W * H; i++) if (p[i] !== -2) seen[i] = 1;
+      wd.FERRIES.forEach((f, k) => { for (const [a, b] of [[f.a, f.b], [f.b, f.a]]) { if (used.has(k + ':' + a)) continue; if (seen[Math.floor(a[1]) * W + Math.floor(a[0])] === 1) { used.add(k + ':' + a); comp.push([Math.floor(b[0]), Math.floor(b[1])]); } } }); }
+    const reachSet = seen.map(v => v === 1 ? 0 : -2);
+    for (const s of wd.WSIGNS) if (!near(reachSet, s.x + .5, s.y + 1.2, 1.6)) errs.push(`biển "${s.name}" (${s.x}, ${s.y}) không tới được`);
+    for (const f of wd.FERRIES) for (const e of [f.a, f.b]) if (!near(reachSet, e[0], e[1], 1.3)) errs.push(`đầu đò "${f.name}" (${e[0]}, ${e[1]}) không tới được`);
+    const C = wd.CAMP; if (!near(reachSet, C.x0 - .5, 12.5, 1.2)) errs.push('cổng tây doanh trại không tới được');
+    // trong trại (đã dựng): từ cổng tây tới cửa chuồng tù, cổng đông, cổng nam
+    S.res = {reason: 'done'}; const T = d.trai;
+    const ok = (x, y) => d.walkable(x, y) && !T.campSolid(x, y);
+    const q = [[C.x0, 12]], vis = new Set([C.x0 + ',' + 12]);
+    while (q.length) { const [x, y] = q.shift(); for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + a, ny = y + b, k = nx + ',' + ny; if (vis.has(k) || !ok(nx, ny) || nx < C.x0 - 2 || nx > C.x1 + 2 || ny < C.y0 - 1 || ny > C.y1 + 2) continue; vis.add(k); q.push([nx, ny]); } }
+    for (const [nm, x, y] of [['cửa chuồng tù', T.PEN.door, T.PEN.y0 - 2], ['cổng đông', C.x1, 20], ['cổng nam', 153, C.y1], ['trướng Ô Mã Nhi', Math.floor(T.KC_AT[0]), Math.floor(T.KC_AT[1])]])
+      if (!vis.has(x + ',' + y)) errs.push(`trong doanh trại không đi được từ cổng tây tới ${nm} (${x}, ${y})`);
+    // vẽ một mảnh nền mới
+    const t0 = performance.now(); d.groundChunk(2, 9, 4); out.chunkMs = Math.round(performance.now() - t0);
+    if (out.chunkMs > 1500) errs.push(`vẽ một mảnh nền mất ${out.chunkMs} ms (quá chậm)`);
+    S.res = null;
+    return {errs, out};
+  }
+
+  window.__checks = {world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();

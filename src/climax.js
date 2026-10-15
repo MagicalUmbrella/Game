@@ -14,6 +14,7 @@
    (how 'trick'). Lúc khác: còn người cùng đánh đứng được thì được kéo vào rừng ('down'), không còn ai thì bị bắt (how 'down').
    Bị bắt (cả 'surrender') dẫn tới màn bị giải sang trại giặc bên kia sông (src/camp.js) và mở đầu chương hai khác. */
 import {$,T,TS,W,H,WA,Z,ctx} from './constants.js';
+import {regionId} from './world.js';
 import {Hs} from './pixel.js';
 import {BUILDINGS,get,tolichY} from './map.js';
 import {buildingSprite,personSprite} from './sprites.js';
@@ -48,8 +49,10 @@ const TI_AT=[32.5,49.5];                            // cu Tí nấp sau nhà, c�
 const fireAt=(x,y)=>{const M=MG;if(!M||!M.fire)return false;const e=M.fire.get(y*W+x);return e!=null&&e>M.T-M.t};
 /* Giặc và người cùng đánh đi theo đường thật (src/pathfind.js), không xuyên sông, cây, nhà, lửa.
    Chưa vét sông Tô Lịch thì giặc lội qua được (đi chậm lại một nửa); đã vét thì phải qua cầu. */
-const okAlly=(x,y)=>walkable(x,y)&&!fireAt(x,y);
-const okEnemy=(x,y)=>(walkable(x,y)||(S.flags.tolich!=='done'&&get(x,y)===WA))&&!fireAt(x,y);
+/* đêm 1285 chỉ diễn ra trong vùng An Phú (bản đồ thế giới rộng hơn nhiều: không cho ai đi lạc ra ngoài, tìm đường cũng nhanh) */
+const inHome=(x,y)=>regionId(x,y)==='anphu';
+const okAlly=(x,y)=>walkable(x,y)&&inHome(x,y)&&!fireAt(x,y);
+const okEnemy=(x,y)=>(walkable(x,y)||(S.flags.tolich!=='done'&&get(x,y)===WA))&&inHome(x,y)&&!fireAt(x,y);
 const wading=o=>get(Math.floor(o.x),Math.floor(o.y))===WA;
 /* Đường văn. Người có chữ được dân làng nghe lời: bấm E thì người ấy tự tìm đường vào rừng, đi chậm hơn
    khi được dẫn, giặc gặp trên đường vẫn bắt được. Đuốc nghi binh: 2 cây, cứ 25 Văn thêm một cây (tối

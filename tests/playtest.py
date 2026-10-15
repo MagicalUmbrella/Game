@@ -138,6 +138,7 @@ def mechanics(page, fails):
                      ('đường văn: dân tự vào rừng', 'selfWalk'), ('ngã xuống: ai bị bắt, ai kẹt lại', 'downRule'),
                      ('ba hồi đêm 1285: lửa, tên đầu toán, đổi mình', 'acts'),
                      ('bị bắt: luật, giải sang trại giặc, cảnh trong trại', 'captivity'),
+                     ('bản đồ thế giới: khóa vùng, đi tới mọi nơi, doanh trại', 'world'),
                      ('giặc không đứng dàn hàng ở bìa rừng', 'noCamping'),
                      ('giấy bút, thuốc bổ mỗi mùa một lần', 'shopLimit'), ('lo trước ngày giặc đến', 'prep'),
                      ('mốc chỉ số, phím C', 'statTiers'), ('chuyện đời thường: mọi lựa chọn', 'lifeAll'),
