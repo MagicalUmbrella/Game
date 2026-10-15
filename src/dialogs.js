@@ -12,7 +12,7 @@ import {prepChoice} from './prep.js';
 import {dailyReward,startDrill,startField,startFishing,startWriting} from './minigames/daily.js';
 import {keys,solidAt} from './input.js';
 import {camX,camY} from './render.js';
-import {DUC_CHUA_CAP,TIENG_FF_CAP,gainThe,sucMax,vanPetition,voTeach} from './stats.js';
+import {DUC_CHUA_CAP,TIENG_FF_CAP,gainThe,growth,sucMax,vanPetition,voTeach} from './stats.js';
 import {knows,practice} from './nghe.js';
 import {trauYeu} from './life.js';
 import {chainChoices} from './chains.js';
@@ -53,7 +53,7 @@ export function talkCha(){
 export function talkThay(){
   const a=age(),ch=[];
   if(S.quests.hoc==='active'){doneQuest('hoc');gain('van',2)}
-  const hoc=k=>startWriting(q=>{gain('van',k*(dailyReward(2,q)+(S.thayBonus?1:0)));toast(vanLesson())});
+  const hoc=k=>startWriting(q=>{gain('van',k*(dailyReward(2,q)+(S.thayBonus?1:0)),true);toast(vanLesson())});
   ch.push({label:'Học chữ',note:'−1 Sức · tập viết · +Văn',fn:()=>{if(!spend())return;hoc(1)}},...allSuc('Học chữ',hoc));
   ch.push(...chainChoices('thay'));
   if(a>=12&&!S.quests.sach)ch.push({label:'Thầy có cần con giúp gì không?',fn:()=>{startQuest('sach');say('Thầy đồ Chu','Bộ Tứ thư của thầy mối mọt hết rồi. Trong kinh thành có hàng sách bán bản mới, giá sáu quan. Con mua giúp thầy được không?')}});
@@ -63,7 +63,7 @@ export function talkThay(){
 export function talkVo(){
   if(age()<8)return say('Lão võ sư Hoàng','Tay chân còn mềm lắm. Đợi tám tuổi hẵng đến đây, ta dạy cho.');
   const n=(S.path==='vo'?3:2)+(has('Kiếm sắt')?1:0);
-  const luyen=k=>startDrill(q=>{gain('vo',k*dailyReward(n,q,5/6));if(!S.theTrain){S.theTrain=true;gainThe(1,90)}toast(voLesson())});
+  const luyen=k=>startDrill(q=>{gain('vo',k*dailyReward(n,q,5/6),true);if(!S.theTrain){S.theTrain=true;gainThe(1,90)}toast(voLesson())});
   const ch=[{label:S.path==='vo'?'Tập trận':'Luyện võ',note:'−1 Sức · +Võ'+(S.theTrain?'':' · khỏe lên'),fn:()=>{if(!spend())return;luyen(1)}},...allSuc(S.path==='vo'?'Tập trận':'Luyện võ',luyen)];
   // Võ 60: luyện trai làng thành đội, ba buổi (mỗi mùa một buổi); đêm giặc đến trai làng ra đòn nhanh hơn
   const dv=S.flags.doi||0,now=S.year*4+S.season;
@@ -92,7 +92,7 @@ export function talkThao(){
   say('Thảo',voice('thao',r<2?'Em là Thảo, cháu bà Tư. Cha mẹ em mất sau năm nước to, em lên đây ở với bà.':r<5?'Hôm nay anh lại sang à? Bà em khen anh mãi.':'Anh mà đi xa, em... em sẽ nhớ anh đấy.'),ch);
 }
 export function talkLy(){
-  const ch=[];if(age()>=10)ch.push({label:'Giúp việc làng',note:'−1 Sức · +3 Tiếng · +1 quan',fn:()=>{if(!spend())return;gain('tieng',3);gain('tien',1);toast(pickR(['Bạn cùng trai làng đắp lại đoạn đê.','Bạn giúp dọn sân đình chuẩn bị lễ hội.','Bạn đi báo tin cho các xóm.']))}});
+  const ch=[];if(age()>=10)ch.push({label:'Giúp việc làng',note:'−1 Sức · +Tiếng · +1 quan',fn:()=>{if(!spend())return;gain('tieng',3,true);gain('tien',1);toast(pickR(['Bạn cùng trai làng đắp lại đoạn đê.','Bạn giúp dọn sân đình chuẩn bị lễ hội.','Bạn đi báo tin cho các xóm.']))}});
   {const pc=prepChoice('lan');if(pc)ch.push(pc)}
   ch.push(...lyChoices());
   // Văn 50: viết đơn xin quan trên giảm sưu thuế năm mất mùa cho làng (một lần, hư cấu)
@@ -114,7 +114,7 @@ export function talkCo(){
 }
 export function talkSach(){
   const ch=[{label:'Mua Tứ thư',note:'6 quan',disabled:S.tien<6||has('Tứ thư'),fn:()=>{S.tien-=6;S.items.push('Tứ thư');renderHUD();toast('Bạn mua một bộ Tứ thư.')}},
-    {label:'Mua giấy bút',note:S.paper?'mùa này đã mua':'3 quan · +2 Văn · mỗi mùa một lần',disabled:S.tien<3||S.paper,fn:()=>{S.tien-=3;S.paper=true;gain('van',2)}}];
+    {label:'Mua giấy bút',note:S.paper?'mùa này đã mua':'3 quan · +Văn · mỗi mùa một lần',disabled:S.tien<3||S.paper,fn:()=>{S.tien-=3;S.paper=true;gain('van',2,true)}}];
   if(age()>=14&&!S.path)ch.push({label:'Mua binh thư chép tay',note:'8 quan · +3 Võ, +1 Văn · đường võ chỉ cần Võ 12',disabled:S.tien<8||has('Binh thư'),fn:()=>{S.tien-=8;S.items.push('Binh thư');gain('vo',3);gain('van',1);toast('Có binh thư, đến tuổi 16 bạn có thể theo đường võ dù Võ chỉ cần 12.')}});
   say('Chủ hàng sách',voice('sach'),ch);
 }
@@ -131,11 +131,11 @@ export function talkTong(){
 }
 export function talkLinh(){say('Lính gác',age()<12?'Đứng lại! Trẻ con không được một mình vào kinh. Đợi mười hai tuổi hẵng đến.':voice('linh','Vào đi. Trong kinh thành phải giữ phép tắc, không được chạy nhảy ồn ào.'))}
 export function talkHocQuan(){
-  if(S.path==='van')return say('Học quan',voice('hocquan',S.dothi?'Thái học sinh mà vẫn chăm đến đây, tốt lắm.':'Sĩ tử của Quốc học viện phải đọc nhiều, viết nhiều.'),(()=>{const hoc=k=>startWriting(q=>{gain('van',k*(dailyReward(3,q)+(S.thayBonus?1:0)));toast(vanLesson())});return[{label:'Học tại Quốc học viện',note:'−1 Sức · tập viết · +3 Văn',fn:()=>{if(!spend())return;hoc(1)}},...allSuc('Học',hoc)]})());
+  if(S.path==='van')return say('Học quan',voice('hocquan',S.dothi?'Thái học sinh mà vẫn chăm đến đây, tốt lắm.':'Sĩ tử của Quốc học viện phải đọc nhiều, viết nhiều.'),(()=>{const hoc=k=>startWriting(q=>{gain('van',k*(dailyReward(3,q)+(S.thayBonus?1:0)),true);toast(vanLesson())});return[{label:'Học tại Quốc học viện',note:'−1 Sức · tập viết · +Văn',fn:()=>{if(!spend())return;hoc(1)}},...allSuc('Học',hoc)]})());
   say('Học quan','Quốc học viện lập từ năm Quý Sửu (1253), thờ Khổng Tử, Chu Công, Mạnh Tử, giảng Tứ thư, Lục kinh. Muốn vào học phải giỏi chữ trước đã.');
 }
 export function talkVoQuan(){
-  if(S.path==='vo')return say('Võ quan',voice('voquan','Giảng võ đường lập cùng năm với Quốc học viện. Hương binh giỏi thì được luyện ở đây.'),(()=>{const luyen=k=>startDrill(q=>{gain('vo',k*dailyReward(4+(has('Kiếm sắt')?1:0),q,5/6));if(q>=1)practice('ngua',k);toast(voLesson())});return[{label:'Luyện tại Giảng võ đường',note:'−1 Sức · +4 Võ · học cưỡi ngựa',fn:()=>{if(!spend())return;luyen(1)}},...allSuc('Luyện',luyen)]})());
+  if(S.path==='vo')return say('Võ quan',voice('voquan','Giảng võ đường lập cùng năm với Quốc học viện. Hương binh giỏi thì được luyện ở đây.'),(()=>{const luyen=k=>startDrill(q=>{gain('vo',k*dailyReward(4+(has('Kiếm sắt')?1:0),q,5/6),true);if(q>=1)practice('ngua',k);toast(voLesson())});return[{label:'Luyện tại Giảng võ đường',note:'−1 Sức · +Võ · học cưỡi ngựa',fn:()=>{if(!spend())return;luyen(1)}},...allSuc('Luyện',luyen)]})());
   say('Võ quan','Giảng võ đường lập mùa thu năm Quý Sửu (1253). Chỉ người đã vào quân mới được luyện ở đây.');
 }
 export {talkNgu} from './ngu.js';   // anh Ngũ: xem ngu.js
@@ -183,19 +183,21 @@ export function doorAction(b){
   if(b.id==='truong'){const tc=truongChoices();return say('Trường làng',tc.length?(S.thay?'Lũ trẻ ngồi chờ trên chiếu. Thầy Chu gật đầu với bạn: "Hôm nay trò giảng nhé."':'Lũ trẻ ngồi chờ trên chiếu, khay cát đã san phẳng. Từ ngày thầy Chu mất, trường làng trông cả vào bạn.'):'Lớp học có mấy chiếc chiếu, khay cát để tập viết. Thầy đồ đang đứng trước cửa.',tc)}
 }
 /* Tự học ở nhà chậm và có trần: muốn giỏi phải đến lớp, đến sân võ (mỗi mùa ở đó được 8 điểm trở lên). */
-const FF_RATE={van:()=>S.path==='van'?2:1,vo:()=>S.path==='vo'?2:1},FF_CAP={van:()=>S.path==='van'?45:25,vo:()=>S.path==='vo'?45:25};
-function ffNote(k){const lab=k==='van'?'Văn':'Võ',c=FF_CAP[k]();return S[k]>=c?`tự ${k==='van'?'học':'luyện'} chỉ đến ${c} ${lab}`:`+${FF_RATE[k]()} ${lab} mỗi mùa, tối đa ${c}`}
+/* tự học ở nhà: điểm thô mỗi mùa (qua growth, như việc lặp lại), bằng khoảng một phần tư đến lớp cả mùa */
+const FF_RATE={van:()=>S.path==='van'?3:2,vo:()=>S.path==='vo'?3:2},FF_CAP={van:()=>S.path==='van'?45:25,vo:()=>S.path==='vo'?45:25};
+function ffNote(k){const lab=k==='van'?'Văn':'Võ',c=FF_CAP[k]();return S[k]>=c?`tự ${k==='van'?'học':'luyện'} chỉ đến ${c} ${lab}`:`tiến chậm, tối đa ${c} ${lab}`}
 export function chooseFocus(){const a=age();say('Những năm tới','Bạn dồn sức vào việc gì? Thời gian sẽ trôi cho đến khi có chuyện quan trọng xảy ra. Bạn sẽ bỏ lỡ những lần gặp gỡ bạn bè trong thời gian ấy. Tự học, tự luyện ở nhà tiến bộ chậm; đến lớp thầy đồ hay sân võ thì nhanh hơn nhiều.',[
   {label:'Tự học ở nhà',note:ffNote('van'),fn:()=>fastForward('van')},
   {label:'Tự luyện võ',note:a<8?'cần 8 tuổi':ffNote('vo'),disabled:a<8,fn:()=>fastForward('vo')},
   {label:'Làm ruộng',note:a<8?'cần 8 tuổi':`+${S.path==='nong'?3+fieldBonus():2} quan mỗi mùa`,disabled:a<8,fn:()=>fastForward('tien')},
-  {label:'Lo việc làng',note:a<10?'cần 10 tuổi':S.tieng>=TIENG_FF_CAP?`ở nhà lo việc làng chỉ tới ${TIENG_FF_CAP} Tiếng`:`+2 Tiếng mỗi mùa, tối đa ${TIENG_FF_CAP}`,disabled:a<10,fn:()=>fastForward('lang')}])}
+  {label:'Lo việc làng',note:a<10?'cần 10 tuổi':S.tieng>=TIENG_FF_CAP?`ở nhà lo việc làng chỉ tới ${TIENG_FF_CAP} Tiếng`:`tiến chậm, tối đa ${TIENG_FF_CAP} Tiếng`,disabled:a<10,fn:()=>fastForward('lang')}])}
 export function fastForward(k){let n=0;
   for(let i=0;i<60;i++){
     /* mùa đang dở chỉ tính phần Sức còn lại, tránh vừa học ở lớp vừa được cộng thêm */
     const part=i?1:S.suc/sucMax();
-    if(k==='van'||k==='vo'){const c=FF_CAP[k]();if(S[k]<c&&Math.random()<part)S[k]=Math.min(c,S[k]+FF_RATE[k]())}
-    else if(k==='tien')S.tien+=Math.round((S.path==='nong'?3+fieldBonus():2)*part);else if(S.tieng<TIENG_FF_CAP&&Math.random()<part)S.tieng=Math.min(TIENG_FF_CAP,S.tieng+2)
+    // tự học, lo việc làng ở nhà: chậm như việc lặp lại (growth), lại có trần riêng
+    if(k==='van'||k==='vo'){const c=FF_CAP[k]();if(S[k]<c)S[k]=Math.min(c,S[k]+growth(k,FF_RATE[k]()*part,true).d)}
+    else if(k==='tien')S.tien+=Math.round((S.path==='nong'?3+fieldBonus():2)*part);else if(S.tieng<TIENG_FF_CAP)S.tieng=Math.min(TIENG_FF_CAP,S.tieng+growth('tieng',4*part,true).d)
     n++;advanceOne();if(modalOpen||S.ended)break}
   if(!modalOpen)nguHint();
   toast(`${n} mùa trôi qua. Bây giờ là ${SEASONS[S.season].toLowerCase()} năm ${canchi(S.year)} (${S.year}), bạn ${age()} tuổi.`,4600);save();renderHUD()}

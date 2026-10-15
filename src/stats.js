@@ -30,6 +30,25 @@ export const voTeach=()=>S.vo>=60;                                     // luyệ
 export const TIENG_FF_CAP=40;
 // Thắp hương nghe kinh chỉ đưa Đức tới đây; cao hơn phải sống ngay thật qua những lựa chọn khó.
 export const DUC_CHUA_CAP=20;
+/* ---------- nhịp tăng chỉ số (làm chậm 10/2026: 7 tuổi từng có 51 Văn) ----------
+   Văn, Võ, Đức, Tiếng tăng qua growth():
+   - việc làm lặp lại được (học, luyện, giúp việc làng, dạy học, mua giấy bút, tự học ở nhà) gọi gain(k, n, true):
+     n là "điểm thô" như cũ, nhân GROW_RATE nên mỗi buổi chỉ được vài phần mười điểm, cộng dồn ở S.frac[k];
+   - việc một lần (sự kiện, lựa chọn, khám phá) giữ nguyên số điểm;
+   - cả hai đều chậm dần khi chỉ số cao (dim: dưới 25 đủ, 25–45 còn 0,7, 45–65 còn 0,5, trên 65 còn 0,3);
+   - và không vượt trần theo tuổi (statCap): trẻ con học giỏi mấy cũng có hạn.
+   Mức nhắm (chơi chăm, dồn một chỉ số): 7 tuổi khoảng 5, 12 tuổi khoảng 20, 16 tuổi khoảng 35, đêm 1285 (27 tuổi)
+   khoảng 70; chơi lơ là thì khoảng một nửa. Bảng "nhịp chỉ số" trong npm test canh việc này. */
+export const GROW_RATE=.12;
+export const dim=v=>v<25?1:v<45?.7:v<65?.5:.3;
+export function statCap(k){const a=S.year-1258;
+  // trẻ con tiến chậm (3 điểm mỗi năm tuổi), từ 16 tuổi nhanh hơn (5 điểm): 7 tuổi 8, 12 tuổi 23, 16 tuổi 35, 20 tuổi 55
+  const kid=(base,per)=>a<16?base+3*(a-6):base+30+5*(a-16);
+  return Math.min(100,k==='van'||k==='vo'?kid(5,3):k==='tieng'?Math.max(2,kid(-1,3)):k==='duc'?kid(8,3):100)}
+/* tính phần tăng thật của n điểm (lap: việc lặp lại); trả {d: số nguyên cộng vào, eff: phần tăng kể cả lẻ, capped} */
+export function growth(k,n,lap){const v=S[k]||0,cap=statCap(k);if(v>=cap)return{d:0,eff:0,capped:true};
+  const eff=n*(lap?GROW_RATE:1)*dim(v),fr=S.frac||(S.frac={}),f=(fr[k]||0)+eff,d=Math.min(Math.floor(f),cap-v);
+  fr[k]=d<Math.floor(f)?0:f-Math.floor(f);return{d,eff,capped:false}}
 /* Sức tối đa mỗi mùa theo thể trạng */
 export const sucMax=()=>3+(S.the>=40?1:0)+(S.the>=75?1:0);
 /* đổi thể trạng (cap: chỉ tăng tới mức này, ví dụ ăn uống không đưa quá 70) */

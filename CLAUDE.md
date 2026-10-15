@@ -193,11 +193,13 @@ Sự kiện có `mg:true` ghi `S.pending` để nếu người chơi tải lại
 
 ### Cân bằng điểm
 
+- **Nhịp tăng chỉ số** (`growth` ở `stats.js`, làm chậm 10/2026 sau khi chủ dự án thấy 7 tuổi đã 51 Văn): việc làm lặp lại (học, luyện, giúp việc làng, dạy học, giấy bút, tự học ở nhà) gọi `gain(k, n, true)`: điểm thô n nhân `GROW_RATE` = 0,12, cộng dồn phần lẻ ở `S.frac` (chữ nổi ghi "+0,4 Văn"); việc một lần (sự kiện, lựa chọn) giữ số điểm. Cả hai chậm dần khi chỉ số cao (`dim`: dưới 25 đủ, 25–45 còn 0,7, 45–65 còn 0,5, trên 65 còn 0,3) và không vượt trần theo tuổi (`statCap`: Văn, Võ 7 tuổi 8, 12 tuổi 23, 16 tuổi 35, 20 tuổi 55; Tiếng thấp hơn 6; Đức cao hơn 3). Bản lưu cũ có chỉ số cao hơn trần thì giữ nguyên, chỉ chưa tăng thêm. Bảng "Nhịp chỉ số theo tuổi" trong `npm test` (`stat_curve`): chơi chăm (dồn 4 Sức, mức giỏi) Văn 7 tuổi khoảng 8, 16 tuổi 35, 27 tuổi khoảng 70; mỗi mùa một buổi thì 27 tuổi khoảng 25. Các số "+2 Văn mỗi Sức" dưới đây là điểm thô.
+
 - Còn từ 2 Sức thì ở thầy đồ, võ sư, Quốc học viện, Giảng võ đường, ruộng có lựa chọn **làm hết Sức một lần** (`allSuc` ở `dialogs.js`): chơi một màn, kết quả nhân số buổi. Phím **N** về nhà ngủ từ bất cứ đâu (`goSleep`). Hai việc này để quãng giữa đỡ lặp, không đổi điểm mỗi Sức.
 - Việc hằng ngày là màn chơi ngắn (`minigames/daily.js`); các con số dưới đây là mức chơi khá, giỏi thì +1, kém hoặc làm qua loa thì −1.
 - Đến lớp thầy đồ: +2 Văn mỗi Sức (+1 nếu đã biếu Tứ thư). Võ sư: +2 Võ (+3 đường võ, +1 có kiếm). Quốc học viện +3, Giảng võ đường +4. Một mùa dùng hết Sức được 8 điểm trở lên.
 - "Chọn việc chính" ở nhà là tự học, tự luyện: +1 mỗi mùa (+2 nếu đúng đường), **có trần** 25 (45 nếu đúng đường), mùa đang dở chỉ tính theo Sức còn lại. Muốn Văn 55 (loại 2 đáp án khi thi) hay Võ cao thì phải đến lớp.
-- "Lo việc làng" ở nhà: +2 Tiếng mỗi mùa, trần `TIENG_FF_CAP` = 40. Tiếng 60 phải giúp làng thật (cụ xã +3 Tiếng mỗi Sức) và qua các sự kiện.
+- "Lo việc làng" ở nhà: 4 điểm thô Tiếng mỗi mùa, trần `TIENG_FF_CAP` = 40. Tiếng 60 phải giúp làng thật (cụ xã 3 điểm thô Tiếng mỗi Sức) và qua các sự kiện. Tự học ở nhà: 2 điểm thô mỗi mùa (3 nếu đúng đường).
 - Đức không mua được bằng Sức: nghe kinh +1 mỗi mùa, chỉ tới `DUC_CHUA_CAP` = 20; trên đó phải qua các lựa chọn khó. Chơi ngẫu nhiên hết chương ra Đức khoảng 10–20, Tiếng 40–50.
 - Thể trạng: ăn cơm mẹ +1 (tới 70), thuốc bổ +2 (tới 85), luyện võ +1 mỗi mùa (tới 90); thức đêm, năm hạn, chăm cha ốm, chịu đòn thì trừ; dùng cạn Sức mà bỏ bữa thì −1 mỗi mùa; dưới 50 tự hồi 1 mỗi mùa.
 - Tiền Tết: dưới 18 tuổi mẹ mừng tuổi 2 quan, từ 18 tuổi chỉ 1 quan (`tetMoney` ở `events.js`), để tiền không quá dư lúc lo trước ngày giặc đến.
