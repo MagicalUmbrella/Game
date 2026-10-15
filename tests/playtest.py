@@ -50,6 +50,7 @@ STEP = """(r) => {
   if(S && S.ended) return 'ended';
   const M=D.MG;
   if(M && M.type==='timing'){ if(M.round<6) D.tmHit(); return 'train'; }
+  if(M && M.type==='vat'){ const win=r<.5; for(let i=0;i<1500&&D.MG===M&&!M.over;i++){ if(win&&i%4===0) window.dispatchEvent(new KeyboardEvent('keydown',{key:i%8?'a':'d'})); M.tick(1/60); } D.vatFlush(); return 'vat'; }
   if(M && M.type==='daily'){ __bots.dailyAuto(['giỏi','khá','kém','qua'][rnd(4)]); D.dailyFlush(); return 'daily'; }
   if(D.modalOpen){
     const inp=document.querySelector('#modal input'); if(inp && !inp.value) inp.value='Kiểm Thử';
@@ -58,7 +59,9 @@ STEP = """(r) => {
   }
   if(M){ // lụt, đêm giặc: bot dịch chuyển chơi bằng luật thật, lúc cố hết sức, lúc bỏ dở
     if(M.type==='escort'||M.type==='camp'){ for(let i=0;i<6000&&D.MG&&(D.MG.type==='escort'||D.MG.type==='camp')&&!D.modalOpen;i++) D.step(0.05); }   // bị giải đi, trong trại: đứng yên, lính lôi đi
-    else if(M.type==='climax') __bots.climaxTeleport(r<.5); else __bots.floodTeleport(r<.6);
+    else if(M.type==='climax') __bots.climaxTeleport(r<.5);
+    else if(['dich','sau','kien','cuop'].includes(M.type)) __bots.goalBot(['giỏi','khá','kém'][rnd(3)], x=>r<.5?/Sổ ruộng|vắng làng/.test(x):/khóc|Cột mốc|Biên nhận/.test(x));
+    else __bots.floodTeleport(r<.6);
     return 'mg';
   }
   if(D.dialogOpen){
@@ -141,6 +144,7 @@ def mechanics(page, fails):
                      ('bản đồ thế giới: khóa vùng, đi tới mọi nơi, doanh trại', 'world'),
                      ('chỉ số: Đức / Tiếng, thể trạng, nghề, mốc mở việc, bản lưu cũ', 'statsV2'),
                      ('thăng tiến: trượt thi, dạy học, lại viên, đội trưởng, ruộng, việc làng', 'career'),
+                     ('màn giữa game: dịch đậu mùa, sâu, tờ văn tự, cướp trâu, đấu vật', 'midgame'),
                      ('giặc không đứng dàn hàng ở bìa rừng', 'noCamping'),
                      ('giấy bút, thuốc bổ mỗi mùa một lần', 'shopLimit'), ('lo trước ngày giặc đến', 'prep'),
                      ('mốc chỉ số, phím C', 'statTiers'), ('chuyện đời thường: mọi lựa chọn', 'lifeAll'),
@@ -217,6 +221,32 @@ CLIMAX_BUILDS = {  # chỉ số sát với người chơi thật theo từng đ�
 }
 REASON = {'done': 'đủ người', 'dawn': 'trời sáng', 'down': 'ngã xuống', 'captured': 'bị bắt'}
 BOSS = {'killed': 'hạ', 'tricked': 'lừa', 'took': 'mất con tin', 'alive': 'không kịp bắt ai'}
+
+
+MID = [  # (tên, hàm bắt đầu, dựng nhân vật, cờ kết cục, kết cục thắng, lựa chọn khi họp làng)
+    ('dịch đậu mùa 1278', 'startDich', "S.year=1278;", 'daumua', ('cham', 'nam'), None),
+    ('sâu cắn lúa 1280', 'startSau', "S.year=1280;S.path='nong';", 'sau', ('giu',), None),
+    ('tờ văn tự 1280', 'startKien', "S.year=1280;S.path='van';S.van=45;", 'kien', ('thang',), 'Sổ ruộng|vắng làng'),
+    ('toán cướp 1280 (Võ 40)', 'startCuop', "S.year=1280;S.path='vo';S.vo=40;", 'cuop', ('win',), None),
+]
+
+
+def mid_table(page, fails, n):
+    """Bot đi bộ chơi các màn giữa game với ba mức tay nghề, n lượt mỗi ô."""
+    print(f"  {'màn':26s} {'tay nghề':9s} {'thắng':>6s}  kết cục")
+    for name, start, setup, flag, good, want in MID:
+        for sk in SKILLS:
+            rs = []
+            for _ in range(n):
+                fresh(page)
+                rs.append(page.evaluate("""([start,setup,flag,sk,want]) => {const D=__dv;D.setS(Object.assign(D.newState('Thử'),{quests:{hoc:'done',trau:'done'}}));
+                  new Function('S',setup)(D.S);D.startPlay(false);while(D.modalOpen)D.nextModal();D.closeDialog();D[start]();
+                  __bots.goalBot(sk,want?(x=>new RegExp(want).test(x)):null);return D.S.flags[flag]||'?'}""", [start, setup, flag, sk, want]))
+            won = sum(r in good for r in rs)
+            ends = ', '.join(f"{k} {rs.count(k)}" for k in dict.fromkeys(rs))
+            print(f"  {name:26s} {sk:9s} {won:>3d}/{n:<3d} {ends}")
+            if sk == 'giỏi' and won < n - 1:
+                fails.append(f"{name}: bot giỏi chỉ thắng {won}/{n} (quá khó?)")
 
 
 def climax_table(page, fails, n):
@@ -314,6 +344,8 @@ def main():
         if not a.no_bots:
             print('== Độ khó lụt 1270 (bot bấm phím) ==')
             flood_table(page, fails, a.bot_runs)
+            print('== Độ khó màn giữa game (bot đi bộ) ==')
+            mid_table(page, fails, a.bot_runs)
             print('== Độ khó đêm 1285 (bot bấm phím) ==')
             climax_table(page, fails, a.bot_runs)
         print('== Chạy thật: đi lại, lụt, đêm giặc ==')

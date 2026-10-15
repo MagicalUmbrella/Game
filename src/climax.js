@@ -13,6 +13,7 @@
    Hết máu: đang đối đầu tên đầu toán (hắn còn sống) thì bị bắt ('captured', how 'fight'); lừa hắn hỏng cũng bị bắt
    (how 'trick'). Lúc khác: còn người cùng đánh đứng được thì được kéo vào rừng ('down'), không còn ai thì bị bắt (how 'down').
    Bị bắt (cả 'surrender') dẫn tới màn bị giải sang trại giặc bên kia sông (src/camp.js) và mở đầu chương hai khác. */
+import {midChronicle} from './minigames/chung.js';
 import {careerChronicle,careerTrai,laiFollow} from './chuc.js';
 import {$,T,TS,W,H,WA,Z,ctx} from './constants.js';
 import {regionId} from './world.js';
@@ -119,7 +120,7 @@ export function startClimax(){
   if(S.quests.lo==='active'){delete S.quests.lo;renderHUD()}   // hết hạn lo trước (hết 1284)
   const v=[],add=(id,name,x,y,look,slow)=>v.push({id,name,x,y,look,st:'wait',slow:slow||1,walk:0,dir:'down'});
   add('me','Mẹ',45.5,50.4,{id:'me_gia'},.85);
-  if(S.cha)add('cha','Cha',42.5,56.4,{id:'cha_gia'},.85);
+  if(S.cha)add('cha','Cha',42.5,56.4,{id:'cha_gia'},S.flags.daumua==='muon'?.6:.85);   // năm dịch thuốc về chậm: cha yếu, đi chậm
   add('batu','Bà Tư',52.4,49.9,{id:'batu'},.75);
   if(S.ev.thao&&S.thao!=='gone'){const p=S.thao==='wife'?[47.4,50.7]:S.thao==='co'?[36.4,49.7]:[49.3,50.6];add('thao','Thảo',p[0],p[1],LOOK_THAO)}
   if(S.child)add('sen','Bé Sen',46.6,51.7,{id:'sen',kid:true},.8);
@@ -130,7 +131,7 @@ export function startClimax(){
   // trai làng: theo Tiếng (src/stats.js), thêm một nếu giữ được đê 1270, một nếu theo đường nông; nói "hòa" thì bớt một; tối đa 4
   const nLang=Math.min(4,traiFromTieng()+careerTrai()+(S.flags.de==='saved'?1:0)+(S.path==='nong'?1:0)-(S.flags.dh==='hoa'?1:0));
   for(let i=0;i<Math.max(0,nLang);i++)al.push({id:'trai'+i,name:'Trai làng',x:39+i*2,y:44.6,look:{id:'trai'},hp:4,dmg:1,cd:0,sp:3.6,inv:0,dir:'down',walk:0});
-  const maxhp=Math.max(2,4+(S.path==='vo'?2:0)+(S.flags.train==='top'?1:0)+voHp()+theHp());
+  const maxhp=Math.max(2,4+(S.path==='vo'?2:0)+(S.flags.train==='top'?1:0)+voHp()+theHp()+(S.vat&&S.vat.do?1:0));   // đô vật làng chịu đòn tốt hơn
   setMG({type:'climax',T:150,t:150,act:1,hp:maxhp,maxhp,v,sk:sk.map(([x,y])=>({x,y,st:'wait'})),carry:null,en:[],al,spawnT:2,decoy:null,decoys:torches(),cd:0,inv:0,slash:0,kills:0,ngu:false,horn:false,nLang:Math.max(0,nLang),
     fire:new Map(),burn:[],burnI:0,fireT:0,bub:[],banner:{act:1,t:3.2},shake:0,boss:null,bossOut:null,
     hideNPC:true,mini:clMini,update:clUpdate,findTarget:clTarget,draw:clDraw,hud:clHud,post:nightPost,key:clKey,blockAt:fireAt,speedMul:()=>MG.carry?(S.path==='nong'?.92:.74):1});
@@ -466,13 +467,15 @@ export function endChapter(res){
   if(S.path==='van')L.push(F.exam==='pass'||F.exam==='khoe'?`Năm 1275 đỗ Thái học sinh${F.exam==='khoe'?', nhưng để bạn cũ đứng ngoài ngõ':''}.`:'Năm 1275 lều chõng đi thi nhưng không đỗ.');
   if(S.path==='vo')L.push(F.train==='top'?'Năm 1283 đứng đầu buổi tập trận'+(F.nguKnows?', được Phạm Ngũ Lão nhớ mặt.':'.'):F.train==='ok'?'Năm 1283 tập trận đạt yêu cầu.':'Năm 1283 tập trận còn vụng về.');
   if(S.ev.thao)L.push(S.thao==='wife'?`Bạn cưới Thảo${S.child?', có bé Sen':''}${F.vay?', nhà phải vay tiền làm sính lễ':''}.`:S.thao==='co'?(F.rival?'Bạn nói lời thương nhưng Thảo chọn Cò.':'Bạn nhường Thảo cho Cò'+(F.cuoiCo==='vang'?', rồi không đến dự đám cưới.':', và làm phù rể cho bạn mình.')):'Thảo theo chồng về làng bên, không ai giữ lại.');
-  if(F.daumua)L.push(F.daumua==='mat'?'Năm dịch đậu mùa, bạn mải lo việc riêng. Cha mất cuối xuân Mậu Dần.':F.daumua==='cham'?'Năm dịch đậu mùa, bạn bỏ hết mọi việc ở nhà chăm cha. Cha qua khỏi.':F.daumua==='nam'?'Năm dịch đậu mùa, bạn tự sắc thuốc nam chữa cho cha. Cha qua khỏi, hàng xóm học cách sắc thuốc của bạn.':'Năm dịch đậu mùa, bạn lên kinh mua thuốc cứu được cha.');
+  if(F.daumua)L.push(F.daumua==='mat'?'Năm dịch đậu mùa, bạn mải lo việc riêng. Cha mất cuối xuân Mậu Dần.':F.daumua==='cham'?'Năm dịch đậu mùa, bạn bỏ hết mọi việc ở nhà chăm cha. Cha qua khỏi.':F.daumua==='nam'?'Năm dịch đậu mùa, bạn tự sắc thuốc nam chữa cho cha. Cha qua khỏi, hàng xóm học cách sắc thuốc của bạn.':F.daumua==='muon'?'Năm dịch đậu mùa, thuốc về chậm. Cha qua khỏi nhưng yếu hẳn, đêm giặc đến đi không nhanh được.':F.daumua==='matcuu'?'Năm dịch đậu mùa, bạn chạy ngược chạy xuôi hái thuốc mà không kịp. Cha mất cuối xuân Mậu Dần.':'Năm dịch đậu mùa, bạn lên kinh mua thuốc cứu được cha.');
+  if(F.dichGiup)L.push('Năm dịch, bạn nhường một thang thuốc cứu đứa nhỏ nhà chị Lụa bên cạnh.');
   if(F.tang)L.push(F.tang==='lo'?'Thầy đồ Chu mất, bạn đứng ra lo tang cho thầy.':'Thầy đồ Chu mất, bạn chỉ gửi chút tiền phúng viếng.');
   if(S.co==='army')L.push('Bạn tiễn Cò theo cờ "Phá cường địch, báo hoàng ân" của Hoài Văn hầu.');else if(F.coStay)L.push('Bạn khuyên Cò ở lại giữ làng'+(res.coThere?', và đêm ấy Cò đứng cạnh bạn.':'.'));
   if(F.tolich)L.push(F.tolich==='done'?'Bạn cùng làng vét sông Tô Lịch. Đêm giặc đến, chúng chỉ qua được bằng hai cây cầu.':'Bạn không ra vét sông Tô Lịch. Đêm giặc đến, chúng lội qua được chỗ sông nông.');
   if(F.duyet&&F.duyet!=='the')L.push(F.duyet==='luong'?'Bạn góp lương cho quân của Hưng Đạo Vương.':'Bạn giữ thóc cho nhà, đêm giặc đến có thêm một bao phải cứu.');
   if(F.dh)L.push(F.dh==='danh'?'Trước Diên Hồng, bạn nói "Đánh!".':'Trước Diên Hồng, bạn nói "nên hòa". Trai làng nhớ câu ấy.');
   L.push(...careerChronicle());
+  L.push(...midChronicle());
   L.push(...prepChronicle(res.nLang||0));
   L.push(...exploreChronicle());
   L.push(...chainChronicle());

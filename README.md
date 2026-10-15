@@ -27,6 +27,9 @@ Mở thẳng `index.html` bằng cách bấm đúp không chạy được nữa,
 | `1`–`9` | Chọn đáp án trong hội thoại |
 | `C` | Bảng chỉ số: mỗi chỉ số đang ở mốc nào, mốc tiếp theo có tác dụng gì |
 | `M` | Bản đồ thế giới |
+| `J` | Thu gọn, mở khung Việc cần làm |
+| `N` | Về nhà ngủ, sang mùa mới |
+| `A` `D` luân phiên, `Space` | Đấu vật ở sới hội xuân |
 | `Esc` | Đóng hội thoại |
 | `Space` | Đánh (màn cao trào) |
 | `Q` | Cắm đuốc nghi binh (màn cao trào, đường văn) |
@@ -45,6 +48,9 @@ Game cần bàn phím, nên chơi trên máy tính.
 - **Doanh trại quân Nguyên ở Gia Lâm** (dựng từ đêm tháng giêng 1285): rào cọc, chòi canh, trướng Ô Mã Nhi, lều tướng, ba dãy chuồng tù, chỗ tra hỏi, bãi ngựa, kho lương, lò rèn; thủy trại có thuyền chiến neo ở bờ sông.
 - **Chỉ số:** Văn, Võ, Đức (lòng mình), Tiếng (uy tín với làng), Thể trạng (sức khỏe, quyết định mỗi mùa có 3–5 Sức). Đức và Tiếng tách nhau: làm điều đúng mà không ai thấy thì được Đức, việc cho làng mà người ta thấy thì được Tiếng; có lựa chọn được cái này mất cái kia. Mốc chỉ số mở ra việc làm được (viết đơn cho làng, cõng người, luyện trai làng thành đội, chỉ đường cho người nhà, nhận đòn thay người khác). Phím `C` xem bảng chỉ số.
 - **Nghề**, học qua việc làm: bơi lội, chèo thuyền, thuốc nam, cưỡi ngựa, rèn. Mỗi nghề có tác dụng ngay trong chương một và là chỗ dựa cho chương hai.
+- **Màn chơi giữa game:** năm dịch đậu mùa 1278 chạy chữa cho cha (hái lá thuốc, sắc thuốc, cứu cả đứa nhỏ nhà bên nếu kịp); năm 1280 mỗi đường đời một màn riêng: nhà nông bắt sâu cứu lúa, người đi học tìm chứng cứ vạch tờ văn tự giả, hương binh đuổi toán cướp trâu ra bãi sông; hội xuân có sới vật ở đình, thắng ba đô thành đô vật của làng.
+- **Lên mốc chỉ số thì có chuyện:** thầy khen, bà Tư nhờ viết câu đối, trai xóm Đông thách vật tay, cụ xã nhờ việc… thấy mình giỏi lên ngay lúc ấy.
+- **Đỡ lặp:** còn nhiều Sức thì làm hết một lần; phím `N` về nhà ngủ từ bất cứ đâu.
 - **Thăng tiến** (danh vị hiện dưới tên trên bảng trạng thái): đường văn đỗ thì thành Thái học sinh; trượt thi thì chọn ở lại Quốc học viện, về làng phụ thầy Chu dạy trẻ (thầy mất thì thành thầy đồ làng), hoặc làm lại viên ở huyện; năm 1283 có thể bỏ bút theo kiếm. Đường võ đứng đầu buổi tập trận 1283 (hoặc đạt mà có Võ 50, Tiếng 30) thì lên đội trưởng hương binh. Đường nông mua thêm ruộng (2 → 6 thửa), làm đồng và mùa gặt được thêm tiền. Năm 1283 làng chọn người coi việc làng thay cụ xã. Mỗi nấc đều đổi đêm 1285 (thêm trai làng, dân đi theo nhanh, dựng lán rẻ) và có dòng trong biên niên.
 - **Mọi lựa chọn đều có hậu quả.** Màn kết có phần "Biên niên đời bạn" liệt kê lại các lựa chọn và hệ quả.
 

@@ -1,4 +1,5 @@
 /* ================= dialogs ================= */
+import {VAT_OPP,hoiVat,vatOpen,vatState} from './minigames/vat.js';
 import {fieldBonus,homeChoices,lyChoices,truongChoices} from './chuc.js';
 import {BI,H,MO,PA,SEASONS,TR,TS,W,WA,WL,WR,Z,canchi,ctx} from './constants.js';
 import {locked} from './world.js';
@@ -17,6 +18,12 @@ import {chainChoices} from './chains.js';
 import {step4} from './pathfind.js';
 
 export const pickR=a=>a[Math.floor(Math.random()*a.length)];
+/* Làm hết Sức mùa này một lần: chơi một màn ngắn, kết quả nhân với số buổi. Đỡ phải bấm đi bấm lại cùng một việc
+   (chủ dự án thấy quãng giữa game lặp). Còn từ 2 Sức trở lên mới hiện. run(k) chạy màn chơi, tính k buổi. */
+export function allSuc(label,run){const n=S.suc;if(n<2)return[];
+  return[{label:`${label} hết Sức mùa này (${n} buổi một lần)`,note:'chơi một lần, tính cho cả mùa',fn:()=>{S.suc=0;renderHUD();run(n)}}]}
+/* Về nhà ngủ từ bất cứ đâu (phím N): đỡ phải đi bộ về khi đã hết việc. */
+export function goSleep(){S.x=43.5;S.y=49.6;advance(1)}   // cửa nhà mình
 function vanLesson(){const v=S.van;return v<10?'Thầy dạy chữ trên khay cát, từng nét một.':v<25?'Thầy giảng sách dạy đạo làm người.':v<45?'Bạn đọc Luận ngữ, tập viết văn sách.':v<70?'Bạn học Kinh Thi, Kinh Thư, bình luận chuyện xưa.':'Bạn đọc Đại Việt sử ký, bàn về phép trị nước.'}
 function voLesson(){const v=S.vo;return v<10?'Đứng tấn đến run cả chân.':v<25?'Tập côn pháp, múa gậy quanh sân.':v<45?'Tập đao pháp đến mỏi tay.':v<70?'Tập cưỡi ngựa, bắn cung.':'Học bày trận, đọc binh thư.'}
 export function talkMe(){
@@ -39,13 +46,14 @@ export function talkCha(){
   if(a>=7&&!S.quests.trau){startQuest('trau');loseBuffalo();return say('Cha','Sáng nay con trâu đứt thừng, giẫm nát cả bờ ruộng rồi chạy vào rừng phía tây. Con lần theo dấu chân nó mà tìm. Nhớ là trâu nhát lắm, lại gần thì đi khẽ thôi.')}
   if(a<8)return say('Cha','Ruộng nhà mình đây. Tám tuổi con ra phụ cha được rồi.');
   {const pc=prepChoice('catThoc');if(pc)return say('Cha','Giặc mà sang thì thóc trong kho khó giữ. Hay nhà mình thuê người gánh bớt vào rừng, chôn kỹ từ bây giờ?',[pc])}
-  if(S.flags.daumua&&S.year<1281)return say('Cha',S.flags.daumua==='cham'?'Năm dịch, con bỏ cả việc để ngồi bên giường cha. Cha nhớ mãi.':S.flags.daumua==='nam'?'Thang thuốc nam con sắc năm ấy, hàng xóm còn nhắc mãi.':'Nhờ thuốc của người Tống mà cha qua khỏi. Con biết lo xa lắm.');
+  if(S.flags.daumua&&S.year<1281)return say('Cha',S.flags.daumua==='cham'?'Năm dịch, con bỏ cả việc để ngồi bên giường cha. Cha nhớ mãi.':S.flags.daumua==='nam'?'Thang thuốc nam con sắc năm ấy, hàng xóm còn nhắc mãi.':S.flags.daumua==='muon'?'Chân cha giờ yếu lắm, ra đồng một lúc đã phải ngồi nghỉ. Nhưng còn sống là quý rồi con ạ.':'Nhờ thuốc của người Tống mà cha qua khỏi. Con biết lo xa lắm.');
   say('Cha',['Xuân thì cấy, hạ làm cỏ, thu gặt, đông cày ải. Đứng trên ruộng rồi bấm E mà làm.','Năm nào nước sông lên to là lo lắm. Phải giữ đê cho chắc.','Được mùa thì phải nhớ để dành thóc giống.'][S.season%3]);
 }
 export function talkThay(){
   const a=age(),ch=[];
   if(S.quests.hoc==='active'){doneQuest('hoc');gain('van',2)}
-  ch.push({label:'Học chữ',note:'−1 Sức · tập viết · +Văn',fn:()=>{if(!spend())return;startWriting(q=>{gain('van',dailyReward(2,q)+(S.thayBonus?1:0));toast(vanLesson())})}});
+  const hoc=k=>startWriting(q=>{gain('van',k*(dailyReward(2,q)+(S.thayBonus?1:0)));toast(vanLesson())});
+  ch.push({label:'Học chữ',note:'−1 Sức · tập viết · +Văn',fn:()=>{if(!spend())return;hoc(1)}},...allSuc('Học chữ',hoc));
   ch.push(...chainChoices('thay'));
   if(a>=12&&!S.quests.sach)ch.push({label:'Thầy có cần con giúp gì không?',fn:()=>{startQuest('sach');say('Thầy đồ Chu','Bộ Tứ thư của thầy mối mọt hết rồi. Trong kinh thành có hàng sách bán bản mới, giá sáu quan. Con mua giúp thầy được không?')}});
   if(S.quests.sach==='active'&&has('Tứ thư'))ch.push({label:'Biếu thầy bộ Tứ thư',fn:()=>{S.items=S.items.filter(i=>i!=='Tứ thư');doneQuest('sach');S.thayBonus=true;gain('van',5);gain('duc',1);say('Thầy đồ Chu','Quý hóa quá! Từ nay thầy kèm riêng cho con. Mỗi buổi học con được thêm một điểm Văn, và đi thi sẽ vững vàng hơn.')}});
@@ -54,7 +62,8 @@ export function talkThay(){
 export function talkVo(){
   if(age()<8)return say('Lão võ sư Hoàng','Tay chân còn mềm lắm. Đợi tám tuổi hẵng đến đây, ta dạy cho.');
   const n=(S.path==='vo'?3:2)+(has('Kiếm sắt')?1:0);
-  const ch=[{label:S.path==='vo'?'Tập trận':'Luyện võ',note:'−1 Sức · +Võ'+(S.theTrain?'':' · khỏe lên'),fn:()=>{if(!spend())return;startDrill(q=>{gain('vo',dailyReward(n,q,5/6));if(!S.theTrain){S.theTrain=true;gainThe(1,90)}toast(voLesson())})}}];
+  const luyen=k=>startDrill(q=>{gain('vo',k*dailyReward(n,q,5/6));if(!S.theTrain){S.theTrain=true;gainThe(1,90)}toast(voLesson())});
+  const ch=[{label:S.path==='vo'?'Tập trận':'Luyện võ',note:'−1 Sức · +Võ'+(S.theTrain?'':' · khỏe lên'),fn:()=>{if(!spend())return;luyen(1)}},...allSuc(S.path==='vo'?'Tập trận':'Luyện võ',luyen)];
   // Võ 60: luyện trai làng thành đội, ba buổi (mỗi mùa một buổi); đêm giặc đến trai làng ra đòn nhanh hơn
   const dv=S.flags.doi||0,now=S.year*4+S.season;
   if((voTeach()||S.career.doi)&&age()>=18&&dv<3)ch.push({label:`Luyện trai làng thành đội (${dv}/3)`,note:S.doiAt===now?'mùa này đã luyện':'−1 Sức · +1 Tiếng'+(S.career.doi?' · việc của đội trưởng':' · cần Võ 60'),disabled:S.doiAt===now,fn:()=>{if(!spend())return;S.doiAt=now;S.flags.doi=dv+1;gain('tieng',1);
@@ -116,11 +125,11 @@ export function talkTong(){
 }
 export function talkLinh(){say('Lính gác',age()<12?'Đứng lại! Trẻ con không được một mình vào kinh. Đợi mười hai tuổi hẵng đến.':'Vào đi. Trong kinh thành phải giữ phép tắc, không được chạy nhảy ồn ào.')}
 export function talkHocQuan(){
-  if(S.path==='van')return say('Học quan',S.dothi?'Thái học sinh mà vẫn chăm đến đây, tốt lắm.':'Sĩ tử của Quốc học viện phải đọc nhiều, viết nhiều.',[{label:'Học tại Quốc học viện',note:'−1 Sức · tập viết · +3 Văn',fn:()=>{if(!spend())return;startWriting(q=>{gain('van',dailyReward(3,q)+(S.thayBonus?1:0));toast(vanLesson())})}}]);
+  if(S.path==='van')return say('Học quan',S.dothi?'Thái học sinh mà vẫn chăm đến đây, tốt lắm.':'Sĩ tử của Quốc học viện phải đọc nhiều, viết nhiều.',(()=>{const hoc=k=>startWriting(q=>{gain('van',k*(dailyReward(3,q)+(S.thayBonus?1:0)));toast(vanLesson())});return[{label:'Học tại Quốc học viện',note:'−1 Sức · tập viết · +3 Văn',fn:()=>{if(!spend())return;hoc(1)}},...allSuc('Học',hoc)]})());
   say('Học quan','Quốc học viện lập từ năm Quý Sửu (1253), thờ Khổng Tử, Chu Công, Mạnh Tử, giảng Tứ thư, Lục kinh. Muốn vào học phải giỏi chữ trước đã.');
 }
 export function talkVoQuan(){
-  if(S.path==='vo')return say('Võ quan','Giảng võ đường lập cùng năm với Quốc học viện. Hương binh giỏi thì được luyện ở đây.',[{label:'Luyện tại Giảng võ đường',note:'−1 Sức · +4 Võ · học cưỡi ngựa',fn:()=>{if(!spend())return;startDrill(q=>{gain('vo',dailyReward(4+(has('Kiếm sắt')?1:0),q,5/6));practice('ngua');toast(voLesson())})}}]);
+  if(S.path==='vo')return say('Võ quan','Giảng võ đường lập cùng năm với Quốc học viện. Hương binh giỏi thì được luyện ở đây.',(()=>{const luyen=k=>startDrill(q=>{gain('vo',k*dailyReward(4+(has('Kiếm sắt')?1:0),q,5/6));practice('ngua',k);toast(voLesson())});return[{label:'Luyện tại Giảng võ đường',note:'−1 Sức · +4 Võ · học cưỡi ngựa',fn:()=>{if(!spend())return;luyen(1)}},...allSuc('Luyện',luyen)]})());
   say('Võ quan','Giảng võ đường lập mùa thu năm Quý Sửu (1253). Chỉ người đã vào quân mới được luyện ở đây.');
 }
 export function talkNgu(){
@@ -167,7 +176,8 @@ export function doorAction(b){
   if(b.id==='cung')return say('Hoàng thành','Cổng Hoàng thành canh gác nghiêm ngặt. Bên trong là cung điện của vua Trần. Dân thường không được vào.');
   if(b.id==='thap')return say('Tháp Báo Thiên','Ngọn tháp cao nhất kinh thành. Toàn thư chép: mùa thu tháng 8 năm Mậu Ngọ (1258), năm bạn ra đời, gió to làm đỉnh tháp rơi xuống.');
   if(b.id==='chua')return talkSu();
-  if(b.id==='dinh')return say('Đình làng','Đình làng thờ Thành hoàng, là nơi dân làng họp bàn việc chung.');
+  if(b.id==='dinh'){const V=vatState();return say('Đình làng',vatOpen()?'Sân đình mở hội xuân. Trống chầu thùng thùng, sới vật đã khoanh vôi, trai các làng cởi trần ngồi chờ.':V.do?'Đình làng thờ Thành hoàng. Ở góc sân, các cụ còn treo tấm lụa đỏ giải vật năm nào của bạn.':'Đình làng thờ Thành hoàng, là nơi dân làng họp bàn việc chung.',
+    vatOpen()?[{label:`Vào sới vật (gặp ${VAT_OPP[V.lv].name})`,note:'mỗi năm một keo · thắng ba đô thì thành đô vật của làng',fn:hoiVat}]:[])}
   if(b.id==='truong'){const tc=truongChoices();return say('Trường làng',tc.length?(S.thay?'Lũ trẻ ngồi chờ trên chiếu. Thầy Chu gật đầu với bạn: "Hôm nay trò giảng nhé."':'Lũ trẻ ngồi chờ trên chiếu, khay cát đã san phẳng. Từ ngày thầy Chu mất, trường làng trông cả vào bạn.'):'Lớp học có mấy chiếc chiếu, khay cát để tập viết. Thầy đồ đang đứng trước cửa.',tc)}
 }
 /* Tự học ở nhà chậm và có trần: muốn giỏi phải đến lớp, đến sân võ (mỗi mùa ở đó được 8 điểm trở lên). */
@@ -192,6 +202,9 @@ export function fishAction(){if(!spend())return;practice('boi');
     if(S.quests.ca==='active'&&!has('Cá')){S.items.push('Cá');renderHUD();toast('Bạn câu được một con cá rô. Mang cho bà Tư thôi!')}
     else if(q===1&&Math.random()<.25){gain('tien',2);toast('Một con cá chép to! Đem bán được hai quan.')}
     else{gain('tien',1);toast('Câu được mấy con cá, đem bán được một quan.')}})}
-export function fieldAction(){if(!spend())return;const n=Math.max(1,(S.path==='nong'?3+fieldBonus():2)-(trauYeu()?1:0));
-  startField(q=>{gain('tien',dailyReward(n,q,.875));
+/* đứng trên ruộng bấm E: còn nhiều Sức thì hỏi làm một buổi hay làm hết Sức */
+export function fieldMenu(){if(S.suc<2)return fieldAction();say('Ruộng nhà','Đất đã ngấu, nước vừa ruộng.',[{label:'Làm một buổi',note:'−1 Sức',fn:()=>fieldAction()},...allSuc('Làm đồng',k=>fieldAction(k))])}
+/* làm đồng một buổi (k = số buổi gộp lại khi làm hết Sức) */
+export function fieldAction(k=1){if(k===1&&!spend())return;const n=Math.max(1,(S.path==='nong'?3+fieldBonus():2)-(trauYeu()?1:0));
+  startField(q=>{gain('tien',k*dailyReward(n,q,.875));
     toast(['Bạn cùng cha cấy lúa, lưng mỏi nhừ.','Bạn làm cỏ, tát nước vào ruộng.','Mùa gặt! Lúa vàng trĩu bông.','Bạn cày ải, phơi đất cho vụ sau.'][S.season])})}

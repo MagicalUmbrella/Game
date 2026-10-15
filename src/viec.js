@@ -2,6 +2,7 @@
 /* Khung "Việc cần làm" (ui.js) luôn có việc để làm: ngoài các việc đã nhận (QUESTS), gợi ý những việc làm được
    ngay mùa này theo tình trạng của bạn: còn Sức thì học, luyện ở đâu; chưa ăn cơm; nghề đang học dở; mốc chỉ số
    sắp tới; bạn bè; chỗ chưa khám phá; hết Sức thì về ngủ. Mỗi gợi ý ghi rõ đến đâu, gặp ai. */
+import {vatOpen} from './minigames/vat.js';
 import {MG,S,age} from './state.js';
 import {STATS,sucMax} from './stats.js';
 import {NGHE,knows} from './nghe.js';
@@ -12,7 +13,7 @@ const now=()=>S.year*4+S.season;
 export function suggestions(){
   const a=age(),out=[],add=(title,hint)=>out.push({title,hint});
   if(MG||S.ended)return out;   // đang trong màn chơi riêng (lụt, đêm giặc, bị giải…): khung chỉ hiện việc đã nhận
-  if(S.suc<=0){add('Hết Sức mùa này','Về nhà, bấm E ở cửa để ngủ sang mùa mới, hoặc chọn việc chính cho thời gian trôi nhanh.');return out}
+  if(S.suc<=0){add('Hết Sức mùa này','Bấm N để về nhà ngủ, sang mùa mới. Hoặc ở cửa nhà chọn việc chính cho thời gian trôi nhanh.');return out}
   if(!S.ate&&S.suc<sucMax())add('Ăn cơm mẹ nấu','Về nhà gặp mẹ.');
   // học, luyện chính
   if(S.path==='van')add('Học ở Quốc học viện',`Gặp Học quan trong kinh thành (phía bắc, qua cổng thành)..`);
@@ -26,6 +27,7 @@ export function suggestions(){
   if(S.path==='van'&&c.van==='day')add(S.thay?'Phụ thầy Chu dạy trẻ':'Dạy trẻ ở trường làng',`Vào trường làng (phía nam đình) bấm E. Đã dạy ${c.hoctro||0} buổi.`);
   if(S.path==='van'&&c.van==='lai')add('Lên huyện làm việc','Ở nhà bấm E ở cửa.');
   if(S.path==='nong'&&a>=16&&(c.ruong||2)<RUONG_MAX&&c.mua!==now()&&S.tien>=ruongCost())add('Mua thêm ruộng',`Gặp cụ xã: ${ruongCost()} quan một thửa.`);
+  if(vatOpen())add('Hội xuân: sới vật ở đình','Vào cửa đình bấm E. Mỗi năm được vào sới một keo.');
   // nghề đang học dở, mùa này còn học được
   const ngheNext={ren:()=>a>=14&&S.renAt!==now()&&'Phụ bác thợ rèn quai búa (lò rèn trong kinh thành), mỗi mùa một lần.',
     cheo:()=>a>=12&&S.found&&S.found.do!=null&&S.cheoAt!==now()&&'Giúp ông lái đò ở bến sông Tô Lịch chèo đò, mỗi mùa một lần.',

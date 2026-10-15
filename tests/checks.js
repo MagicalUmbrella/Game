@@ -815,5 +815,51 @@
     return {errs, trai: [n0, n1, n2]};
   }
 
-  window.__checks = {career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  /* Màn chơi giữa game (dịch đậu mùa 1278, sâu 1280, tờ văn tự 1280, toán cướp 1280, đấu vật hội xuân):
+     đứng im thì thua (đúng kết cục), bot dịch chuyển theo MG.goal() thì thắng; kết cục hiện trong biên niên. */
+  function midgame() {
+    const d = D(), errs = [], out = {};
+    const flush = () => { while (d.modalOpen) d.nextModal(); d.closeDialog(); };
+    const fresh = (o) => { d.setS(Object.assign(d.newState('Thử'), {year: 1280, season: 0, cha: true, quests: {hoc: 'done', trau: 'done'}}, o)); d.startPlay(false); flush(); };
+    const idle = (start, maxT = 160) => { d[start](); const M = d.MG; for (let t = 0; t < maxT && d.MG === M; t += DT) d.step(DT); const ended = d.MG !== M; if (!ended) { d.setMG(null); document.body.classList.remove('mg'); } return ended; };
+    // bot: đứng ở mục tiêu kế tiếp, bấm E (cướp: Space); khung có lựa chọn thì chọn theo want(text)
+    const play = (start, want, maxT = 160, pre = 0) => { d[start](); const M = d.MG; let t = 0;
+      for (; t < pre; t += DT) d.step(DT);   // đứng chờ trước (ví dụ đợi nhà bên có người ốm)
+      while (d.MG === M && t < maxT) { const g = M.goal && M.goal(); if (g) { d.S.x = g[0]; d.S.y = g[1] + .3; }
+        for (let i = 0; i < 6; i++) { d.step(DT); t += DT; }
+        if (M.type === 'cuop') { ev(' ', true); ev(' ', false); } else { ev('e', true); ev('e', false); }
+        while (d.modalOpen) { const o = [...document.querySelectorAll('#modal .opt')]; const b = want && o.find(x => want(x.textContent)); if (b) b.click(); else if (o.length > 1) o[0].click(); else d.nextModal(); } }
+      while (d.modalOpen) { const o = [...document.querySelectorAll('#modal .opt')]; const b = want && o.find(x => want(x.textContent)); if (b) b.click(); else d.nextModal(); }
+      return t; };
+    // dịch đậu mùa
+    fresh({year: 1278}); if (!idle('startDich') || d.S.flags.daumua !== 'matcuu' || d.S.cha) errs.push(`dịch: đứng im mà kết cục ${d.S.flags.daumua}, cha ${d.S.cha}`);
+    fresh({year: 1278}); out.dich = play('startDich', null, 160, 26); if (!['cham', 'nam'].includes(d.S.flags.daumua) || !d.S.cha) errs.push(`dịch: bot chạy chữa mà kết cục ${d.S.flags.daumua}`);
+    if (!d.S.flags.dichGiup) errs.push('dịch: bot đi qua nhà chị Lụa mà không cứu đứa nhỏ');
+    // sâu cắn lúa
+    fresh({path: 'nong'}); if (!idle('startSau') || d.S.flags.sau !== 'mat') errs.push(`sâu: đứng im mà kết cục ${d.S.flags.sau}`);
+    fresh({path: 'nong'}); out.sau = play('startSau'); if (d.S.flags.sau !== 'giu') errs.push(`sâu: bot bắt sâu mà kết cục ${d.S.flags.sau}`);
+    // tờ văn tự: chọn sổ ruộng và người làm chứng vắng mặt thì thắng
+    fresh({path: 'van', van: 45}); out.kien = play('startKien', x => /Sổ ruộng|vắng làng/.test(x)); if (d.S.flags.kien !== 'thang') errs.push(`tờ văn tự: bot chọn đúng chứng cứ mà kết cục ${d.S.flags.kien}`);
+    fresh({path: 'van', van: 45}); play('startKien', x => /khóc|Cột mốc/.test(x)); if (d.S.flags.kien !== 'thua') errs.push(`tờ văn tự: chọn chứng cứ yếu mà kết cục ${d.S.flags.kien}`);
+    // toán cướp
+    fresh({path: 'vo', vo: 40}); if (!idle('startCuop') || !['lost', 'nga'].includes(d.S.flags.cuop)) errs.push(`cướp: đứng im mà kết cục ${d.S.flags.cuop}`);
+    fresh({path: 'vo', vo: 40}); out.cuop = play('startCuop'); if (d.S.flags.cuop !== 'win') errs.push(`cướp: bot đuổi đánh mà kết cục ${d.S.flags.cuop}`);
+    // đấu vật: bấm luân phiên A, D thì thắng; đứng im thì thua
+    const vat = (mash) => { d.S.year++; d.hoiVat(); const M = d.MG; let k = 0;
+      for (let t = 0; t < 25 && d.MG === M && !M.over; t += DT) { if (mash && (t * 60 | 0) % 4 === 0) { ev(k++ % 2 ? 'a' : 'd', true); } d.MG && d.MG.tick && d.MG.tick(DT); }
+      d.vatFlush(); flush(); };
+    fresh({year: 1276, season: 0, vo: 40}); vat(false); if (d.S.vat.lost !== 1 || d.S.vat.lv !== 0) errs.push(`vật: đứng im mà thắng (${JSON.stringify(d.S.vat)})`);
+    for (let i = 0; i < 3; i++) vat(true); if (!d.S.vat.do) errs.push(`vật: bấm đều tay ba năm mà chưa thành đô vật (${JSON.stringify(d.S.vat)})`);
+    // đô vật thêm 1 máu đêm 1285
+    const hp = (o) => { d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, path: 'nong', co: 'army', quests: {trau: 'done'}}, o)); d.startClimax(); const h = d.MG.maxhp; d.setMG(null); document.body.classList.remove('mg'); return h; };
+    if (hp({vat: {lv: 2, do: true, won: 3, lost: 0, last: 0}}) !== hp({}) + 1) errs.push('đô vật mà đêm 1285 không thêm máu');
+    // biên niên
+    d.setS(Object.assign(d.newState('Thử'), {flags: {sau: 'giu', kien: 'thang', cuop: 'win'}, vat: {do: true, won: 3, lost: 1}}));
+    const L = d.midChronicle().join(' ');
+    for (const w of ['sâu', 'văn tự', 'cướp', 'đô vật']) if (!L.includes(w)) errs.push(`biên niên thiếu dòng "${w}"`);
+    flush();
+    return {errs, out};
+  }
+
+  window.__checks = {midgame, career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();
