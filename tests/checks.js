@@ -710,6 +710,14 @@
     fresh({}); d.renderHUD(); let q = document.getElementById('quests').innerText;
     if (!/Mùa này/i.test(q) || !/trường làng|Học chữ/.test(q)) errs.push(`khung việc cần làm không gợi ý việc mùa này ("${q.slice(0, 80)}")`);
     d.S.suc = 0; d.renderHUD(); q = document.getElementById('quests').innerText; if (!/Hết Sức/.test(q)) errs.push('hết Sức mà khung việc không nhắc về ngủ');
+    // chạm trần chỉ số tuổi này thì thôi gợi ý học, luyện; sang năm (trần lên) thì gợi ý lại
+    fresh({}); d.S.van = d.stats.statCap('van'); d.S.vo = d.stats.statCap('vo'); d.renderHUD(); q = document.getElementById('quests').innerText;
+    if (/Học chữ|Luyện võ ở sân/.test(q)) errs.push('chạm trần tuổi mà khung việc vẫn gợi ý học, luyện');
+    season(); season(); season(); season(); d.S.suc = 3; d.renderHUD(); q = document.getElementById('quests').innerText;
+    if (!/Học chữ/.test(q)) errs.push('sang năm trần lên mà không gợi ý học lại');
+    // mẹ đã giao việc "Đến trường làng" thì không gợi ý trùng
+    fresh({year: 1264, quests: {hoc: 'active'}}); d.renderHUD(); q = document.getElementById('quests').innerText;
+    if (!/Đến trường làng/.test(q) || /Học chữ ở trường làng/.test(q)) errs.push('việc "Đến trường làng" bị gợi ý trùng');
     // giúp việc làng: Tiếng tăng, Đức không
     fresh({}); d.talkLy(); choose('Giúp việc làng'); closeDialog();
     if (!(d.S.tieng + ((d.S.frac || {}).tieng || 0) > 0) || d.S.duc !== 0) errs.push(`giúp việc làng: Tiếng ${d.S.tieng}, Đức ${d.S.duc} (mong Tiếng tăng, Đức không)`);

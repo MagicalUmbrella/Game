@@ -4,7 +4,7 @@
    sắp tới; bạn bè; chỗ chưa khám phá; hết Sức thì về ngủ. Mỗi gợi ý ghi rõ đến đâu, gặp ai. */
 import {vatOpen} from './minigames/vat.js';
 import {MG,S,age} from './state.js';
-import {STATS,sucMax} from './stats.js';
+import {STATS,sucMax,statCap} from './stats.js';
 import {NGHE,knows} from './nghe.js';
 import {foundCount,spotTotal} from './explore.js';
 import {RUONG_MAX,ruongCost,vanFailOpen} from './chuc.js';
@@ -16,11 +16,13 @@ export function suggestions(){
   if(S.suc<=0){add('Hết Sức mùa này','Bấm N để về nhà ngủ, sang mùa mới. Hoặc ở cửa nhà chọn việc chính cho thời gian trôi nhanh.');return out}
   if(!S.ate&&S.suc<sucMax())add('Ăn cơm mẹ nấu','Về nhà gặp mẹ.');
   // học, luyện chính
-  if(S.path==='van')add('Học ở Quốc học viện',`Gặp Học quan trong kinh thành (phía bắc, qua cổng thành)..`);
-  else if(S.path==='vo')add('Luyện ở Giảng võ đường',`Gặp Võ quan trong kinh thành, phía đông..`);
+  // chỉ số đã chạm trần tuổi này (statCap) thì thôi gợi ý học, luyện; sang năm trần lên thì gợi ý lại
+  const room=k=>(S[k]||0)<statCap(k);
+  if(S.path==='van'){if(room('van'))add('Học ở Quốc học viện',`Gặp Học quan trong kinh thành (phía bắc, qua cổng thành).`)}
+  else if(S.path==='vo'){if(room('vo'))add('Luyện ở Giảng võ đường',`Gặp Võ quan trong kinh thành, phía đông.`)}
   else if(S.path==='nong')add('Làm đồng',`Ra ruộng nhà mình phía nam làng, đứng trên ruộng bấm E.`);
-  else{if(S.thay)add('Học chữ ở trường làng',`Gặp thầy đồ Chu ở trường làng, phía nam đình.`);
-    if(a>=8)add('Luyện võ ở sân võ','Gặp lão võ sư Hoàng ở sân võ, phía đông bắc làng.')}
+  else{if(S.thay&&S.quests.hoc!=='active'&&room('van'))add('Học chữ ở trường làng',`Gặp thầy đồ Chu ở trường làng, phía nam đình.`);   // mẹ đã giao việc "Đến trường làng" thì khỏi gợi ý trùng
+    if(a>=8&&room('vo'))add('Luyện võ ở sân võ','Gặp lão võ sư Hoàng ở sân võ, phía đông bắc làng.')}
   // thăng tiến (chuc.js)
   const c=S.career||{};
   if(vanFailOpen())add('Trượt thi rồi, đi đường nào?','Về nhà bấm E ở cửa: ở lại Quốc học viện, về làng dạy học, hoặc làm lại viên ở huyện.');
@@ -35,7 +37,7 @@ export function suggestions(){
   if(a>=12&&!((S.nghe||{}).cheo)&&S.cheoAt!==now())add('Ra bến đò sông Hồng','Ông lái đò ngồi ở bến dưới chân đê, phía đông làng. Xin ông cho cầm chèo một chuyến.');
   for(const id of Object.keys(ngheNext)){const p=(S.nghe||{})[id]||0;if(p>0&&!knows(id)){const h=ngheNext[id]();if(h)add(`Học nghề ${NGHE[id].name.toLowerCase()} (${p}/${NGHE[id].need})`,h)}}
   // mốc chỉ số sắp tới
-  for(const st of STATS){if(st.k==='the')continue;const v=S[st.k],nx=st.marks.find(([m])=>v<m);if(nx&&nx[0]-v<=6)add(`Sắp tới mốc ${st.name} ${nx[0]}`,`Còn ${nx[0]-v} nữa: ${nx[1].charAt(0).toLowerCase()+nx[1].slice(1)}.`)}
+  for(const st of STATS){if(st.k==='the')continue;const v=S[st.k],nx=st.marks.find(([m])=>v<m);if(nx&&nx[0]-v<=6&&nx[0]<=statCap(st.k))add(`Sắp tới mốc ${st.name} ${nx[0]}`,`Còn ${nx[0]-v} nữa: ${nx[1].charAt(0).toLowerCase()+nx[1].slice(1)}.`)}
   // bạn bè
   if(S.ev.thao&&S.thao==='none'&&!S.thaoHelped&&a>=12)add('Gánh nước giúp Thảo','Thảo ở nhà bà Tư, cạnh nhà mình.');
   if(S.co==='village'&&!S.coPlayed&&a<26)add(a<14?'Đi chơi với Cò':'Ngồi uống nước với Cò','Cò hay ở quanh gốc đa đầu làng.');
