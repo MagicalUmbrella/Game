@@ -15,13 +15,17 @@ import {showStats} from './stats.js';
 import {exploreTarget} from './explore.js';
 import {step4} from './pathfind.js';
 
+function keyName(e){const c=e.code||'';
+  return c==='Space'?' ':/^Key[A-Z]$/.test(c)?c.slice(3).toLowerCase():/^Digit\d$/.test(c)?c.slice(5):/^Arrow/.test(c)?c.toLowerCase():(e.key||'').toLowerCase()}
 export const keys={};let lastAxis='y';
 addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT'){if(e.key==='Enter'){e.preventDefault();mpick(0)}return}
-  const k=e.key.toLowerCase();keys[k]=true;
+  // Lấy phím theo vị trí (e.code): bật bộ gõ tiếng Việt (Unikey, Telex) thì e.key có khi là 'Process' hay chữ đã ghép dấu,
+  // làm Space, E, WASD không ăn trong màn chơi.
+  const k=keyName(e);keys[k]=true;
   if(['a','d','arrowleft','arrowright'].includes(k))lastAxis='x';else if(['w','s','arrowup','arrowdown'].includes(k))lastAxis='y';
   if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
-  if(MG&&MG.modalKey&&modalOpen&&MG.modalKey(k))return;
+  if(MG&&MG.modalKey&&modalOpen){if(e.repeat)return;if(MG.modalKey(k))return}   // giữ phím không tính là bấm nhiều lần
   if(modalOpen){if(/^[1-9]$/.test(k))mpick(+k-1);return}
   if(dialogOpen){if(/^[1-9]$/.test(k))pick(+k-1);else if(k==='escape')closeDialog();return}
   if((k==='m'||(k==='escape'&&worldMapOpen))&&playing){toggleWorldMap();return}   // bản đồ thế giới
@@ -32,7 +36,7 @@ addEventListener('keydown',e=>{
   if(k==='n'&&playing&&!MG){goSleep();return}   // về nhà ngủ, sang mùa mới
   if(k==='e'&&playing&&target)target.act();
 });
-addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
+addEventListener('keyup',e=>{keys[keyName(e)]=false;keys[(e.key||'').toLowerCase()]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
 /* Đêm 1285: lửa chặn ô (MG.blockAt). Đang đứng sẵn trong ô ấy thì vẫn bước ra được. */
 export function solidAt(px,py){const tx=Math.floor(px),ty=Math.floor(py),t=get(tx,ty);if(MG&&MG.blockAt&&MG.blockAt(tx,ty)&&!(Math.floor(S.x)===tx&&Math.floor(S.y)===ty))return true;if(isW(t)||t===MO||t===TR||t===WL)return true;if(!(MG&&MG.roam)&&locked(S,tx,ty))return true;   // vùng chưa tới lúc (world.js)
