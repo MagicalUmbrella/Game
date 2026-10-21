@@ -50,9 +50,9 @@ const okGuard=(x,y)=>walkable(x,y)&&(!campSolid(x,y)||doorTile(x,y));   // lính
 function blockAt(x,y){return MG.type==='camp'&&!inRect(x,y,PEN)}
 
 /* ---------- người trong cảnh ---------- */
-function walker(id,name,look,x,y,extra){return Object.assign({id,name,look,x,y,dir:'down',walk:0,moving:false,path:null},extra||{})}
+export function walker(id,name,look,x,y,extra){return Object.assign({id,name,look,x,y,dir:'down',walk:0,moving:false,path:null},extra||{})}
 /* Đi tới (tx,ty) theo đường ô (4 hướng), tốc độ sp ô/giây. Trả về true khi đã tới. */
-function goTo(o,tx,ty,sp,dt,ok=okWalk){const d=Math.hypot(tx-o.x,ty-o.y);if(d<.12){o.moving=false;return true}
+export function goTo(o,tx,ty,sp,dt,ok=okWalk){const d=Math.hypot(tx-o.x,ty-o.y);if(d<.12){o.moving=false;return true}
   const st=nextStep(o,tx,ty,ok,MG.clock);if(!st){o.moving=false;return false}
   const [mx,my]=stepTo(o,st,Math.min(d,sp*dt),ok);o.x+=mx;o.y+=my;o.moving=!!(mx||my);if(o.moving){o.walk+=dt*8;o.dir=dirOf(mx,my)}return false}
 const frame=o=>o.moving?[1,0,2,0][Math.floor(o.walk)%4]:0;
@@ -121,7 +121,7 @@ function escortUpdate(dt){const M=MG;M.clock+=dt;const fast=keys[' ']?3:1;
   if(M.phase==='land'){M.k=Math.min(1,M.k+dt*1.1*fast);M.col.forEach((o,i)=>{const p=along(M.pts,Math.max(0,M.s-i*GAP)),a=M.from.get(o),u=M.k;setPos(o,[a[0]+(p.x-a[0])*u,a[1]+(p.y-a[1])*u],p.dir);if(!o.me)o.moving=u<1;else P.moving=u<1});
     if(M.k>=1)M.phase='walk2'}
 }
-function drawWalker(list,o,lab){list.push({y:o.y,f:()=>{shadow(o.x,o.y,10);drawSprite(personSprite(o.look,o.dir,frame(o)),o.x,o.y);if(o.tied)wrists(o.x,o.y);if(o.torch){const px=Math.round((o.x+(o.dir==='left'?-.35:.35))*TS),py=Math.round((o.y-.4)*TS);tongue(px,py-10,8,5,o.x)}},lab:lab&&Math.hypot(o.x-S.x,o.y-S.y)<5?[o.name,o.x,o.y-2]:null})}
+export function drawWalker(list,o,lab){list.push({y:o.y,f:()=>{shadow(o.x,o.y,10);drawSprite(personSprite(o.look,o.dir,frame(o)),o.x,o.y);if(o.tied)wrists(o.x,o.y);if(o.torch){const px=Math.round((o.x+(o.dir==='left'?-.35:.35))*TS),py=Math.round((o.y-.4)*TS);tongue(px,py-10,8,5,o.x)}},lab:lab&&Math.hypot(o.x-S.x,o.y-S.y)<5?[o.name,o.x,o.y-2]:null})}
 /* thừng trói tay: một vòng dây ngang thắt lưng */
 function wrists(x,y,dy=0){const px=Math.round(x*TS),py=Math.round((y+dy)*TS)-11;ctx.fillStyle='#8a6a3a';ctx.fillRect((px-4)*Z-camX,py*Z-camY,Z*8,Z*2);ctx.fillStyle='#5a4426';ctx.fillRect((px-1)*Z-camX,(py+2)*Z-camY,Z*2,Z*2)}
 /* sợi thừng võng xuống giữa hai người: từ tay người kéo tới chỗ trói người sau */

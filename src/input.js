@@ -40,7 +40,7 @@ addEventListener('keyup',e=>{keys[keyName(e)]=false;keys[(e.key||'').toLowerCase
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
 /* Đêm 1285: lửa chặn ô (MG.blockAt). Đang đứng sẵn trong ô ấy thì vẫn bước ra được. */
 export function solidAt(px,py){const tx=Math.floor(px),ty=Math.floor(py),t=get(tx,ty);if(MG&&MG.blockAt&&MG.blockAt(tx,ty)&&!(Math.floor(S.x)===tx&&Math.floor(S.y)===ty))return true;if(isW(t)||t===MO||t===TR||t===WL)return true;if(!(MG&&MG.roam)&&locked(S,tx,ty))return true;   // vùng chưa tới lúc (world.js)
-  if(campSolid(tx,ty))return true;   // rào, lều trong doanh trại giặc (trai.js)
+  if(campSolid(tx,ty)&&!(MG&&MG.passAt&&MG.passAt(tx,ty)))return true;   // rào, lều trong doanh trại giặc (trai.js); MG.passAt: chỗ rào đã nạy (trốn trại, chapter2)
   if(t===GA&&age()<12)return true;return bsolid[ty*W+tx]===1}
 const solidTerrain=(tx,ty)=>{const t=get(tx,ty);return isW(t)||t===MO||t===TR||t===WL||bsolid[ty*W+tx]===1};
 export function canStand(x,y){const r=.28;return!solidAt(x-r,y-.12)&&!solidAt(x+r,y-.12)&&!solidAt(x-r,y+.12)&&!solidAt(x+r,y+.12)}

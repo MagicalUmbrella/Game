@@ -657,6 +657,72 @@
     return {errs, out};
   }
 
+  /* Chương hai, phần mở đầu: sang chương từ màn kết, trốn trại (nạy rào, bị thấy thì bị bắt lại, đốt kho, ra khỏi
+     trại), tản cư, gặp dân binh, biên niên; nhánh không bị bắt đi thẳng vào tản cư; tải lại trang mở đúng cảnh. */
+  function chapter2() {
+    const d = D(), errs = [], out = {}, tr = d.trai, T2 = d.tron.TRON;
+    const base = (capt) => { d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, cha: true, co: 'village', tieng: 45, ended: true,
+      res: {reason: capt ? 'captured' : 'done', burnt: ['nha2', 'home'], lostWho: capt ? [{name: 'Mẹ', look: {id: 'me'}}] : [], thoc: 1, thocT: 2},
+      capt: capt ? {how: 'fight', for: null} : null}));
+      while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null); };
+    const modal = () => document.querySelector('#modal').innerText;
+    const pickAll = (until) => { for (let i = 0; i < 20 && d.modalOpen && !until.test(modal()); i++) d.mpick(0); };
+    // 1. bị bắt: sang chương hai vào màn trốn trại
+    base(true); if (!d.ch2.ch2Open(d.S)) errs.push('màn kết chương một mà ch2Open sai');
+    d.ch2.ch2Start(); d.mpick(0); let M = d.MG, S = d.S;
+    if (!M || M.type !== 'tron') { errs.push(`bị bắt mà sang chương hai không vào màn trốn trại (${M && M.type})`); return {errs, out}; }
+    while (d.modalOpen) d.nextModal();
+    // đứng yên trong chuồng: không ai thấy
+    run(3); if (M.alert > 0) errs.push('đứng trong chuồng mà bị lộ');
+    // nạy rào: tới cọc mục, giữ E
+    const L = M.goal(); S.x = L[0]; S.y = L[1] - .1;
+    if (!d.canStand(S.x, S.y)) errs.push(`chỗ nạy rào không đứng được (${S.x},${S.y})`);
+    ev('e', true); run(T2.PRY + .4); ev('e', false);
+    if (!M.open) errs.push(`giữ E ${T2.PRY + .4} giây mà chưa nạy được cọc rào`);
+    // từ chỗ nạy, đi ra được ngoài rào trại (BFS theo canStand)
+    const C = tr.CAMP, seen = new Set(), q = [[Math.floor(S.x), Math.floor(S.y)]]; let outOK = false;
+    while (q.length && !outOK) { const [x, y] = q.shift(); for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + a, ny = y + b, k = nx + ',' + ny;
+      if (seen.has(k) || nx < C.x0 - 4 || nx > C.x1 + 4 || ny < C.y0 - 2 || ny > C.y1 + 4) continue; seen.add(k);
+      if (!d.canStand(nx + .5, ny + .5)) continue; if (nx < C.x0 - 1 || ny > C.y1 + 2 || nx > C.x1 + 2) { outOK = true; break; } q.push([nx, ny]); } }
+    if (!outOK) errs.push('nạy rào xong mà không có đường ra khỏi trại');
+    // đứng giữa trước mặt lính giữ cổng tây: bị lộ, bị bắt lại về chuồng
+    const g = M.gate[0]; S.x = g.x + 1.6; S.y = g.y; M.burn = 0; M.horse = 0;
+    run(4); if (M.caught < 1) errs.push(`đứng trước mặt lính giữ cổng 4 giây mà không bị bắt lại (lộ ${M.alert.toFixed(2)})`);
+    else if (!tr.inRect(Math.floor(S.x), Math.floor(S.y), tr.PEN)) errs.push('bị bắt lại mà không về chuồng');
+    if (!M.open) errs.push('bị bắt lại mà lỗ rào bị bịt');
+    // lấy đuốc, đốt kho lương: lính giữ cổng bỏ chỗ
+    const f = tr.FIRES[1]; S.x = f[0] + .9; S.y = f[1]; let tg = M.findTarget();
+    if (!tg || !/đuốc/.test(tg.label)) errs.push('đứng cạnh đống lửa mà không lấy được đuốc'); else tg.act();
+    const G = tr.GRAN; S.x = G.x + 2.5; S.y = G.y + G.h + .8; tg = M.findTarget();
+    if (!tg || !/kho lương/.test(tg.label)) errs.push('cầm đuốc đứng cạnh kho mà không đốt được'); else tg.act();
+    M.alert = 0; S.x = tr.PEN_IN[0]; S.y = tr.PEN_IN[1]; run(6);
+    if (!M.burnt) errs.push('đốt kho mà không ghi'); else if (!M.gate.some(x => x.away)) errs.push('kho cháy mà lính giữ cổng không bỏ chỗ');
+    // ra ngoài trại: thoát
+    S.x = C.x0 - 3; S.y = C.y0 + 10; run(.2);
+    if (d.MG) errs.push('ra ngoài rào trại mà màn trốn trại chưa xong');
+    if (!S.c2.tron || !S.c2.tron.ok) errs.push('thoát mà S.c2.tron.ok sai');
+    pickAll(/Biên niên chương hai/);
+    const txt = modal(); out.chron = S.c2.chron.length;
+    if (!/Biên niên chương hai/.test(txt)) errs.push('chuỗi cảnh chương hai không tới màn biên niên');
+    for (const [re, what] of [[/trốn khỏi trại/, 'trốn trại'], [/kho lương/, 'đốt kho'], [/dân binh/, 'dân binh'], [/Trần Bình Trọng/, 'tin Trần Bình Trọng'], [/thóc/, 'thóc']])
+      if (!re.test(txt)) errs.push(`biên niên chương hai thiếu dòng ${what}`);
+    if (S.ch !== 2 || S.c2.scene !== 'cho') errs.push(`hết phần đã làm mà S.ch ${S.ch}, cảnh ${S.c2.scene}`);
+    while (d.modalOpen) d.nextModal();
+    // tải lại khi đang ở cảnh trốn trại: mở lại đúng cảnh
+    S.c2.scene = 'tron'; d.ch2.ch2Resume(); if (!d.MG || d.MG.type !== 'tron') errs.push('tải lại giữa cảnh trốn trại mà không mở lại màn');
+    // trời sáng chưa ra: thất bại, vẫn đi tiếp
+    d.MG.t = T2.T - .01; run(.1); if (S.c2.tron.ok) errs.push('trời sáng chưa ra khỏi trại mà vẫn tính thoát');
+    while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
+    // 2. không bị bắt: vào thẳng tản cư
+    base(false); d.ch2.ch2Start(); d.mpick(0);
+    if (d.MG) errs.push('không bị bắt mà vẫn vào màn trốn trại');
+    if (!/Làng sau đêm giặc/.test(modal())) errs.push('không bị bắt mà không vào cảnh tản cư');
+    pickAll(/Biên niên chương hai/); if (!/Biên niên chương hai/.test(modal())) errs.push('nhánh tản cư không tới màn biên niên');
+    while (d.modalOpen) d.nextModal();
+    document.body.classList.remove('mg');
+    return {errs, out};
+  }
+
   /* Bản đồ thế giới: kích thước; chương một không bước ra khỏi vùng An Phú (khóa vùng) và BFS không lan ra ngoài;
      mở hết các vùng thì đi bộ cộng đi đò tới được mọi biển địa danh, đầu đò, cổng doanh trại; trong doanh trại
      từ cổng tây tới được cửa chuồng tù, cổng đông, cổng nam; vẽ một mảnh nền không quá lâu. */
@@ -914,5 +980,5 @@
     return {errs};
   }
 
-  window.__checks = {nguArc, midgame, career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  window.__checks = {chapter2, nguArc, midgame, career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();

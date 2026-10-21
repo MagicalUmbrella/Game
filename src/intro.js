@@ -4,12 +4,13 @@ import {S,loadSave,newState,save,setS} from './state.js';
 import {renderHUD,showModal} from './ui.js';
 import {loseBuffalo} from './dialogs.js';
 import {resumePending} from './events.js';
+import {ch2Open,ch2Resume,ch2Start} from './chapter2/index.js';
 
 export function titleScreen(){
   const sv=loadSave(),touch=matchMedia('(pointer:coarse)').matches&&!matchMedia('(pointer:fine)').matches;
   showModal({big:true,kicker:'Một cuộc đời dưới triều Trần',title:'Đại Việt Một Đời',
     body:`<p>Sinh năm Mậu Ngọ 1258, lớn lên ở làng An Phú bên sông Tô Lịch. Học chữ, luyện võ, làm ruộng, thương một người, giữ một người bạn, rồi đứng trước đêm giặc phương bắc kéo đến làng.</p><p class="note">Sự kiện lịch sử trong game theo Đại Việt sử ký toàn thư. Mọi lựa chọn đều có hậu quả.${touch?' Game cần bàn phím, nên chơi trên máy tính.':''}</p>`,
-    choices:[...(sv&&!sv.ended&&sv.name?[{label:'Tiếp tục',note:`${sv.name} · ${sv.year-1258} tuổi`,fn:()=>{setS(sv);startPlay(true)}}]:[]),{label:'Bắt đầu cuộc đời',fn:birthScreen}]});
+    choices:[...(sv&&!sv.ended&&sv.name?[{label:'Tiếp tục',note:`${sv.name} · ${sv.ch===2?'chương hai':(sv.year-1258)+' tuổi'}`,fn:()=>{setS(sv);startPlay(true)}}]:[]),...(ch2Open(sv)&&sv.name?[{label:'Sang chương hai',note:`${sv.name} · 1285`,fn:()=>{setS(sv);startPlay(true,true);ch2Start()}}]:[]),{label:'Bắt đầu cuộc đời',fn:birthScreen}]});
 }
 function birthScreen(){
   showModal({kicker:'Xuân · Mậu Ngọ 1258',title:'Tiếng khóc chào đời',
@@ -23,4 +24,4 @@ function thoiNoi(){
      {label:'Bông lúa',note:'+5 quan',fn:pickItem('lua','tien',5,'Ông bà gật gù: có bát ăn bát để là phúc rồi.')},{label:'Chuỗi tràng hạt',note:'+5 Đức',fn:pickItem('hat','duc',5,'Mẹ chắp tay: con hiền lành thì trời thương.')}]});
 }
 export let playing=false;
-export function startPlay(fromSave){playing=true;if(S._reLose){S._reLose=false;loseBuffalo()}$('hud').hidden=false;renderHUD();if(fromSave)setTimeout(resumePending,60);else save();return true}
+export function startPlay(fromSave,noResume){playing=true;if(S._reLose){S._reLose=false;loseBuffalo()}$('hud').hidden=false;renderHUD();if(fromSave&&!noResume)setTimeout(()=>S.ch===2?ch2Resume():resumePending(),60);else save();return true}

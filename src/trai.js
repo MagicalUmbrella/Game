@@ -146,7 +146,7 @@ export function drawCamp(list){const x0=Math.floor(camX/T)-1,y0=Math.floor(camY/
   for(let y=Math.max(CAMP.y0,y0-1);y<=Math.min(CAMP.y1,y1+2);y++)for(let x=Math.max(THUY.x0,x0-1);x<=Math.min(CAMP.x1,x1+1);x++)if(isStake(x,y))list.push({y:y+1,f:()=>drawSprite(stakeSprite(),x+.5,y+1)});
   const openMain=MG&&MG.type==='escort';
   for(const p of [...PENS,HORSE])for(let y=p.y0-1;y<=p.y1+1;y++)for(let x=p.x0-1;x<=p.x1+1;x++){if(!vis(x,y))continue;
-    const f=p===HORSE?horseFence(x,y):penFence(x,y,openMain);if(f)list.push({y:y+.9,f:()=>drawSprite(fenceSprite(),x+.5,y+.95)})}
+    const f=p===HORSE?horseFence(x,y):penFence(x,y,openMain)&&!(MG&&MG.passAt&&MG.passAt(x,y));if(f)list.push({y:y+.9,f:()=>drawSprite(fenceSprite(),x+.5,y+.95)})}
   for(const t of [...TENTS,...T_TENTS])if(vis(t.x+1,t.y))list.push({y:t.y+2,f:()=>drawSprite(tentSprite(),t.x+1.5,t.y+2.05)});
   for(const g of GENS)if(vis(g.x+1,g.y))list.push({y:g.y+g.h,f:()=>{drawSprite(genSprite(),g.x+1.5,g.y+2.05);flagFx(g.x+2.6,g.y+1.6,false)},lab:Math.hypot(g.x+1.5-S.x,g.y+2-S.y)<5?[g.name,g.x+1.5,g.y-.9]:null});
   if(vis(CMD.x+2,CMD.y))list.push({y:CMD.y+CMD.h,f:()=>drawSprite(cmdSprite(),CMD.x+CMD.w/2,CMD.y+CMD.h+.05),lab:Math.hypot(OMN_AT[0]-S.x,OMN_AT[1]-S.y)<12?['Trướng Ô Mã Nhi',CMD.x+CMD.w/2,CMD.y-.9]:null});
