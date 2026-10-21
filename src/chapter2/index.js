@@ -1,11 +1,13 @@
 /* ================= chương hai: khởi đầu, lưu, nối các cảnh ================= */
 /* Chương hai (1285–1288), dàn ý ở docs/chuong2.md. Mọi người, việc quanh các mốc Toàn thư là hư cấu.
    S.ch = 2 khi đã sang chương hai. S.c2 giữ tiến trình:
-     scene: cảnh đang chơi ('tron' trốn trại, 'tancu' dẫn dân lánh nạn, 'danbinh' gặp dân binh, 'cd' trận Chương Dương, 'cho' hết phần đã làm)
+     scene: cảnh đang chơi ('tron' trốn trại, 'tancu' dẫn dân lánh nạn, 'danbinh' gặp dân binh, 'cd' trận Chương Dương, 'tim' cứu người ở trại bỏ hoang,
+            'tin' giặc chạy, 'vuave' vua về kinh, 'xet' phong thưởng trị tội, 'cho' hết phần đã làm)
      tron: kết quả trốn trại {ok, saved:[tên], burn, horse, caught}
      tancu: lựa chọn lúc tản cư {o, cha, gop}
      doi: số người làng theo bạn vào dân binh; men: trai làng ấy [{name, look, fallen}] (chuongduong.js)
-     cd: kết quả trận Chương Dương
+     cd: kết quả trận Chương Dương; tim: cứu người ở trại {cuu, xa, chet, ko, lo}; missing: người làng bị chở đi xa (chương ba)
+     duoi: 'duoi' theo dân binh đuổi giặc | 've' về làng; ten: viên quan ghi tên ('ghi' | 'doi'); caLoi: 'to' | 'tha'
      chron: các dòng biên niên chương hai
    Chơi lại từ bản lưu thì ch2Resume() mở lại đúng cảnh (gọi từ intro.startPlay). */
 import {S,save,setMG} from '../state.js';
@@ -15,6 +17,8 @@ import {startTron} from './trontrai.js';
 import {startTancu} from './tancu.js';
 import {startDanbinh,showCho} from './danbinh.js';
 import {startCD} from './chuongduong.js';
+import {startTim} from './giactan.js';
+import {startTin,startVuave,startXet} from './vuave.js';
 
 /* chương một đã xong (đêm 1285 có kết quả) thì sang được chương hai */
 export const ch2Open=sv=>!!(sv&&sv.res&&sv.ended&&sv.ch!==2);
@@ -30,6 +34,6 @@ export function ch2Start(){
     choices:[{label:'Bắt đầu',fn:()=>{runScene()}}]});
 }
 export function ch2Resume(){if(!S.c2)return;setMG(null);setKeys();document.body.classList.remove('mg','battle');runScene()}
-function runScene(){const sc=S.c2.scene;if(sc==='tron')startTron();else if(sc==='tancu')startTancu();else if(sc==='danbinh')startDanbinh();else if(sc==='cd'||(sc==='cho'&&!S.c2.cd))startCD();else showCho()}
+function runScene(){const sc=S.c2.scene;if(sc==='tron')startTron();else if(sc==='tancu')startTancu();else if(sc==='danbinh')startDanbinh();else if(sc==='cd'||(sc==='cho'&&!S.c2.cd))startCD();else if(sc==='tim'||(sc==='cho'&&!S.c2.tim))startTim();else if(sc==='tin')startTin();else if(sc==='vuave')startVuave();else if(sc==='xet')startXet();else showCho()}
 export function ch2Go(scene){S.c2.scene=scene;save();runScene()}
 export function ch2Note(line){if(S.c2&&line)S.c2.chron.push(line)}

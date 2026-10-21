@@ -1,7 +1,7 @@
 /* ================= chương hai · gặp dân binh ================= */
 /* Hư cấu (đội dân binh, người cầm đầu, lời nói), trừ các tin có src (Toàn thư, tháng 2 năm 1285).
    Bạn cùng trai làng gia nhập một đội dân binh ven sông. S.c2.doi: số người làng theo bạn.
-   Sau cảnh này là chỗ dừng hiện tại của chương hai (showCho): biên niên chương hai, "còn tiếp: Chương Dương". */
+   Sau cảnh này là trận Chương Dương (chuongduong.js). showCho: chỗ dừng hiện tại của chương hai, biên niên chương hai, "còn tiếp". */
 import {S,save} from '../state.js';
 import {gain,showModal} from '../ui.js';
 import {traiFromTieng} from '../stats.js';
@@ -34,6 +34,6 @@ function news(){
 /* Chỗ dừng hiện tại: phần sau (Chương Dương, Hàm Tử, Vân Đồn, Bạch Đằng) đang làm. */
 export function showCho(){S.c2.scene='cho';save();
   showModal({kicker:'Chương hai · còn tiếp',title:'Biên niên chương hai',wide:true,
-    body:`<ul class="chron">${S.c2.chron.map(l=>`<li>${l}</li>`).join('')}</ul><p>Giặc tan ở Chương Dương, nhưng Toa Đô, Ô Mã Nhi còn ở phía nam…</p><p class="note">Phần tiếp theo (giặc tan, vua về kinh) đang làm. Lần sau mở game sẽ chơi tiếp từ đây.</p>`,
+    body:`<ul class="chron">${S.c2.chron.map(l=>`<li>${l}</li>`).join('')}</ul><p>Năm Bính Tuất 1286, làng An Phú dựng lại trên nền cũ. Nhưng người ta bảo giặc phương bắc chưa chịu thôi…</p><p class="note">Phần tiếp theo (giữa hai cuộc chiến, 1286–1287) đang làm. Lần sau mở game sẽ chơi tiếp từ đây.</p>`,
     choices:[{label:'Bắt đầu một cuộc đời mới',fn:()=>{try{localStorage.removeItem('dvmd-save')}catch(e){}location.reload();return false}}]});
 }

@@ -38,6 +38,8 @@ import {prepCost} from './prep.js';
 import * as ch2 from './chapter2/index.js';
 import * as tron from './chapter2/trontrai.js';
 import * as cd from './chapter2/chuongduong.js';
+import * as gt from './chapter2/giactan.js';
+import * as vv from './chapter2/vuave.js';
 import {personSprite} from './sprites.js';
 import {loadPeople} from './person.js';
 import {groundChunk,overview,prewarm} from './ground.js';
@@ -54,4 +56,4 @@ const hook=import.meta.env.MODE==='test'&&{
   get modalOpen(){return ui.modalOpen},renderHUD:ui.renderHUD,get dialogOpen(){return ui.dialogOpen},pick:ui.pick,closeDialog:ui.closeDialog,mpick:ui.mpick,nextModal:ui.nextModal,startQuest:ui.startQuest,
   advance,advanceOne,EVENTS,LIFE,SPOTS,runLife,lifeChronicle,fastForward,chooseFocus,talkThay,talkVo,talkLy,talkRen,talkCha,talkMe,talkSach,talkTong,talkCo,talkThao,startPlay,fieldAction,fishAction,
   startFlood,endFlood,startExam,startTraining,tmHit,startClimax,finishClimax,startEscort,W,H,
-  dailyFlush,step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY,personSprite,groundChunk,overview,world,trai,stats,nghe,talkSu,loadSave:state.loadSave,doorAction,chuc,prepCost,endChapter,startDich,startCuop,startSau,startKien,hoiVat,startVat,vatFlush,midChronicle,cheo,loi,ngu,talkNgu:ngu.talkNgu,talkHocQuan,talkVoQuan,ch2,tron,cd};
+  dailyFlush,step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY,personSprite,groundChunk,overview,world,trai,stats,nghe,talkSu,loadSave:state.loadSave,doorAction,chuc,prepCost,endChapter,startDich,startCuop,startSau,startKien,hoiVat,startVat,vatFlush,midChronicle,cheo,loi,ngu,talkNgu:ngu.talkNgu,talkHocQuan,talkVoQuan,ch2,tron,cd,gt,vv};

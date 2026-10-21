@@ -147,7 +147,10 @@
     const where = new Set();
     // bài này chỉ xem giặc đi đúng địa hình: bạn đứng yên không ngã (giặc đông, khỏe hơn từ 10/2026 từng hạ bạn sớm,
     // màn kết thúc trước khi giặc kịp sang bờ nam, test báo lỗi chập chờn)
+    // cảnh nhỏ khi lên mốc chỉ số (moc.js) còn xếp hàng từ bài trước thì mở khung, chặn màn chơi: đóng đi
+    S.mocQ = [];
     for (let i = 0; i < 70 * 60 && d.MG === M; i++) {
+      while (d.modalOpen) d.nextModal();
       M.hp = 99; d.step(DT);
       for (const o of M.en.concat(M.al)) {
         if (o.dead || o.down) continue;
@@ -763,7 +766,7 @@
       const chron = d.S.c2.chron.join('\n');
       for (const [re, what] of [[/cắm lá cờ đầu tiên/, 'cắm cờ'], [/giữ được bến/, 'giữ bến'], [/Cánh trái sắp vỡ/, 'cánh trái'], [/hạ \d+ tên giặc/, 'số giặc hạ']]) if (!re.test(chron)) errs.push(`biên niên thiếu dòng ${what}`);
       if (R.fallen.length && !/Trai làng ngã ở Chương Dương/.test(chron)) errs.push('có trai làng ngã mà biên niên không ghi tên');
-      d.mpick(0); if (d.S.c2.scene !== 'cho') errs.push(`sau trận không sang cảnh kế (cảnh ${d.S.c2.scene})`);
+      d.mpick(0); if (d.S.c2.scene !== 'tim') errs.push(`sau trận không sang cảnh cứu người ở trại (cảnh ${d.S.c2.scene})`);
     }
     if (out.ms > 40) errs.push(`vẽ một khung trận mất ${out.ms} ms (quá chậm)`);
     while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
@@ -775,6 +778,58 @@
     else { if (!R2.cham && !R2.lo) errs.push('đứng yên ban đêm mà không bị trời rạng hay bị lộ'); if (!R2.late) errs.push('đứng yên mà vẫn giữ được bến'); if (R2.co !== 'khac') errs.push('đứng yên mà vẫn cắm được cờ'); if (R2.canh !== 'vo') errs.push('đứng yên không sang cánh trái mà cánh trái vẫn trụ được'); }
     while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
     document.body.classList.remove('mg', 'battle');
+    return {errs, out};
+  }
+
+  /* Giặc tan (chapter2/giactan.js, vuave.js): đứng yên thì hàng tù bị chở đi hết; bot đánh ngất lính từ sau lưng rồi cắt dây thì
+     cứu được hết; đứng trước mặt lính thì bị lộ; tin giặc chạy, vua về kinh (viên quan hỏi tên khi đủ công), bài thơ, tháng 8. */
+  function giactan() {
+    const d = D(), errs = [], out = {}, TIM = d.gt.TIM;
+    const modal = () => document.querySelector('#modal').innerText;
+    const setup = (cong) => { d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 1, ch: 2, path: 'vo', vo: 45, co: 'village', cha: true,
+      res: {reason: 'done', lostWho: [{name: 'Mẹ', look: {id: 'me_gia'}}, {name: 'Bà Tư', look: {id: 'batu'}}]},
+      c2: {scene: 'tim', cd: {cong}, chron: [], tancu: {}, tron: null, men: [{name: 'anh Tráng', look: {id: 'trai'}, fallen: false}]}}));
+      while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null); d.ch2.ch2Resume();
+      if (!/Trại giặc bỏ hoang/.test(modal())) errs.push('không mở khung trại giặc bỏ hoang'); d.mpick(0);
+      const M = d.MG; if (!M || M.type !== 'tim') { errs.push(`không vào màn cứu người (${M && M.type})`); return null; } return M; };
+    // 1. đứng yên: bị chở đi hết
+    let M = setup(0); if (!M) return {errs, out}; let t = 0;
+    for (; t < 200 && d.MG === M; t += 1 / 20) d.step(1 / 20);
+    out.idle = Math.round(t);
+    if (d.MG === M) errs.push('đứng yên mà màn cứu người không kết thúc sau 200 giây');
+    else { const R = d.S.c2.tim; if (R.cuu.length) errs.push('đứng yên mà vẫn cứu được người'); if (!(d.S.c2.missing || []).includes('Mẹ')) errs.push('mẹ bị chở đi mà không ghi vào S.c2.missing'); }
+    while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
+    // 2. đứng trước mặt lính đi đầu: bị lộ
+    M = setup(3); for (let i = 0; i < 200; i++) d.step(1 / 20);
+    const g0 = M.row[0], [vx, vy] = {up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0]}[g0.face || g0.dir];
+    for (let i = 0; i < 80 && !M.lo; i++) { d.S.x = g0.x + vx * 2; d.S.y = g0.y + vy * 2; d.step(1 / 20); }
+    if (!M.lo) errs.push('đứng ngay trước mặt lính mà không bị lộ');
+    // 3. bot: đánh ngất lính từ sau lưng, rồi cắt dây từng người
+    const back = {up: [0, 1], down: [0, -1], left: [1, 0], right: [-1, 0]};
+    for (const g of M.row.filter(o => o.guard)) { for (let i = 0; i < 3 && !g.ko; i++) { const [bx, by] = back[g.face || g.dir]; d.S.x = g.x + bx * .8; d.S.y = g.y + by * .8; M.alert = 0; M.stun = 0; M.key(' '); d.step(1 / 20); } }
+    out.ko = M.ko; if (M.ko < 2) errs.push(`đứng sau lưng lính bấm Space mà chỉ hạ được ${M.ko} tên`);
+    for (t = 0; t < 120 && d.MG === M; t += 1 / 20) { const c = M.caps.find(c => c.tied && !c.gone); if (c) { d.S.x = c.x + .4; d.S.y = c.y + .4; ev('e', true); } else ev('e', false); d.step(1 / 20); }
+    ev('e', false);
+    const R = d.S.c2.tim; out.cuu = R && R.cuu.length;
+    if (d.MG === M) errs.push('cứu hết mà màn không kết thúc');
+    else if (R.xa.length) errs.push(`hạ lính rồi cắt dây mà vẫn có người bị chở đi: ${R.xa.join(', ')}`);
+    // 4. tin, vua về kinh, tháng 8
+    if (!/Về bìa tre|Thuyền giặc/.test(modal())) errs.push('hết màn cứu người không có khung kết');
+    d.mpick(0); if (!/Giặc chạy/.test(modal())) errs.push('không tới khung giặc chạy'); d.mpick(0);
+    if (!/Tây Kết/.test(modal()) || !/Người làm tôi phải nên như thế này/.test(modal())) errs.push('khung tin Tây Kết thiếu tin hoặc lời vua'); d.mpick(0);
+    const V = d.MG; if (!V || V.type !== 'vuave') errs.push(`không vào cảnh vua về kinh (${V && V.type})`);
+    else { let asked = false; window.dispatchEvent(new KeyboardEvent('keydown', {key: ' '}));
+      for (t = 0; t < 120 && d.MG === V; t += 1 / 20) { if (d.modalOpen) { if (/hỏi tên/.test(modal())) { asked = true; d.mpick(0); } else break; } d.step(1 / 20); }
+      window.dispatchEvent(new KeyboardEvent('keyup', {key: ' '})); out.vuave = Math.round(t);
+      if (!asked) errs.push('đủ công mà viên quan không dừng lại hỏi tên');
+      if (d.MG === V) errs.push('đoàn rước không đi hết sau 120 giây');
+      if (!/Đoạt sáo Chương Dương độ/.test(modal()) || !/Non nước cũ muôn thu/.test(modal())) errs.push('thiếu bài thơ Trần Quang Khải'); d.mpick(0);
+      if (!/Phong thưởng và trị tội/.test(modal())) errs.push('không tới khung tháng 8'); d.mpick(0);
+      if (!/Biên niên chương hai/.test(modal())) errs.push('không tới màn biên niên chương hai');
+      const chron = d.S.c2.chron.join('\n');
+      for (const [re, what] of [[/cắt dây cứu/, 'cứu người'], [/đuổi giặc/, 'đuổi giặc'], [/ghi tên bạn/, 'viên quan ghi tên'], [/Cả Lợi/, 'ông Cả Lợi'], [/tám quan/, 'thưởng']]) if (!re.test(chron)) errs.push(`biên niên thiếu dòng ${what}`); }
+    while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
+    document.body.classList.remove('mg');
     return {errs, out};
   }
 
@@ -1035,5 +1090,5 @@
     return {errs};
   }
 
-  window.__checks = {chuongduong, chapter2, nguArc, midgame, career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  window.__checks = {giactan, chuongduong, chapter2, nguArc, midgame, career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();

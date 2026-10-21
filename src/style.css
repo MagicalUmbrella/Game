@@ -99,3 +99,6 @@ body.mg #toast{top:104px}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
 
 body{margin:0}img{max-width:100%}
+
+/* bài thơ trong khung sự kiện (chương hai) */
+.card .body p.poem{text-align:center;line-height:1.7;margin:10px 0}
