@@ -24,7 +24,7 @@ OUT = '#1a1210'                        # màu viền
 
 # ---------------------------------------------------------------- bảng màu chung
 BASE = dict(
-    S='#f3bf96', s='#d99169', b='#ee8f7c', K='#1a1210', m='#b9473a', u='#e3b190', w='#ffffff',
+    S='#f3bf96', s='#d99169', b='#ee8f7c', K='#1a1210', m='#b9473a', u='#e3b190', w='#ffffff', Q='#a8443a',   # Q: vết sẹo
     H='#2b2226', h='#54434b', G='#140f11',                 # tóc đen
     A='#f1e6c8', a='#c8b48e',                               # viền áo, áo lót trắng
     X='#d0473a',                                            # yếm đỏ
@@ -308,7 +308,7 @@ PEOPLE = [
     ('giac', 'Giặc', dict(hair='knot', hat='mugiac', beard='mus', torso='armor', legs='boots', weapon='dao', pal={**C('#3e4a62'), **B2('#3a2a1e'), **P2('#2a2826')})),
     ('giac_ky', 'Giặc kỵ', dict(hair='knot', hat='mugiac', plume=True, beard='full', torso='armor', legs='boots', weapon='dao', pal={**C('#6a4a2e'), **B2('#3a2a1e'), **P2('#2a2826')})),
     # đêm 1285, hồi ba (hư cấu): tên đầu toán giặc áo đỏ thẫm, đai vàng; cu Tí con nhà hàng xóm
-    ('giac_dau', 'Tên đầu toán', dict(hair='knot', hat='mugiac', plume=True, beard='full', torso='armor', legs='boots', weapon='dao', pal={**C('#7a2622'), **B2('#d9b25a'), **P2('#241f1e')})),
+    ('giac_dau', 'Tên đầu toán', dict(hair='knot', hat='mugiac', plume=True, beard='full', scar=True, torso='armor', legs='boots', weapon='dao', pal={**C('#7a2622'), **B2('#d9b25a'), **P2('#241f1e')})),
     ('laido', 'Ông lái đò', dict(hair='knot', hat='nonla', beard='long', torso='shirt', legs='bare', pal={**GREY, **C('#4f6a74'), **B2('#2e3e44'), **P2('#3e3a34'), 'T': '#e6c98a', 'U': '#fbe8b8', 't': '#b08f52'})),
     ('khach', 'Khách qua đò', dict(hair='bun', hat='nonla', face='w', torso='dress', legs='feet', pal={**C('#9a6a4a'), **B2('#4a3020'), 'T': '#e6c98a', 'U': '#fbe8b8', 't': '#b08f52'})),
     # người làng, quân các làng: nhiều kiểu để đám đông không giống nhau, không giống bạn (khăn đỏ là của bạn)
@@ -398,6 +398,8 @@ def frame(spec, d, f, atk=None):
     if spec.get('beard'): put(BEARD[spec['beard']][d], bob, HX)
     if spec.get('hat'): put(sq(HAT[spec['hat']][d]) if spec['hat'] != 'nonla' else HAT['nonla'][d], bob, HX)
     if spec.get('plume'): put(HAT['plume'][d], bob, HX)
+    if spec.get('scar') and d != 'up':   # vết sẹo chém chéo qua má (Mặt Sẹo, tên đầu toán)
+        for y, x in ([(4, 3), (5, 2), (6, 2), (7, 3)] if d == 'down' else [(4, 6), (5, 5), (6, 5), (7, 6)]): grid[(x + HX, y + bob)] = 'Q'
     # chém
     if atk is not None and wpn:
         cols, back = WEAPON[wpn]

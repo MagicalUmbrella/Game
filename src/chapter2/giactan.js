@@ -23,7 +23,8 @@ import {DK,PA,BR,ST,GA,SA} from '../constants.js';
 import {roadRoute,along} from '../pathfind.js';
 import {walker,goTo,drawWalker} from '../camp.js';
 import {CAMP,FIRES,PEN_DOOR,campMini,campSolid,drawCamp,hideProp} from '../trai.js';
-import {tongue,smoke} from '../climax.js';
+import {tongue,smoke,drawBubbles} from '../climax.js';
+import {MS,msMeet,msTaunt} from './matseo.js';
 import {hudBar,hudBox} from '../minigames/flood.js';
 import {ch2Go,ch2Note} from './index.js';
 
@@ -61,7 +62,8 @@ function begin(col,chet){
   const row=[g(0)];caps.forEach((c,i)=>{row.push(c);if(!few&&i===Math.floor(caps.length/2)-1)row.push(g(1))});row.push(g(2));
   row.forEach((o,i)=>o.k=i);
   const [sx,sy]=nearOK(CAMP.x0-7,32.5),safe=nearOK(CAMP.x0-9,44.5);S.x=sx;S.y=sy;st.P.dir='right';
-  setMG({type:'tim',t:0,clock:0,pts,L,s:0,row,caps,chet,safe,alert:0,seen:false,lo:0,ko:0,cut:0,cutting:null,stun:0,rush:0,warned:0,look:TIM.LOOK,done:false,
+  const ms=walker('ms',MS.name,MS.look,...nearOK(end[0]-.6,end[1]-.4),{dir:'left',torch:true});msMeet('thuyen');   // Mặt Sẹo đứng ở bến chờ hàng tù (hư cấu)
+  setMG({type:'tim',ms,bub:[],t:0,clock:0,pts,L,s:0,row,caps,chet,safe,alert:0,seen:false,lo:0,ko:0,cut:0,cutting:null,stun:0,rush:0,warned:0,look:TIM.LOOK,done:false,
     hideNPC:true,roam:true,hideProp,update:tUpdate,draw:tDraw,post:tPost,hud:tHud,key:tKey,findTarget:tTarget,mini:campMini,speedMul:()=>st.MG.stun>0?0:.8,
     goal:()=>{const c=st.MG.caps.find(c=>c.tied&&!c.gone);return c?[c.x,c.y]:[S.x,S.y]}});
   document.body.classList.add('mg');
@@ -74,7 +76,8 @@ function sight(g,o){const dx=o.x-g.x,dy=o.y-g.y,d=Math.hypot(dx,dy);if(d>TIM.VIE
   const n=Math.ceil(d/.3);for(let i=1;i<n;i++){const x=Math.floor(g.x+dx*i/n),y=Math.floor(g.y-.4+dy*i/n);if(campSolid(x,y)||get(x,y)===4)return 0}   // lều, rào, cây che
   return 1-d/TIM.VIEW*.6}
 
-function tUpdate(dt){const M=st.MG;if(M.done)return;M.t+=dt;M.clock=M.t;M.stun-=dt;M.rush-=dt;M.warned-=dt;
+function tUpdate(dt){const M=st.MG;if(M.done)return;M.t+=dt;M.clock=M.t;
+  for(const b of M.bub)b.t-=dt;M.bub=M.bub.filter(b=>b.t>0);if(M.ms&&!M.msSaid&&Math.hypot(M.ms.x-S.x,M.ms.y-S.y)<7){M.msSaid=true;M.bub.push({o:M.ms,text:msTaunt(),t:4.5})}M.stun-=dt;M.rush-=dt;M.warned-=dt;
   // hàng tù đi theo đường; ai đã lên bến thì bị chở đi
   M.s+=TIM.PACE*(M.rush>0?1.7:1)*dt;let k=0;
   for(const o of M.row){if(o.gone||o.free)continue;const s=Math.max(0,M.s-k*TIM.GAP);k++;
@@ -111,12 +114,13 @@ function finish(M){M.done=true;setMG(null);setKeys();document.body.classList.rem
   ch2Note(cuu.length?`Giặc bỏ trại Gia Lâm, bạn lẻn tới cắt dây cứu ${cuu.map(lc).join(', ')} khỏi hàng tù.`:'Giặc bỏ trại Gia Lâm, bạn không cứu được ai khỏi hàng tù.');
   if(ownXa.length)ch2Note(`${ownXa.map(cap1).join(', ')} bị giặc chở đi trên thuyền, không biết về đâu.`);
   if(M.ko)ch2Note(`Bạn đánh ngất ${M.ko} tên lính áp giải từ sau lưng.`);
+  ch2Note('Ở bến thủy trại, Mặt Sẹo đứng chờ hàng tù rồi xuống thuyền giặc đi mất.');
   save();
   showModal({kicker:'Hạ 1285 · cuối tháng năm',title:ownXa.length?'Thuyền giặc đi xa':'Về bìa tre',
     body:`${cuu.length?`<p>Ở bìa tre, ${cuu.map(lc).join(', ')} ngồi bệt xuống đất, cổ tay còn hằn vết dây.${ownCuu.length?' Người làng ôm lấy nhau mà khóc.':''}</p>`:''}
       ${xa.length?`<p>Chiếc thuyền giặc rời bến, chở theo ${xa.map(lc).join(', ')}. Bạn đứng trên bãi nhìn theo tới khi cánh buồm khuất sau khúc sông.</p>`:''}
       <p class="note">Hư cấu.${ownXa.length?' Người bị chở đi sẽ được nhắc lại về sau.':''}</p>`,
-    choices:[{label:'Tiếp tục',fn:()=>ch2Go('tin')}]})}
+    choices:[{label:'Tiếp tục',fn:()=>ch2Go('tin')}]})}   // 'tin': lửa trại ngày giặc tan (traiDB.js)
 const cap1=n=>n[0].toUpperCase()+n.slice(1);
 
 /* ---------- vẽ ---------- */
@@ -125,9 +129,10 @@ function cone(g){const [vx,vy]=DIRV[g.face||g.dir]||[0,1],a=Math.atan2(vy,vx),h=
 function tDraw(list){const M=st.MG;drawCamp(list);
   for(const o of M.row){if(o.gone)continue;if(o.ko){list.push({y:o.y,f:()=>{ctx.fillStyle='#0b0d0c';ctx.fillRect(o.x*T-camX-21,o.y*T-camY-12,42,15);ctx.fillStyle='#3c4250';ctx.fillRect(o.x*T-camX-18,o.y*T-camY-9,36,9)}});continue}drawWalker(list,o,!o.guard)}
   for(const c of M.caps)if(c.free&&!c.gone)drawWalker(list,c,true);
+  if(M.ms)drawWalker(list,M.ms,true);
   // khói còn bốc ở mấy đống lửa trại bỏ
   list.push({y:-1e8,f:()=>{for(const [i,f] of FIRES.entries()){const px=Math.round(f[0]*TS),py=Math.round(f[1]*TS);smoke(px,py-6,i+3,7);if(i%2)tongue(px,py,7,6,i)}}})}
-function tPost(){const M=st.MG;for(const g of guards(M))if(Math.abs(g.x-S.x)<16&&Math.abs(g.y-S.y)<10)cone(g);
+function tPost(){const M=st.MG;for(const g of guards(M))if(Math.abs(g.x-S.x)<16&&Math.abs(g.y-S.y)<10)cone(g);drawBubbles(M.bub);
   if(M.cutting&&M.cut>0){const sx=S.x*T-camX,sy=(S.y-1.9)*T-camY;ctx.fillStyle='#0b0d0c';ctx.fillRect(sx-22,sy,44,8);ctx.fillStyle='#9fcaa9';ctx.fillRect(sx-20,sy+2,40*M.cut/TIM.CUT,4)}}
 function tHud(){const M=st.MG,w=Math.min(470,innerWidth-32),x=Math.round(innerWidth/2-w/2);hudBox(x,16,w,46);
   ctx.font='600 12px "Be Vietnam Pro", system-ui, sans-serif';ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillStyle='#e2bf72';ctx.fillText('Trại giặc bỏ hoang · cứu người khỏi hàng tù',x+12,30);
