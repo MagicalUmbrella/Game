@@ -21,8 +21,8 @@ import {endMG} from './chung.js';
 
 const src=t=>`<p class="src">Toàn thư chép: ${t}</p>`;
 /* bến tây (bờ làng) và bến đông; thuyền chạy ngang trên dòng y = BEN */
-export const BEN=44.6,WX=78.6,EX=92.3,SHORE_W=[77.2,BEN],SHORE_E=[93.6,BEN];
-export const LAIDO={x:76.6,y:43.5};   // chỗ ông lái đò ngồi chờ khách
+export const BEN=64.6,WX=78.6,EX=92.3,SHORE_W=[77.2,BEN],SHORE_E=[93.6,BEN];
+export const LAIDO={x:76.6,y:63.5};   // chỗ ông lái đò ngồi chờ khách
 /* Độ khó (chỉnh bằng bot trong tests): sức một lần chèo, tốc độ tối đa, sức cản, nước chảy (giữa dòng), sức lái,
    độ lệch bến cho phép, thời gian, thời gian được tính "nhanh". GUST: nước lúc mạnh lúc yếu. */
 export const CHEO={IMP:.42,VMAX:3.2,DRAG:.9,CUR:1.7,GUST:.5,STEER:2.3,TOL:.7,TMAX:42,FAST:30};

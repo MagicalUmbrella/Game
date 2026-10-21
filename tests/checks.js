@@ -2,7 +2,7 @@
    Mỗi hàm trả về danh sách lỗi (mảng chuỗi rỗng là đạt) kèm vài số liệu. */
 (() => {
   const D = () => window.__dv;
-  const W = 480, H = 240, DT = 1 / 60;   // bản đồ thế giới (src/constants.js); bài world() kiểm tra lại
+  const W = 480, H = 260, DT = 1 / 60;   // bản đồ thế giới (src/constants.js); bài world() kiểm tra lại
   const ev = (k, down) => window.dispatchEvent(new KeyboardEvent(down ? 'keydown' : 'keyup', {key: k}));
   const run = (sec, dt = DT) => { for (let t = 0; t < sec; t += dt) D().step(dt); };
 
@@ -17,7 +17,7 @@
   /* Mọi NPC, cửa nhà, biển, chuồng trâu, đống đất và chỗ đê vỡ (1270), người và thóc cần cứu, rừng
      trú ẩn (1285), chỗ giấu trâu đều đi tới được từ nhà. Bán kính lấy nhỏ hơn bán kính bấm E một chút. */
   function reach() {
-    const d = D(), S = d.S, prev = d.bfs(43, 50), errs = [];
+    const d = D(), S = d.S, prev = d.bfs(43, 70), errs = [];
     let n = 0;
     const need = (name, x, y, r) => { n++; if (!near(prev, x, y, r)) errs.push(`không tới được ${name} (${x.toFixed(1)}, ${y.toFixed(1)})`); };
     // NPC: thử vị trí ở nhiều năm và nhiều nhánh truyện (NPC có at() đổi chỗ theo trạng thái)
@@ -840,29 +840,29 @@
     const d = D(), errs = [], out = {}, wd = d.world;
     if (d.W !== W || d.H !== H) errs.push(`checks.js ghi bản đồ ${W}×${H} nhưng game là ${d.W}×${d.H}`);
     d.setS(Object.assign(d.newState('Thử'), {year: 1270, season: 0, quests: {trau: 'done'}}));
-    let S = d.S, prev = d.bfs(43, 50), leak = 0;
+    let S = d.S, prev = d.bfs(43, 70), leak = 0;
     for (let i = 0; i < W * H; i++) if (prev[i] !== -2 && wd.regionId(i % W, (i / W) | 0) !== 'anphu') leak++;
     if (leak) errs.push(`chương một: BFS từ nhà lan ra ${leak} ô ngoài vùng An Phú`);
     // đi thẳng xuống nam ở mép dưới vùng An Phú, đi sang đông ở bến Đông Bộ Đầu: phải dừng ở ranh
-    S.x = 40.5; S.y = 70.5; ev('s', true); run(3); ev('s', false);
-    if (S.y >= 72) errs.push(`chương một mà đi được xuống phía nam ra ngoài vùng (y ${S.y.toFixed(1)})`);
+    S.x = 40.5; S.y = 90.5; ev('s', true); run(3); ev('s', false);
+    if (S.y >= 92) errs.push(`chương một mà đi được xuống phía nam ra ngoài vùng (y ${S.y.toFixed(1)})`);
     if (!/chưa tới lúc/.test(document.getElementById('toast').innerText)) errs.push('chạm ranh vùng chưa mở mà không có lời nhắc');
     // mở hết các vùng: tới được mọi nơi (đi bộ + đò)
     S.regions = Object.keys(wd.REGIONS); S.res = null;
-    const seen = new Int32Array(W * H).fill(-2), comp = [[43, 50]];
+    const seen = new Int32Array(W * H).fill(-2), comp = [[43, 70]];
     const used = new Set();
     while (comp.length) { const [sx, sy] = comp.pop(); const p = d.bfs(sx, sy); for (let i = 0; i < W * H; i++) if (p[i] !== -2) seen[i] = 1;
       wd.FERRIES.forEach((f, k) => { for (const [a, b] of [[f.a, f.b], [f.b, f.a]]) { if (used.has(k + ':' + a)) continue; if (seen[Math.floor(a[1]) * W + Math.floor(a[0])] === 1) { used.add(k + ':' + a); comp.push([Math.floor(b[0]), Math.floor(b[1])]); } } }); }
     const reachSet = seen.map(v => v === 1 ? 0 : -2);
     for (const s of wd.WSIGNS) if (!near(reachSet, s.x + .5, s.y + 1.2, 1.6)) errs.push(`biển "${s.name}" (${s.x}, ${s.y}) không tới được`);
     for (const f of wd.FERRIES) for (const e of [f.a, f.b]) if (!near(reachSet, e[0], e[1], 1.3)) errs.push(`đầu đò "${f.name}" (${e[0]}, ${e[1]}) không tới được`);
-    const C = wd.CAMP; if (!near(reachSet, C.x0 - .5, 12.5, 1.2)) errs.push('cổng tây doanh trại không tới được');
+    const C = wd.CAMP; if (!near(reachSet, C.x0 - .5, 32.5, 1.2)) errs.push('cổng tây doanh trại không tới được');
     // trong trại (đã dựng): từ cổng tây tới cửa chuồng tù, cổng đông, cổng nam
     S.res = {reason: 'done'}; const T = d.trai;
     const ok = (x, y) => d.walkable(x, y) && !T.campSolid(x, y);
-    const q = [[C.x0, 12]], vis = new Set([C.x0 + ',' + 12]);
+    const q = [[C.x0, 32]], vis = new Set([C.x0 + ',' + 32]);
     while (q.length) { const [x, y] = q.shift(); for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + a, ny = y + b, k = nx + ',' + ny; if (vis.has(k) || !ok(nx, ny) || nx < C.x0 - 2 || nx > C.x1 + 2 || ny < C.y0 - 1 || ny > C.y1 + 2) continue; vis.add(k); q.push([nx, ny]); } }
-    for (const [nm, x, y] of [['cửa chuồng tù', T.PEN.door, T.PEN.y0 - 2], ['cổng đông', C.x1, 20], ['cổng nam', 153, C.y1], ['trướng Ô Mã Nhi', Math.floor(T.KC_AT[0]), Math.floor(T.KC_AT[1])]])
+    for (const [nm, x, y] of [['cửa chuồng tù', T.PEN.door, T.PEN.y0 - 2], ['cổng đông', C.x1, 40], ['cổng nam', 153, C.y1], ['trướng Ô Mã Nhi', Math.floor(T.KC_AT[0]), Math.floor(T.KC_AT[1])]])
       if (!vis.has(x + ',' + y)) errs.push(`trong doanh trại không đi được từ cổng tây tới ${nm} (${x}, ${y})`);
     // đi đò thật (bến Chương Dương): có cảnh thuyền, tới bờ bên kia
     S.res = null; const f = wd.FERRIES.find(x => /Chương Dương/.test(x.name)); S.x = f.a[0]; S.y = f.a[1]; d.step(DT);
@@ -935,7 +935,7 @@
     if (!/Chỉ đường/.test(document.getElementById('prompt').innerText)) errs.push(`Đức 25: đứng cạnh mẹ mà không chỉ đường được ("${document.getElementById('prompt').innerText}")`);
     d.setMG(null); M = night({duc: 0}); d.S.x = M.v.find(p => p.id === 'me').x + .4; d.S.y = M.v.find(p => p.id === 'me').y; d.step(DT);
     if (/Chỉ đường/.test(document.getElementById('prompt').innerText)) errs.push('Đức 0 (đường nông) mà vẫn chỉ đường được');
-    d.setMG(null); M = night({nghe: {thuoc: d.nghe.NGHE.thuoc.need}}); M.spawnT = 1e9; M.hp = 1; d.S.x = 20; d.S.y = 60; run(4);
+    d.setMG(null); M = night({nghe: {thuoc: d.nghe.NGHE.thuoc.need}}); M.spawnT = 1e9; M.hp = 1; d.S.x = 20; d.S.y = 80; run(4);
     if (M.hp !== 2) errs.push(`biết thuốc nam mà còn 1 máu không tự băng bó (máu ${M.hp})`);
     d.setMG(null); document.body.classList.remove('mg');
     // bản lưu cũ (chưa tách Đức, Tiếng)

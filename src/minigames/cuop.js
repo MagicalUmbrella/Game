@@ -20,16 +20,16 @@ import {darkPost,endMG,goalArrow} from './chung.js';
 /* Độ khó (chỉnh bằng bot): tốc độ tên dắt trâu, tốc độ hai tên chặn, máu mỗi tên, khoảng cách bắt đầu chặn,
    nhịp đánh của cướp. */
 export const CUOP={LEAD_SP:1.35,GUARD_SP:2.6,HP:5,AGGRO:4.5,HIT_CD:1.15,MY_CD:.36};   // 10/2026: khó hơn (trước LEAD_SP 1.25, HP 4; đường ra thuyền dài hơn qua WAYS)
-const BOAT={x:81.2,y:57.5},START={x:43.5,y:49.8};
+const BOAT={x:81.2,y:77.5},START={x:43.5,y:69.8};
 /* tên dắt trâu đi vòng xuống bờ ruộng phía nam rồi mới ra thuyền (WAYS), đường dài hơn để người chơi có thời gian đuổi */
-const WAYS=[[60.5,66.5],[74.5,66.5]];
+const WAYS=[[60.5,86.5],[74.5,86.5]];
 const okW=(x,y)=>!solidAt(x+.5,y+.5);
 const pDmg=()=>1+(S.vo>=50?1:0)+(has('Kiếm sắt')?1:0);
 
 export function startCuop(){
-  const en=[{lead:true,x:54.5,y:55.5},{x:53.5,y:54.5},{x:53.5,y:56.5}].map((e,i)=>({...e,id:i,hp:CUOP.HP,cd:0,stun:0,dir:'right',walk:0,swing:0,dead:false,flash:0}));
+  const en=[{lead:true,x:54.5,y:75.5},{x:53.5,y:74.5},{x:53.5,y:76.5}].map((e,i)=>({...e,id:i,hp:CUOP.HP,cd:0,stun:0,dir:'right',walk:0,swing:0,dead:false,flash:0}));
   const hp=Math.max(2,4+voHp()+theHp());
-  setMG({type:'cuop',t:0,en,hp,maxhp:hp,inv:0,cd:0,swing:0,trau:{x:52.5,y:55.5,dir:'right',trail:[]},hideNPC:true,
+  setMG({type:'cuop',t:0,en,hp,maxhp:hp,inv:0,cd:0,swing:0,trau:{x:52.5,y:75.5,dir:'right',trail:[]},hideNPC:true,
     update:cUpdate,findTarget:()=>null,draw:cDraw,hud:cHud,post:cPost,key:cKey,goal:cGoal,speedMul:()=>1});
   S.x=START.x;S.y=START.y;P.dir='down';document.body.classList.add('mg');
   setKeys('<span><kbd>Space</kbd> đánh</span><span><kbd>Shift</kbd> chạy</span><span>Hạ tên dắt trâu trước khi hắn ra tới thuyền</span>');

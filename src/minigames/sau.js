@@ -16,9 +16,9 @@ import {endMG,goalArrow,pickTiles} from './chung.js';
 /* Độ khó (chỉnh bằng bot): thời gian, nhịp mọc ổ mới, thời gian một ổ lớn hết cỡ, số nắm tro mỗi lần lấy,
    ngưỡng hại lúa cho từng kết cục. */
 export const SAU={T:75,SPAWN:4,GROW:18,TRO:4,START:4,GIU:10,VUA:20,MAX:7};   // MAX: số ổ tối đa cùng lúc
-const DOOR={x:43.5,y:49.6};
+const DOOR={x:43.5,y:69.6};
 export function startSau(){
-  const field=pickTiles(43,50,28,52,78,72,(x,y)=>get(x,y)===FI,400,1);
+  const field=pickTiles(43,70,28,72,78,92,(x,y)=>get(x,y)===FI,400,1);
   const M={type:'sau',t:0,field,o:[],tro:0,dmg:0,spawnT:SAU.SPAWN,
     update:sUpdate,findTarget:sTarget,draw:sDraw,hud:sHud,goal:sGoal};
   setMG(M);for(let i=0;i<SAU.START;i++)spawn(M);

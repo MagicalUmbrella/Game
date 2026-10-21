@@ -6,6 +6,8 @@ import {BUILDINGS,DECOR,SIGNS,TREES,isW,map} from './map.js';
 import {drawGround,overview} from './ground.js';
 import {PLACES,REGIONS,regionId,regionOpen} from './world.js';
 import {CAMP as CAMP_R,campUp,drawCamp,hideProp as campHide} from './trai.js';
+import {GATES_K,KINH,cityFolk} from './kinhthanh.js';
+import {cityDecorSprite} from './kinhthanh_ve.js';
 import {banyanSprite,boatSprite,buffaloSprite,buildingSprite,personSprite,propSprite,signSprite,treeSprite,wellSprite} from './sprites.js';
 import {PROPS,propAt} from './scenery.js';
 import {TOWERS,WALLS,towerSprite,wallSprite} from './walls.js';
@@ -43,7 +45,8 @@ function render(){
   drawGround(ctx,s,camX/Z,camY/Z,VW/Z,VH/Z,Z);   // nền vẽ theo mảnh (ground.js)
   const x0=Math.max(0,Math.floor(camX/T)-1),y0=Math.max(0,Math.floor(camY/T)-1),x1=Math.min(W-1,Math.ceil((camX+VW)/T)+1),y1=Math.min(H-1,Math.ceil((camY+VH)/T)+2);
   if(!reduce)for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(!isW(map[y*W+x]))continue;const h=Hs(x,y,7);if(h>.45)continue;const ph=(clock*.9+h*7)%3;if(ph>1.3)continue;ctx.fillStyle='rgba(255,255,255,.55)';const gx=Math.floor(Hs(x,y,8)*11)+Math.floor(ph*2),gy=3+Math.floor(Hs(x,y,9)*10);ctx.fillRect((x*TS+gx)*Z-camX,(y*TS+gy)*Z-camY,2*Z,Z)}
-  if(S&&age()<12){ctx.fillStyle='#4a2c1c';for(let x=52;x<=54;x++)ctx.fillRect((x*TS+2)*Z-camX,(19*TS+2)*Z-camY,12*Z,14*Z);for(let y=11;y<=12;y++)ctx.fillRect((70*TS+2)*Z-camX,(y*TS+1)*Z-camY,12*Z,14*Z);ctx.fillStyle='#d9b14a';for(let x=52;x<=54;x++){ctx.fillRect((x*TS+5)*Z-camX,(19*TS+8)*Z-camY,Z,Z);ctx.fillRect((x*TS+10)*Z-camX,(19*TS+8)*Z-camY,Z,Z)}}
+  if(S&&age()<12){const door=(x,y)=>{ctx.fillStyle='#4a2c1c';ctx.fillRect((x*TS+2)*Z-camX,(y*TS+2)*Z-camY,12*Z,14*Z);ctx.fillStyle='#d9b14a';ctx.fillRect((x*TS+5)*Z-camX,(y*TS+8)*Z-camY,Z,Z);ctx.fillRect((x*TS+10)*Z-camX,(y*TS+8)*Z-camY,Z,Z)};   // trẻ con: cổng thành đóng
+    for(const x of [...GATES_K.nam,...GATES_K.namPhu])door(x,KINH.y1);for(const y of GATES_K.dong)door(KINH.x1,y)}
   drawTracks();
   const list=[];
   for(const t of near(TREES,x0-2,y0,x1+2,y1+4))if(t.x>=x0-2&&t.x<=x1+2&&t.y>=y0&&t.y<=y1+4&&!(MG&&MG.hideTree&&MG.hideTree(t)))list.push({y:t.y+.9,f:()=>{const sp=treeSprite(s,t.v),hide=S&&Math.abs(S.x-t.x-.5)<sp.width/TS/2-.3&&S.y<t.y+.9&&S.y>t.y+1-sp.height/TS+.6;
@@ -52,7 +55,7 @@ function render(){
   for(const t of TOWERS)if(t.x+t.n>=x0-2&&t.x<=x1+2&&t.y>=y0-2&&t.y<=y1+3)list.push({y:t.y+1.02,f:()=>drawSprite(towerSprite(t),t.x+t.n/2,t.y-.1)});
   for(const p of near(PROPS,x0-1,y0,x1+1,y1+2))if(p.x>=x0-1&&p.x<=x1+1&&p.y>=y0&&p.y<=y1+2&&!(MG&&MG.hideProp&&MG.hideProp(p))&&!campHide(p)){const [px,py]=propAt(p);list.push({y:py-.05,f:()=>drawSprite(propSprite(p,s),px,py)})}
   for(const b of near(BUILDINGS,x0-8,y0-6,x1+2,y1+3)){if(b.x>x1+2||b.x+b.w<x0-2||b.y>y1+3||b.y+b.h<y0-2)continue;list.push({y:b.y+b.h,f:()=>{const c=buildingSprite(b);blit(c,b.x*TS-c.ox,b.y*TS-c.oy)}})}
-  for(const d of near(DECOR,x0-3,y0-3,x1+3,y1+3)){if(d.x<x0-3||d.x>x1+3||d.y<y0-3||d.y>y1+3)continue;list.push({y:d.y+(d.kind==='boat'?.4:1),f:()=>{if(d.kind==='banyan')drawSprite(banyanSprite(s),d.x+.5,d.y+1);else if(d.kind==='well')drawSprite(wellSprite(),d.x+.5,d.y+1);else{const bob=reduce?0:Math.round(Math.sin(clock*1.5+d.x));drawSprite(boatSprite(),d.x+.5,d.y+.6+bob/TS)}}})}
+  for(const d of near(DECOR,x0-3,y0-3,x1+3,y1+3)){if(d.x<x0-3||d.x>x1+3||d.y<y0-3||d.y>y1+3)continue;list.push({y:d.y+(d.kind==='boat'?.4:d.kind==='them'?-5:1),f:()=>{if(d.kind==='banyan')drawSprite(banyanSprite(s),d.x+.5,d.y+1);else if(d.kind==='well')drawSprite(wellSprite(),d.x+.5,d.y+1);else if(d.city){const c=cityDecorSprite(d);if(c)drawSprite(c,d.x+.5,d.y+(d.kind==='them'?1.05:1))}else{const bob=reduce?0:Math.round(Math.sin(clock*1.5+d.x));drawSprite(boatSprite(),d.x+.5,d.y+.6+bob/TS)}}})}
   for(const sg of near(SIGNS,x0-1,y0-1,x1+1,y1+2))list.push({y:sg.y+1,f:()=>drawSprite(signSprite(),sg.x+.5,sg.y+1)});
   if(S){
     const a=age();
@@ -63,6 +66,8 @@ function render(){
       if(!n.moving&&Math.hypot(dpx,dpy)<3)dir=Math.abs(dpx)>Math.abs(dpy)?(dpx>0?'right':'left'):(dpy>0?'down':'up');
       const fr=n.moving?[1,0,2,0][Math.floor(clock*8)%4]:0;
       list.push({y:n.y,f:()=>{shadow(n.x,n.y,10);drawSprite(personSprite(look,dir,fr),n.x,n.y)},lab:Math.hypot(dpx,dpy)<4?[n.name,n.x,n.y-(isKid(look)?1.55:2)]:null})}
+    if(!(MG&&MG.hideNPC)&&x0<KINH.x1+3&&y0<KINH.y1+3)for(const o of cityFolk(clock)){if(o.x<x0-1||o.x>x1+1||o.y<y0-1||o.y>y1+2)continue;   // người trong kinh thành
+      const fr=o.frame!==undefined&&o.frame!==0?o.frame:o.moving?[1,0,2,0][Math.floor(o.walk)%4]:0;list.push({y:o.y,f:()=>{shadow(o.x,o.y,10);drawSprite(personSprite(o.look,o.dir,fr),o.x,o.y)}})}
     list.push({y:S.buffalo.y,f:()=>{shadow(S.buffalo.x,S.buffalo.y,22);drawSprite(buffaloSprite(S.buffalo.dir||'left'),S.buffalo.x,S.buffalo.y)}});
     const look={id:a<14?'ban_be':S.path==='van'?'ban_van':S.path==='vo'?'ban_vo':'ban_nong'};
     const fr=MG&&MG.swing>0?(MG.swing>.17?'a0':'a1'):P.moving?[1,0,2,0][Math.floor(P.walk)%4]:0;

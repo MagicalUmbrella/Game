@@ -23,9 +23,9 @@ const RISE=.004,RISE_OPEN=.002,WIDEN=30,NEED_MAX=4,NEW_AT=28,NEW_X=62,CO_GAP=12;
 const brOf=x=>({x:x+.5,y:Math.floor(tolichY(x)+2.6)+.5,got:0,need:2,age:0});
 export function startFlood(){
   const xs=[31,37,44,50,57];
-  setMG({type:'flood',carry:false,level:0,coT:4,co:S.rel.co>=3?{x:43.5,y:34.6,dir:'up',walk:0,moving:false,bag:false,tgt:null,pause:0}:null,hide:['co'],br:xs.map(brOf),t:0,pile:{x:41.5,y:33.4},
+  setMG({type:'flood',carry:false,level:0,coT:4,co:S.rel.co>=3?{x:43.5,y:54.6,dir:'up',walk:0,moving:false,bag:false,tgt:null,pause:0}:null,hide:['co'],br:xs.map(brOf),t:0,pile:{x:41.5,y:53.4},
     update:floodUpdate,findTarget:floodTarget,draw:floodDraw,hud:floodHud,post:rainPost,speedMul:()=>MG.carry?(knows('boi')?.9:.75):1});   // biết bơi: quen nước, lội lụt vác bao nhanh hơn
-  S.x=41.5;S.y=34.8;P.dir='up';document.body.classList.add('mg');
+  S.x=41.5;S.y=54.8;P.dir='up';document.body.classList.add('mg');
   setKeys('<span><kbd>E</kbd> vác bao đất ở đống đất, đắp vào chỗ đê vỡ</span><span><kbd>Shift</kbd> chạy</span><span>Chỗ vỡ để lâu sẽ loang rộng, cần thêm bao</span>');
 }
 function floodUpdate(dt){const M=MG;M.t+=dt;M.shake=Math.max(0,(M.shake||0)-dt*1.6);

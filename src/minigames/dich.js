@@ -22,14 +22,14 @@ import {endMG,goalArrow,pickTiles,twinkle} from './chung.js';
 /* Độ khó (chỉnh bằng bot trong tests/bots.js): sốt ban đầu, tốc độ sốt tăng, giảm khi đắp khăn, khi uống thuốc;
    số thang cần; giờ nhà bên có người ốm; thời gian tối đa. */
 export const DICH={SOT0:.3,RISE:.0085,NUOC:.07,THANG_GIAM:.3,THANG:3,NHA_BEN:25,TMAX:98,BUI:7,MOC:20};   // MOC: bụi đã hái bao lâu thì ra lá lại
-const DOOR={x:43.5,y:49.4},WELL={x:44.5,y:43.4},BEN={x:35,y:49.4};   // cửa nhà mình, giếng, cửa nhà chị Lụa (nhà phía tây)
+const DOOR={x:43.5,y:69.4},WELL={x:44.5,y:63.4},BEN={x:35,y:69.4};   // cửa nhà mình, giếng, cửa nhà chị Lụa (nhà phía tây)
 const leafSprite=()=>simple('la_thuoc',9,7,s=>{s(1,2,3,4,'#3f8a3a');s(4,1,4,4,'#5aa84a');s(2,3,1,1,'#2a5a26');s(5,2,1,2,'#3f8a3a');s(4,5,1,2,'#6e4a2a')},4,7);
 const bowlSprite=()=>simple('bat_nuoc',8,5,s=>{s(0,1,8,3,'#8a6238');s(1,0,6,1,'#7fb3c8');s(1,4,6,1,'#5a3f25')},4,5);
 
 export function startDich(){
   // bụi lá thuốc: ô cạnh nhiều cây trong rừng phía tây, đi tới được từ nhà
   const tree=new Set(TREES.map(t=>t.x+','+t.y)),nTree=(x,y)=>[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]].filter(([a,b])=>tree.has((x+a)+','+(y+b))).length;
-  const bui=pickTiles(43,50,4,34,24,66,(x,y)=>nTree(x,y)>=3,DICH.BUI,5).map(p=>({...p,got:false}));
+  const bui=pickTiles(43,70,4,54,24,86,(x,y)=>nTree(x,y)>=3,DICH.BUI,5).map(p=>({...p,got:false}));
   setMG({type:'dich',t:0,sot:DICH.SOT0,la:0,thang:0,nuoc:false,bui,ben:null,benDone:false,hide:['cha'],
     update:dUpdate,findTarget:dTarget,draw:dDraw,hud:dHud,goal:dGoal});
   S.x=DOOR.x;S.y=DOOR.y+.3;P.dir='down';document.body.classList.add('mg');

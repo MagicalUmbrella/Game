@@ -49,12 +49,19 @@ function wallPx(s,wpx,hpx,wt,P){
 }
 const bspr={};
 export function buildingSprite(b){if(bspr[b.id])return bspr[b.id];
-  const wpx=b.w*TS,hpx=b.h*TS,ex=10,top={palace:44,pagoda:42,tower:84,dinh:26,school:22,stall:16,shed:18,house:20}[b.kind];
+  const wpx=b.w*TS,hpx=b.h*TS,ex=10,top={dien:58,palace:44,pagoda:42,tower:84,dinh:26,school:22,stall:16,shed:18,house:20,pho:22,kho:20,lang:16}[b.kind];
   const[c,g]=mk(wpx+ex*2,hpx+top+2),ox=ex,oy=top,s=(x,y,w,h,col)=>{g.fillStyle=col;g.fillRect(ox+x,oy+y,w,h)};
   const P={house:{wall:'#c6a676',post:'#7a5a36',roof:'#c4a35e',thatch:1},school:{wall:'#cdb088',post:'#6d4a2c',roof:'#8f5434',up:1,curl:1},dinh:{wall:'#b99a6a',post:'#5e3c22',roof:'#7d4329',up:1,curl:1,pearl:'#d9b14a'},
     shed:{wall:'#a88c62',post:'#6b4f2e',roof:'#b99a58',thatch:1},pagoda:{wall:'#d4b88e',post:'#7a3c26',roof:'#7a3f2a',up:1,curl:1,pearl:'#d9b14a'},palace:{wall:'#a8402b',post:'#6e2418',roof:'#9c6a2c',up:1,curl:1,ridge:'#e2b94e',pearl:'#f0d27a'},
-    stall:{wall:'#b8946a',post:'#6b4f2e',roof:'#8a5a34',up:1},tower:{}}[b.kind];
-  if(b.kind==='tower'){
+    stall:{wall:'#b8946a',post:'#6b4f2e',roof:'#8a5a34',up:1},tower:{},
+    dien:{wall:'#a8302a',post:'#5e1a12',roof:'#b8862c',up:1,curl:1,ridge:'#f0c850',pearl:'#ffe08a'},            // điện Thiên An: mái ngói vàng, cột son
+    pho:{wall:'#cdb48a',post:'#6b4a2c',roof:'#8a4a2e',up:1},kho:{wall:'#9a7a56',post:'#5a3a22',roof:'#7a4a2c'},   // nhà phố mái ngói, kho
+    lang:{wall:'#a8402b',post:'#6e2418',roof:'#9c6a2c',up:1,ridge:'#e2b94e'}}[b.kind];   // dãy nhà lang hai bên sân rồng
+  if(b.kind==='lang'&&b.h>b.w){   // dãy nhà lang chạy dọc (nhìn từ trên): mái ngói dọc thân, nóc vàng giữa, hàng cột son phía sân
+    const T=['#b07a3a','#9c6a2c','#86582a','#704822'];for(let y=0;y<hpx-6;y++)for(let x=1;x<wpx-1;x++){const row=y%4,side=Math.abs(x-wpx/2)/(wpx/2);s(x,y,1,1,row===0?T[0]:side>.7?T[3]:(x+(y>>2))%4===0?T[2]:T[1])}
+    s(Math.floor(wpx/2)-1,0,2,hpx-6,'#e2b94e');s(Math.floor(wpx/2)-1,0,1,hpx-6,'#f0d27a');
+    for(let y=4;y<hpx-6;y+=10){s(0,y,2,6,'#a8302a');s(wpx-2,y,2,6,'#a8302a')}s(-2,hpx-6,wpx+4,4,'#8a3a26');s(-2,hpx-2,wpx+4,2,'#b8b1a1');
+  } else if(b.kind==='tower'){
     for(let i=0;i<7;i++){const w=wpx-4-i*3,x=Math.floor((wpx-w)/2),y=hpx-12-i*12;s(x,y,w,10,i%2?'#a8643c':'#b4704a');s(x,y,w,1,'#c98a60');s(x+Math.floor(w/2)-1,y+3,2,4,'#3a2618');
       s(x-3,y-2,w+6,2,'#6b3826');s(x-4,y-3,2,1,'#6b3826');s(x+w+2,y-3,2,1,'#6b3826')}
     s(Math.floor(wpx/2)-1,hpx-12-7*12-4,2,8,'#d9b14a');s(0,hpx-3,wpx,3,'#8a8476');
@@ -63,13 +70,14 @@ export function buildingSprite(b){if(bspr[b.id])return bspr[b.id];
     wallPx(s,wpx,hpx,wt,P);
     if(b.kind==='stall'){s(4,hpx-12,wpx-8,8,'#3a2a1c');s(3,hpx-6,wpx-6,3,'#8a6238');const goods={sach:['#d9cba0','#b8a676','#e8dcb6'],ren:['#c0c4c8','#e0823a','#8a8e92'],nhaituan:['#b8322a','#e2bf72','#3f6f9a'],gom:['#9fbfa8','#7a5132','#d9d0b8']}[b.id]||['#d9cba0'];
       for(let i=0;i<Math.floor((wpx-10)/5);i++)s(5+i*5,hpx-9,3,3,goods[i%goods.length])}
-    else{const dw=b.kind==='palace'?14:10,dx=Math.floor(wpx/2-dw/2);s(dx-1,hpx-15,dw+2,12,shade(P.post,-.25));s(dx,hpx-14,dw,11,'#2e2118');
+    else{const dw=b.kind==='palace'||b.kind==='dien'?14:b.kind==='lang'?6:10,dx=Math.floor(wpx/2-dw/2);s(dx-1,hpx-15,dw+2,12,shade(P.post,-.25));s(dx,hpx-14,dw,11,'#2e2118');
       if(P.thatch){for(let y=hpx-14;y<hpx-8;y+=2)s(dx,y,dw,1,'#b08a52');s(dx,hpx-8,dw,1,'#8a6a3a')}   // mành tre cuộn nửa chừng
       else{s(Math.floor(wpx/2),hpx-14,1,11,'#4a3424');s(dx+1,hpx-9,1,2,'#d9b14a');s(dx+dw-2,hpx-9,1,2,'#d9b14a')}
       s(dx-2,hpx-3,dw+4,1,'#b8b1a1');                                         // bậc đá
       if(wpx>=64)for(const wx of[dx-14,dx+dw+6]){s(wx-1,hpx-14,10,8,shade(P.post,-.15));s(wx,hpx-13,8,6,'#2e2118');for(let i=1;i<8;i+=2){s(wx+i,hpx-13,1,6,'#a07a4a');s(wx+i,hpx-13,1,1,'#c09a62')}}}
-    if(b.kind==='palace'){for(let x=8;x<wpx-8;x+=16)s(x,wt,3,hpx-wt-3,'#e2b94e');s(Math.floor(wpx/2)-12,hpx-2,24,2,'#c9c2b0')}
-    const two=b.kind==='palace'||b.kind==='pagoda',rTop=two?oy-top+26:oy-top+8,eave=oy+wt+2;
+    if(b.kind==='palace'||b.kind==='dien'){for(let x=8;x<wpx-8;x+=16)s(x,wt,3,hpx-wt-3,'#e2b94e');s(Math.floor(wpx/2)-12,hpx-2,24,2,'#c9c2b0')}
+    if(b.kind==='dien'){s(-6,hpx-3,wpx+12,3,'#c9c2b0');s(-6,hpx-3,wpx+12,1,'#e0d8c4')}   // nền điện cao, bậc đá trải rộng
+    const two=b.kind==='palace'||b.kind==='pagoda'||b.kind==='dien',rTop=two?oy-top+26:oy-top+8,eave=oy+wt+2;
     roofPx(g,ox-4,rTop,wpx+8,eave,P.roof,{thatch:P.thatch,up:P.up,curl:P.curl,ridge:P.ridge,pearl:P.pearl,slope:P.thatch?6:10});
     if(two){const iw=Math.round(wpx*.55),ix=ox+Math.floor((wpx-iw)/2);g.fillStyle=P.wall;g.fillRect(ix+4,rTop-8,iw-8,10);g.fillStyle=P.post;for(let x=ix+4;x<ix+iw-4;x+=8)g.fillRect(x,rTop-8,1,10);
       roofPx(g,ix-2,8,iw+4,rTop-7,P.roof,{up:1,curl:1,ridge:P.ridge,pearl:P.pearl,slope:7})}

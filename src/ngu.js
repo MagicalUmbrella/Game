@@ -49,7 +49,7 @@ export function nguNews(){const n=S.nguN||0;
     `<p>Đời sau biết anh với tên <b>Phạm Ngũ Lão</b>.</p>${src('Ngũ Lão người làng Phù Ủng, lúc hơn hai mươi tuổi được Hưng Đạo Vương thấy là có kỳ tài, gả con gái nuôi cho, nhận làm gia thần.')}`}
 
 /* ---------- 1284: bến Đông Bộ Đầu ---------- */
-export const NGU_DB={x:79.5,y:9.6};
+export const NGU_DB={x:79.5,y:29.6};
 export function nguDuyet(){if(S.nguMet&&!S.flags.nguKnows)startQuest('nguDB')}
 export const nguDBOn=()=>S.quests.nguDB==='active'&&S.year===1284;
 export function talkNguTuong(){

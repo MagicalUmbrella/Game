@@ -60,7 +60,7 @@ function begin(col,chet){
   const g=n=>walker('g'+n,'Lính giặc',{id:'giac'},start[0],start[1],{guard:true,look2:n});
   const row=[g(0)];caps.forEach((c,i)=>{row.push(c);if(!few&&i===Math.floor(caps.length/2)-1)row.push(g(1))});row.push(g(2));
   row.forEach((o,i)=>o.k=i);
-  const [sx,sy]=nearOK(CAMP.x0-7,12.5),safe=nearOK(CAMP.x0-9,24.5);S.x=sx;S.y=sy;st.P.dir='right';
+  const [sx,sy]=nearOK(CAMP.x0-7,32.5),safe=nearOK(CAMP.x0-9,44.5);S.x=sx;S.y=sy;st.P.dir='right';
   setMG({type:'tim',t:0,clock:0,pts,L,s:0,row,caps,chet,safe,alert:0,seen:false,lo:0,ko:0,cut:0,cutting:null,stun:0,rush:0,warned:0,look:TIM.LOOK,done:false,
     hideNPC:true,roam:true,hideProp,update:tUpdate,draw:tDraw,post:tPost,hud:tHud,key:tKey,findTarget:tTarget,mini:campMini,speedMul:()=>st.MG.stun>0?0:.8,
     goal:()=>{const c=st.MG.caps.find(c=>c.tied&&!c.gone);return c?[c.x,c.y]:[S.x,S.y]}});
