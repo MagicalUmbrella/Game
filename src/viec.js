@@ -12,7 +12,7 @@ import {RUONG_MAX,ruongCost,vanFailOpen} from './chuc.js';
 const now=()=>S.year*4+S.season;
 export function suggestions(){
   const a=age(),out=[],add=(title,hint)=>out.push({title,hint});
-  if(MG||S.ended)return out;   // đang trong màn chơi riêng (lụt, đêm giặc, bị giải…): khung chỉ hiện việc đã nhận
+  if(MG||S.ended||S.ch===2)return out;   // chương hai đi theo cảnh, chưa có việc tự do; đang trong màn chơi riêng (lụt, đêm giặc, bị giải…): khung chỉ hiện việc đã nhận
   if(S.suc<=0){add('Hết Sức mùa này','Bấm N để về nhà ngủ, sang mùa mới. Hoặc ở cửa nhà chọn việc chính cho thời gian trôi nhanh.');return out}
   if(!S.ate&&S.suc<sucMax())add('Ăn cơm mẹ nấu','Về nhà gặp mẹ.');
   // học, luyện chính
