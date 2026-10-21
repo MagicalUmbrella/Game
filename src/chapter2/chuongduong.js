@@ -21,6 +21,7 @@ import {hudBar,hudBox} from '../minigames/flood.js';
 import {gainThe,theHp,voDmg,voHp} from '../stats.js';
 import {CT,addNear,blocksNear,darkness,dirTo,drawField,drawLabels,dust,edgeArrow,fieldMini,killMan,laneX,mkBlock,nearFoes,newField,person,say,updateArrows,updateBlocks,updateFx,updateNear,volley,walkF} from './chientruong.js';
 import {ch2Go,ch2Note} from './index.js';
+import {MS,msMeet,msTaunt,msWin} from './matseo.js';
 
 const src=t=>`<p class="src">Toàn thư chép: ${t}</p>`;
 export const CD={NIGHT_T:150,DET_R:80,DET_UP:1.1,DET_DOWN:.22,ROW:26,STEER:22,HOLD_T:36,HOLD_MAX:80,HOLD_R:110,CANH_T:45,SECTOR:[1,4],FLAG:1.6,CO_T:100,ME_LANE:9};
@@ -34,14 +35,19 @@ export function villageMen(){if(!S.c2.men){const g=S.flags.giao?'_giao':'';S.c2.
 export function startCD(){S.c2.scene='cd';S.season=1;save();
   const n=villageMen().length;
   showModal({kicker:'Hạ 1285 · tháng năm',title:'Đêm trước Chương Dương',
-    body:`<p>Tin báo về: quân triều sắp đánh lớn ở bến Chương Dương. Đội dân binh ông Đoàn được lệnh xuôi sông trong đêm, đi đợt thuyền đầu, rạng sáng đổ bộ.</p>
+    body:`<p>Tin báo về: quân triều sắp đánh lớn ở bến Chương Dương. Đội dân binh ông Đoàn được lệnh xuôi sông trong đêm, đi đợt thuyền đầu, rạng sáng đổ bộ.</p>${intelP()}
       <p>Ông Đoàn giao bạn cầm thuyền dẫn đầu${n?`, ${n} trai làng ngồi cùng thuyền`:''}. "Không đốt đuốc, không ai nói một lời. Thuyền canh của giặc treo đèn, cứ tránh xa đèn."</p>
       <p class="note">Giữ W để chèo, A D lái, cả đoàn chèo theo bạn. Lên bờ: WASD đi, Space đánh, giữ E để cắm cờ. Hư cấu trên nền sử.</p>`,
     choices:[{label:'Xuống thuyền',fn:()=>begin()}]})}
 
+/* điều dò được ở làng Thượng Phúc (dotin.js) */
+const TIN_TXT={gac:'giờ đổi gác của thuyền canh (đêm dài hơn, khó bị lộ hơn)',thuyen:'đường đi của thuyền canh (thuyền canh không đổi hướng bất chợt)',ky:'quân kỵ giặc đóng xa bến (bớt giặc lẻ lúc giữ bến)',bando:'thế đất quanh bến (giữ bến nhanh hơn)'};
+const tin=()=>S.c2.tin2||[];
+function intelP(){const t=tin();return t.length?`<p>Nhờ chuyến dò tin ở làng Thượng Phúc, bạn biết: ${t.map(k=>TIN_TXT[k]).join('; ')}.</p>`:''}
+function allyHp(){return CT.ALLY_HP+(S.flags.giao?1:0)+(S.c2.luong==='giu'?1:S.c2.luong==='mat'?-1:0)}
 function begin(){
-  const F=newField({seed:1285,wh:1440}),R=F.rnd,me=[];
-  const P={x:0,y:0,dir:'up',hp:0,max:6+voHp()+theHp()+(S.path==='vo'?2:0),sw:0,cd:0,inv:0,mv:0,axis:'y',walk:0,look:{id:S.path==='van'?'ban_van':S.path==='vo'?'ban_vo':'ban_nong'}};P.hp=P.max;
+  const F=newField({seed:1285,wh:1440}),R=F.rnd,me=[],c2=S.c2;
+  const P={x:0,y:0,dir:'up',hp:0,max:6+voHp()+theHp()+(S.path==='vo'?2:0)+(c2.ao?1:0)+(c2.luong==='giu'?1:0),sw:0,cd:0,inv:0,mv:0,axis:'y',walk:0,look:{id:S.path==='van'?'ban_van':S.path==='vo'?'ban_vo':'ban_nong'}};P.hp=P.max;
   const men=villageMen().filter(m=>!m.fallen);
   // đoàn thuyền: mỗi khúc hai thuyền; thuyền của bạn ở khúc CD.ME_LANE, bạn ngồi gần mũi, trai làng ngồi cùng
   for(let i=0;i<F.lanes;i++)for(let r=0;r<2;r++){const b={x:laneX(F,i)+60+(r?30:-30)+R()*10,y:1270+r*60+R()*40,moving:false,flagc:R()<.5?'#c8302a':'#d8a020',lane:i};
@@ -55,7 +61,9 @@ function begin(){
   for(let i=0;i<F.lanes;i++)for(let r=0;r<3;r++)mkBlock(F,laneX(F,i),440-r*80,1);
   F.camX=mb.x;F.camY=mb.y-120;
   const M={type:'cd',F,P,me:mb,pat,phase:'dem',pt:0,t:0,det:0,lo:false,cham:false,late:false,hold:0,canh:null,co:null,kills:0,nga:0,fallen:[],coFell:false,flagHold:0,volT:4,
-    allies:[],hideNPC:true,roam:true,render:cdRender,hud:cdHud,update:cdUpdate,key:cdKey,findTarget:()=>null,speedMul:()=>0,goal:cdGoal};
+    allies:[],hideNPC:true,roam:true,render:cdRender,
+    nightT:CD.NIGHT_T+(tin().includes('gac')?30:0),detUp:CD.DET_UP*(tin().includes('gac')?.7:1),knowPat:tin().includes('thuyen'),fewKy:tin().includes('ky'),
+    holdT:CD.HOLD_T*(tin().includes('bando')?.85:1)*(c2.tancu&&c2.tancu.gop==='quan'?.9:1),dmgB:c2.the==='mai'?1:0,bua:!!c2.bua,hua:!!c2.hua,rally:c2.the==='the',hud:cdHud,update:cdUpdate,key:cdKey,findTarget:()=>null,speedMul:()=>0,goal:cdGoal};
   setMG(M);document.body.classList.add('mg','battle');
   setKeys('<span><kbd>W</kbd> chèo</span><span><kbd>A</kbd><kbd>D</kbd> lái</span><span>Tránh vùng đèn thuyền canh</span>');
   F.banner={txt:'Đêm · xuôi sông về Chương Dương',t:3.5}}
@@ -74,14 +82,14 @@ function night(M,dt){const F=M.F,mb=M.me,row=!!(keys.w||keys.arrowup),steer=(key
   mb.y-=v*dt;mb.moving=v>0;if(!rush&&steer){mb.x=Math.max(F.lx+40,Math.min(F.ww-60,mb.x+steer*CD.STEER*dt));mb.moving=true}
   for(const b of F.boats){if(b.side)continue;if(b===mb)continue;if(b.y-CT.BL<=F.bank+4){b.moving=false;continue}const ty=mb.y+b.off,d=b.y-ty;const sp=(rush?44:CD.ROW*1.1)*dt;if(d>0){b.y-=Math.min(sp,d);b.moving=true}else b.moving=false}
   // thuyền canh
-  for(const p of M.pat){p.x+=p.vx*dt;if(p.x<p.lo||p.x>p.hi||F.rnd()<dt*.08)p.vx*=-1;p.x=Math.max(p.lo,Math.min(p.hi,p.x));p.moving=true;
+  for(const p of M.pat){p.x+=p.vx*dt;if(p.x<p.lo||p.x>p.hi||(!M.knowPat&&F.rnd()<dt*.08))p.vx*=-1;p.x=Math.max(p.lo,Math.min(p.hi,p.x));p.moving=true;
     const lx=p.x-9,ly=p.y+CT.BL*.5,d=Math.hypot(mb.x-lx,mb.y-CT.BL/2-ly);p.near=d;
     if(d<130&&!p.said&&!M.lo){p.said=1;say(F,{x:lx,y:ly+20},['Hình như có tiếng nước khua?','Sương dày quá, chẳng thấy gì.','Ai đó? …Chắc cá quẫy.'][M.pat.indexOf(p)],3.2)}}
-  if(!M.lo&&!M.landing){const inLamp=M.pat.some(p=>p.near<CD.DET_R);M.det=inLamp?Math.min(1,M.det+dt*CD.DET_UP*(1.2-Math.min(...M.pat.map(p=>p.near))/CD.DET_R)):Math.max(0,M.det-dt*CD.DET_DOWN);
+  if(!M.lo&&!M.landing){const inLamp=M.pat.some(p=>p.near<CD.DET_R);M.det=inLamp?Math.min(1,M.det+dt*M.detUp*(1.2-Math.min(...M.pat.map(p=>p.near))/CD.DET_R)):Math.max(0,M.det-dt*CD.DET_DOWN);
     if(M.det>=1){M.lo=true;F.banner={txt:'Thuyền canh thổi tù và! Bị lộ!',t:3};F.shake=.4;volley(F,{x:mb.x,y:mb.y-60},26,900)}}
   if(M.lo){M.volT-=dt;if(M.volT<=0){M.volT=3;volley(F,{x:mb.x,y:mb.y-60},20,900)}}
   updateArrows(F,dt,(x,y)=>{dust(F,x,y,'#c8dcd8',3)});
-  if(!M.cham&&!M.lo&&M.t>CD.NIGHT_T){M.cham=true;F.banner={txt:'Trời rạng! Phải đổ bộ ngay!',t:3}}
+  if(!M.cham&&!M.lo&&M.t>M.nightT){M.cham=true;F.banner={txt:'Trời rạng! Phải đổ bộ ngay!',t:3}}
   if(mb.y-CT.BL<=F.bank+4&&!M.landing){M.landing=true;M.landT=0}
   if(M.landing){M.landT+=dt;if(M.landT>2.2||F.boats.every(b=>b.side||b.y-CT.BL<=F.bank+6))toLand(M)}}
 
@@ -91,8 +99,9 @@ function toLand(M){const F=M.F,P=M.P,mb=M.me,R=F.rnd;M.phase='giu';M.pt=0;
   P.x=mb.x;P.y=F.bank-8;P.dir='up';
   // trai làng theo bạn lên bờ
   villageMen().forEach((m,k)=>{if(m.fallen)return;const slot=[[-16,8],[16,8],[-26,-4],[26,-4],[0,16]][k];
-    const e=addNear(F,P.x+slot[0],P.y+slot[1],0,{look:m.look,hp:CT.ALLY_HP+(S.flags.giao?1:0),max:CT.ALLY_HP,ally:m,slot,name:cap(m.name),spd:1.1});M.allies.push(e)});
-  if(S.co==='village')M.allies.push(addNear(F,P.x,P.y+12,0,{look:{id:'co'},hp:CT.ALLY_HP+1,ally:{name:'Cò',co:true},slot:[0,-14],name:'Cò',spd:1.1}));
+    const e=addNear(F,P.x+slot[0],P.y+slot[1],0,{look:m.look,hp:allyHp(),max:CT.ALLY_HP,ally:m,slot,name:cap(m.name),spd:1.1});M.allies.push(e)});
+  if(S.co==='village'&&S.c2.coKe!=='o')M.allies.push(addNear(F,P.x,P.y+12,0,{look:{id:'co'},hp:CT.ALLY_HP+1+(S.c2.coKe==='canh'?2:0),ally:{name:'Cò',co:true},slot:[0,-14],name:'Cò',spd:1.1}));
+  if(S.c2.hen==='o')M.allies.push(addNear(F,P.x-8,P.y+20,0,{look:{id:'trai3'},hp:allyHp(),max:CT.ALLY_HP,ally:{name:'anh Hến',hen:true},slot:[-8,20],name:'Anh Hến',spd:1.1}));
   // dân binh các thuyền khác, khối ta đợt đầu, giặc lẻ trên bãi
   for(const b of F.boats)if(!b.side&&!b.me&&Math.abs(b.x-P.x)<600)for(let k=0;k<3;k++)addNear(F,b.x-8+(k%2)*16,F.bank-6-(k>>1)*10,0);
   for(let i=0;i<F.lanes;i++)mkBlock(F,laneX(F,i),F.bank+30-CT.DY*4,0);
@@ -122,11 +131,11 @@ function land(M,dt){const F=M.F,P=M.P,R=F.rnd,won=M.phase==='xong';
     if(Math.abs(x-P.x)<16&&Math.abs(y-P.y)<14){m.atk=.25;if(b.cd<=0&&!won){b.cd=1.1;if(R()<.5)hitMe(M)}}}}
   updateNear(F,dt,P,{fight:!won,hitMe:()=>hitMe(M),died:(tg)=>died(M,tg)});
   if(!won){M.volT-=dt;if(M.volT<=0){M.volT=3.6+R()*1.6;volley(F,P,22,900)}}
-  updateArrows(F,dt,(x,y)=>{if(!won&&Math.hypot(x-P.x,y-P.y)<8)hitMe(M);for(const e of F.near)if(!e.dead&&!e.side&&!e.ally&&Math.hypot(x-e.x,y-e.y)<7){e.dead=1;e.t=0}});
+  updateArrows(F,dt,(x,y)=>{if(!won&&Math.hypot(x-P.x,y-P.y)<8){if(M.bua&&P.inv<=0){M.bua=false;M.buaCut=true;P.inv=.6;F.banner={txt:'Mũi tên sượt qua, đứt vòng chỉ đỏ bé Sen buộc…',t:2.6}}else hitMe(M)}for(const e of F.near)if(!e.dead&&!e.side&&!e.ally&&Math.hypot(x-e.x,y-e.y)<7){e.dead=1;e.t=0}});
   if(P.hp<=0)down(M);
   // giặc lẻ kéo tới chỗ bạn, dân binh lẻ theo sau
   const foes=nearFoes(F,1).length,mine=F.near.filter(e=>!e.side&&!e.dead&&!e.ally).length;
-  const want=M.phase==='giu'?(M.lo?16:14):M.phase==='co'?9:8;
+  const want=(M.phase==='giu'?(M.lo?16:14):M.phase==='co'?9:8)-(M.fewKy&&M.phase==='giu'?3:0);
   if(!won&&foes<want&&R()<dt*(M.phase==='giu'?2.6:1.5)){const tgt=M.phase==='giu'?M.zone:P;addNear(F,tgt.x+(R()-.5)*300,Math.max(F.go.y-30,tgt.y-170-R()*50),1)}
   if(!won&&mine<7&&R()<dt*1)addNear(F,P.x+(R()-.5)*160,Math.min(F.bank+20,P.y+90),0);
   phaseTick(M);
@@ -138,7 +147,7 @@ function land(M,dt){const F=M.F,P=M.P,R=F.rnd,won=M.phase==='xong';
 function giu(M,dt){const F=M.F,P=M.P,Zn=M.zone;
   const inZ=Math.hypot(P.x-Zn.x,P.y-Zn.y)<CD.HOLD_R,foes=nearFoes(F,1).filter(e=>Math.hypot(e.x-Zn.x,e.y-Zn.y)<CD.HOLD_R).length;
   // vòng bến sạch giặc thì giữ nhanh, còn một hai tên thì chậm, từ ba tên trở lên thì mất dần
-  M.holding=inZ&&foes<=2;M.hold=M.holding?Math.min(1,M.hold+dt/CD.HOLD_T*(foes?.5:1)):Math.max(0,M.hold-(foes>=3?dt/CD.HOLD_T*.5:0));
+  M.holding=inZ&&foes<=2;M.hold=M.holding?Math.min(1,M.hold+dt/M.holdT*(foes?.5:1)):Math.max(0,M.hold-(foes>=3?dt/M.holdT*.5:0));
   if(M.hold>=1||M.pt>CD.HOLD_MAX){M.late=M.hold<1;wave2(M);M.phase='canh0';M.pt=0}}
 function wave2(M){const F=M.F,R=F.rnd;F.banner={txt:M.late?'Đợt thuyền sau đổ bộ dưới mưa tên…':'Đợt thuyền thứ hai cập bến!',t:2.6};
   for(let i=0;i<F.lanes;i++)for(let r=0;r<2;r++)F.boats.push({x:laneX(F,i)+60+(r?30:-30)+R()*10,y:F.wh+CT.BL+r*50+R()*30,wave2:1,lane:i,blk:!r,late:M.late,flagc:R()<.5?'#c8302a':'#d8a020'});
@@ -152,7 +161,8 @@ function canhStart(M){const F=M.F,[a,b]=CD.SECTOR,R=F.rnd;M.phase='canh';M.pt=0;
   F.banner={txt:'Cánh trái sắp vỡ! Dẫn trai làng sang chặn!',t:3};
   setKeys('<span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> đi</span><span><kbd>Space</kbd> đánh</span><span>Sang cánh trái (mũi tên vàng)</span>')}
 function canh(M,dt){const F=M.F,P=M.P;
-  if(!M.reserve&&inSector(F,P.x)&&P.y<F.bank){M.reserve=1;const [a,b]=CD.SECTOR;for(let i=a;i<=b;i++)mkBlock(F,laneX(F,i),Math.min(F.bank-30,P.y+60),0,{w3:1});F.banner={txt:'Dân binh đợt sau theo bạn sang cánh trái!',t:2.4}}   // bạn tới thì kéo theo quân sang lấp chỗ hởM.canhTa=F.blocks.filter(b=>!b.side&&b.broken&&!M.preBroken.has(b)&&inSector(F,b.x+60)).length;
+  if(!M.reserve&&inSector(F,P.x)&&P.y<F.bank){M.reserve=1;const [a,b]=CD.SECTOR;for(let i=a;i<=b;i++)mkBlock(F,laneX(F,i),Math.min(F.bank-30,P.y+60),0,{w3:1});F.banner={txt:'Dân binh đợt sau theo bạn sang cánh trái!',t:2.4}}   // bạn tới thì kéo theo quân sang lấp chỗ hở
+  M.canhTa=F.blocks.filter(b=>!b.side&&b.broken&&!M.preBroken.has(b)&&inSector(F,b.x+60)).length;
   if(M.coArmy&&!M.coArmy.dead){const c=M.coArmy;if(c.x<c.stay[0])c.x+=40*dt;if(c.x>c.stay[1])c.x-=40*dt;if(inSector(F,P.x)&&!M.coMet&&Math.hypot(P.x-c.x,P.y-c.y)<60){M.coMet=1;say(F,c,'Tưởng mày không tới! Đánh thôi!',3.4)}}
   const left=F.blocks.filter(b=>b.side&&!b.broken&&inSector(F,b.x+60)).length;
   const taAlive=F.blocks.filter(b=>!b.side&&!b.broken&&inSector(F,b.x+60)).length;
@@ -164,8 +174,13 @@ function endCanh(M){const F=M.F,[a,b]=CD.SECTOR;for(let i=a;i<=b;i++)F.lane[i]=.
     if(M.coArmy&&!M.coArmy.dead){M.coArmy.dead=1;M.coArmy.t=0;M.coFell=true;say(M.F,M.coArmy,S.flags.dieu?'…Năm tám tuổi… cái diều… bay cao lắm nhỉ…':'…Bảo mẹ tao… tao không chạy…',6)}
     for(const bl of F.blocks)if(!bl.side&&!bl.broken&&inSector(F,bl.x+60)){bl.broken=1}}
   M.phase='co0';M.pt=0}
-function co(M,dt){const F=M.F,P=M.P,G=F.go;
-  if(Math.hypot(P.x-G.x,P.y-G.y)<26&&keys.e){M.flagHold+=dt;if(M.flagHold>=CD.FLAG)win(M,'me')}else M.flagHold=Math.max(0,M.flagHold-dt*2);
+function co(M,dt){const F=M.F,P=M.P,G=F.go,ms=M.ms;
+  // Mặt Sẹo giữ gò: hắn còn đứng gần cột cờ thì không cắm được; còn ít máu thì hắn bỏ chạy
+  const guard=ms&&!ms.dead&&!ms.flee&&Math.hypot(ms.x-G.x,ms.y-G.y)<60;
+  if(ms&&!ms.dead&&!ms.flee){if(Math.hypot(P.x-ms.x,P.y-ms.y)>80&&Math.hypot(ms.x-G.x,ms.y-G.y)>20){ms.x+=Math.sign(G.x-ms.x)*Math.min(30*dt,Math.abs(G.x-ms.x));ms.y+=Math.sign(G.y+12-ms.y)*Math.min(30*dt,Math.abs(G.y+12-ms.y))}
+    if(ms.hp<=4){ms.flee=1;ms.hp=99;say(F,ms,'Nhớ đấy! Còn gặp lại!',3.4);F.banner={txt:'Mặt Sẹo bỏ gò chạy!',t:2.6};msWin('cd');M.msRan=true;ch2Note('Trên gò Chương Dương bạn gặp lại Mặt Sẹo, tên đầu toán đốt làng; bạn đánh cho hắn bỏ gò chạy.')}}
+  if(guard&&Math.hypot(P.x-G.x,P.y-G.y)<26&&keys.e&&!M.msWarn){M.msWarn=1;say(F,ms,'Muốn cắm cờ thì bước qua xác ta!',3)}
+  if(!guard&&Math.hypot(P.x-G.x,P.y-G.y)<26&&keys.e){M.flagHold+=dt;if(M.flagHold>=CD.FLAG)win(M,'me')}else M.flagHold=Math.max(0,M.flagHold-dt*2);
   if(M.pt>CD.CO_T)win(M,'khac')}
 function win(M,who){const F=M.F;M.co=who;M.phase='xong';M.endT=5;F.slow=1.6;F.shake=.6;
   F.banner={txt:who==='me'?'Cờ đỏ trên gò Chương Dương!':'Cờ ta đã cắm trên gò!',t:4.5};
@@ -175,14 +190,16 @@ function win(M,who){const F=M.F;M.co=who;M.phase='xong';M.endT=5;F.slow=1.6;F.sh
 function hitMe(M){const F=M.F,P=M.P;if(P.inv>0||M.phase==='xong')return;P.hp--;P.inv=.55;F.shake=.25;dust(F,P.x,P.y-14,'#c03020',4)}
 function down(M){const F=M.F,P=M.P;M.nga++;P.hp=Math.ceil(P.max*.6);P.inv=2;gainThe(-1);
   const al=M.allies.filter(e=>!e.dead);const who=al.length?al[Math.floor(F.rnd()*al.length)].name:'Dân binh';F.banner={txt:`${who} kéo bạn dậy!`,t:2};
+  if(M.hua){M.hua=false;M.huaUp=true;P.hp=P.max;F.banner={txt:'Nhớ lời hứa ở nhà… bạn đứng dậy!',t:2.6}}   // đêm trước trận đã hứa trở về
+  else if(M.rally){M.rally=false;M.rallied=true;for(const e of al)e.hp=Math.max(e.hp,CT.ALLY_HP+1);F.banner={txt:'Cả đội gọi tên bạn! Không ai lùi!',t:2.6}}   // đã thề trước trại
   P.y=Math.min(F.bank-8,P.y+40)}
 function died(M,tg){if(tg===M.coArmy){M.coFell=true;say(M.F,tg,S.flags.dieu?'…Năm tám tuổi… cái diều… bay cao lắm nhỉ…':'…Bảo mẹ tao… tao không chạy…',6);return}
   if(!tg.ally)return;const m=tg.ally;if(m.co){M.coFell=true;say(M.F,tg,S.flags.dieu?'…Năm tám tuổi… cái diều… bay cao lắm nhỉ…':'…Bảo mẹ tao… tao không chạy…',6);return}
-  m.fallen=true;M.fallen.push(m.name);
+  m.fallen=true;M.fallen.push(m.name);if(m.hen)S.c2.henFell=true;
   const line=S.flags.de==='saved'?'…Năm lụt… mình giữ được đê… lần này cũng giữ được…':(S.flags.doi||0)>=3?'…Mấy buổi luyện đội… không uổng…':'…Bảo mẹ tôi… tôi không bỏ chạy…';say(M.F,tg,line,6)}
-function atk(){const M=st.MG;if(!M||M.type!=='cd'||M.phase==='dem')return;const F=M.F,P=M.P;if(P.cd>0)return;P.cd=.28;P.sw=.2;let hit=0;const dmg=2+voDmg()+(S.path==='vo'?1:0);
+function atk(){const M=st.MG;if(!M||M.type!=='cd'||M.phase==='dem')return;const F=M.F,P=M.P;if(P.cd>0)return;P.cd=.28;P.sw=.2;let hit=0;const dmg=2+voDmg()+(S.path==='vo'?1:0)+M.dmgB;
   for(const e of F.near)if(!e.dead&&e.side&&!e.flee&&Math.abs(e.x-P.x)<20&&Math.abs(e.y-P.y)<16){e.hp-=dmg;e.stun=.5;const ax=Math.abs(e.x-P.x)>Math.abs(e.y-P.y);e.vx=ax?Math.sign(e.x-P.x)*160:0;e.vy=ax?0:Math.sign(e.y-P.y)*160;hit=1;
-    P.dir=ax?(e.x>P.x?'right':'left'):(e.y>P.y?'down':'up');dust(F,e.x,e.y-12,'#c03020',7);if(e.hp<=0){e.dead=1;e.t=0;M.kills++}}
+    P.dir=ax?(e.x>P.x?'right':'left'):(e.y>P.y?'down':'up');dust(F,e.x,e.y-12,'#c03020',7);if(e.hp<=0){if(e.boss)e.hp=1;else{e.dead=1;e.t=0;M.kills++}}}
   if(!hit)for(const b of blocksNear(F,P.x,P.y,20,1)){for(const m of b.men){if(!m.alive)continue;const x=b.x+m.dx,y=b.y+m.dy;
     if(Math.abs(x-P.x)<20&&Math.abs(y-P.y)<16){killMan(F,b,m);hit=1;M.kills++;const ax=Math.abs(x-P.x)>Math.abs(y-P.y);P.dir=ax?(x>P.x?'right':'left'):(y>P.y?'down':'up');break}}if(hit)break}
   if(hit){F.freeze=.05;F.shake=Math.max(F.shake,.15)}}
@@ -194,6 +211,7 @@ function cdGoal(){const M=st.MG,F=M.F;if(M.phase==='dem')return [M.me.x,F.bank];
 /* nhịp chuyển: sau đợt hai cập bến ít giây thì sang cánh trái; cánh trái xong ít giây thì lên gò */
 function phaseTick(M){if(M.phase==='canh0'&&M.pt>3&&M.F.boats.every(b=>!b.wave2||b.landed))canhStart(M);
   if(M.phase==='co0'&&M.pt>3){M.phase='co';M.pt=0;M.F.banner={txt:'Lên gò! Cắm cờ!',t:3};
+    const G=M.F.go;M.ms=addNear(M.F,G.x+6,G.y+14,1,{look:MS.look,hp:14,max:14,name:MS.name,boss:1,spd:.9,cd:1});msMeet('cd');say(M.F,M.ms,msTaunt(),4);
     setKeys('<span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> đi</span><span><kbd>Space</kbd> đánh</span><span>Giữ <kbd>E</kbd> trên gò để cắm cờ</span>')}}
 
 /* ---------- vẽ ---------- */
@@ -207,7 +225,7 @@ function cdRender(){const M=st.MG,F=M.F,P=M.P;
     if(M.phase==='giu'){const Zn=M.zone;list.push([F.go.y-100,()=>{ctx.strokeStyle=M.holding?'rgba(255,224,138,.55)':'rgba(224,127,107,.5)';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.beginPath();ctx.ellipse(Zn.x,Zn.y,CD.HOLD_R,CD.HOLD_R*.55,0,0,7);ctx.stroke();ctx.setLineDash([])}])}
     if(M.phase==='canh'){const [a,b]=sector(F);list.push([F.go.y-100,()=>{ctx.fillStyle='rgba(255,224,138,.07)';ctx.fillRect(a,F.go.y,b-a,F.bank-F.go.y)}])}});
   // nhãn tên trai làng, Cò
-  const labels=[];for(const e of F.near)if((e.ally||e===M.coArmy)&&!e.dead&&Math.hypot(e.x-P.x,e.y-P.y)<90)labels.push([e.name,e.x,e.y-44]);
+  const labels=[];for(const e of F.near)if((e.ally||e===M.coArmy||(e.boss&&!e.flee))&&!e.dead&&Math.hypot(e.x-P.x,e.y-P.y)<90)labels.push([e.name,e.x,e.y-44]);
   if(M.phase==='dem'){const holes=[[M.me.x,M.me.y-CT.BL/2,26]];for(const p of M.pat)holes.push([p.x-9,p.y+CT.BL*.5-12,CD.DET_R*1.05]);darkness(holes,.8);
     // sương trôi
     ctx.setTransform(DPR,0,0,DPR,0,0);for(let i=0;i<7;i++){const y=(i*97+F.t*4)%innerHeight,x=((i*233+F.t*12)%(VW+400))-200;ctx.fillStyle='rgba(200,210,220,.06)';ctx.fillRect(x,y,380,26)}}
@@ -224,7 +242,7 @@ function cdHud(){const M=st.MG,F=M.F,P=M.P;ctx.setTransform(DPR,0,0,DPR,0,0);con
   if(M.phase==='dem'){txt=M.lo||M.cham?'Cả đoàn chèo gấp vào bờ!':'Giữ W chèo, A D lái. Tránh vùng đèn thuyền canh';bar=M.det;col=M.det>.6?'#e0402a':'#d98a3a'}
   else if(M.phase==='giu'){txt=M.holding?'Giữ được bến…':'Về vòng bến, đánh lui giặc trong vòng';bar=M.hold;col='#e2bf72'}
   else if(M.phase==='canh'){const left=F.blocks.filter(b=>b.side&&!b.broken&&inSector(F,b.x+60)).length;txt=`Trụ ở cánh trái · còn ${left} khối giặc · ta vỡ ${M.canhTa}/2`;bar=Math.min(1,M.pt/CD.CANH_T);col='#e07f6b'}
-  else if(M.phase==='co'){txt='Lên gò, giữ E để cắm cờ';bar=M.flagHold/CD.FLAG;col='#e2bf72'}
+  else if(M.phase==='co'){txt=M.ms&&!M.ms.dead&&!M.ms.flee?`Mặt Sẹo giữ gò · đánh lui hắn (máu ${M.ms.hp})`:'Lên gò, giữ E để cắm cờ';bar=M.flagHold/CD.FLAG;col='#e2bf72'}
   else txt=M.phase==='xong'?'Giặc chạy về phía sông Lô!':'…';
   ctx.fillStyle='#efe8d4';ctx.fillText(txt,x+12,48);if(bar!==null)hudBar(x+w-150,42,138,bar,col)}
 
@@ -232,7 +250,13 @@ function cdHud(){const M=st.MG,F=M.F,P=M.P;ctx.setTransform(DPR,0,0,DPR,0,0);con
 function finish(M){M.phase='ket';M.update=()=>{};M.hud=()=>{};   // bãi trận vẫn vẽ sau khung kết, tới khi bấm Tiếp tục
   const cong=[];if(!M.lo&&!M.cham)cong.push('Bạn dẫn đợt thuyền đầu lặng lẽ vào bến, mở đường cho cả đoàn dân binh.');if(!M.late)cong.push('Bạn giữ được bến cho đợt thuyền thứ hai.');
   if(M.canh==='giu')cong.push('Bạn giữ khúc chiến tuyến bên trái lúc nó sắp vỡ.');if(M.co==='me')cong.push('Bạn cắm lá cờ đầu tiên trên gò Chương Dương.');
-  S.c2.cd={lo:M.lo,cham:M.cham,late:M.late,canh:M.canh,co:M.co,kills:M.kills,nga:M.nga,fallen:M.fallen.slice(),coFell:M.coFell,cong:cong.length};
+  S.c2.cd={lo:M.lo,cham:M.cham,late:M.late,canh:M.canh,co:M.co,kills:M.kills,nga:M.nga,fallen:M.fallen.slice(),coFell:M.coFell,cong:cong.length,ms:M.msRan?'chay':'gap',bua:!!M.buaCut,hua:!!M.huaUp,rally:!!M.rallied};
+  if(M.ms&&!M.msRan)ch2Note('Trên gò Chương Dương bạn gặp lại Mặt Sẹo, tên đầu toán đốt làng. Hắn lẫn vào đám giặc tháo chạy.');
+  if(M.buaCut)ch2Note('Ở Chương Dương, một mũi tên sượt qua cổ tay bạn, đứt vòng chỉ đỏ bé Sen buộc.');
+  if(M.huaUp)ch2Note('Ở Chương Dương bạn ngã xuống, nhớ lời hứa ở nhà mà gượng đứng dậy.');
+  if(M.rallied)ch2Note('Ở Chương Dương bạn ngã xuống, cả đội dân binh gọi tên bạn, không ai lùi.');
+  if(S.c2.hua==='co')ch2Note(M.coFell?'Bạn không giữ được lời hứa với Thảo: Cò không về.':'Bạn giữ được lời hứa với Thảo: đưa Cò về.');
+  if(S.c2.coKe==='o'&&S.co==='village')ch2Note('Cò ở lại giữ thuyền, không ra trận Chương Dương.');
   if(M.lo)ch2Note('Đêm trước Chương Dương, thuyền canh giặc phát hiện đoàn thuyền. Dân binh phải đổ bộ dưới mưa tên.');
   else if(M.cham)ch2Note('Đêm trước Chương Dương, bạn chèo chậm, đoàn thuyền đổ bộ khi trời đã rạng.');
   else ch2Note('Đêm trước Chương Dương, bạn cầm thuyền dẫn đầu lặng lẽ qua mặt thuyền canh giặc.');

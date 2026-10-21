@@ -660,6 +660,22 @@
     return {errs, out};
   }
 
+  /* Đi nhanh qua các cảnh chương hai: khung sự kiện chọn lựa đầu, trại dân binh (chờ hết lời rồi gặp ông Đoàn), dò tin (rút
+     ngay), chặn lương (hạ hết lính). stop(chữ khung, MG) trả true thì dừng. */
+  function ch2Skip(d, stop, max = 80) {
+    const modal = () => document.querySelector('#modal').innerText;
+    for (let i = 0; i < max; i++) {
+      if (d.dialogOpen) { const b = document.querySelector('#dialog #opt0'); if (b) b.click(); else d.closeDialog(); continue; }
+      if (d.modalOpen) { if (stop(modal(), null)) return true; d.mpick(0); continue; }
+      const M = d.MG; if (!M) return false; if (stop(null, M)) return true;
+      if (M.type === 'traidb') { for (let k = 0; k < 900 && !M.free && !d.modalOpen; k++) d.step(.1); if (!d.modalOpen && M.free) M.doan.talk(); continue; }
+      if (M.type === 'dotin') { d.S.x = M.exit[0]; d.S.y = M.exit[1]; M.findTarget().act(); if (d.MG === M) M.findTarget().act(); continue; }
+      if (M.type === 'cuop2') { for (const e of M.en) e.dead = true; d.step(.05); continue; }
+      return false;
+    }
+    return false;
+  }
+
   /* Chương hai, phần mở đầu: sang chương từ màn kết, trốn trại (nạy rào, bị thấy thì bị bắt lại, đốt kho, ra khỏi
      trại), tản cư, gặp dân binh, biên niên; nhánh không bị bắt đi thẳng vào tản cư; tải lại trang mở đúng cảnh. */
   function chapter2() {
@@ -704,10 +720,10 @@
     S.x = C.x0 - 3; S.y = C.y0 + 10; run(.2);
     if (d.MG) errs.push('ra ngoài rào trại mà màn trốn trại chưa xong');
     if (!S.c2.tron || !S.c2.tron.ok) errs.push('thoát mà S.c2.tron.ok sai');
-    pickAll(/Đêm trước Chương Dương/);
+    ch2Skip(d, m => m && /Đêm trước Chương Dương/.test(m));
     const txt = S.c2.chron.join('\n'); out.chron = S.c2.chron.length;
     if (!/Đêm trước Chương Dương/.test(modal())) errs.push('chuỗi cảnh chương hai không tới trận Chương Dương');
-    for (const [re, what] of [[/trốn khỏi trại/, 'trốn trại'], [/kho lương/, 'đốt kho'], [/dân binh/, 'dân binh'], [/Trần Bình Trọng/, 'tin Trần Bình Trọng'], [/thóc/, 'thóc']])
+    for (const [re, what] of [[/trốn khỏi trại/, 'trốn trại'], [/kho lương/, 'đốt kho'], [/dân binh/, 'dân binh'], [/Trần Bình Trọng/, 'tin Trần Bình Trọng'], [/thóc/, 'thóc'], [/Thượng Phúc/, 'dò tin'], [/cướp lương/, 'chặn lương'], [/Mặt Sẹo/, 'Mặt Sẹo']])
       if (!re.test(txt)) errs.push(`biên niên chương hai thiếu dòng ${what}`);
     if (S.ch !== 2 || S.c2.scene !== 'cd') errs.push(`tới trận mà S.ch ${S.ch}, cảnh ${S.c2.scene}`);
     while (d.modalOpen) d.nextModal();
@@ -720,7 +736,7 @@
     base(false); d.ch2.ch2Start(); d.mpick(0);
     if (d.MG) errs.push('không bị bắt mà vẫn vào màn trốn trại');
     if (!/Làng sau đêm giặc/.test(modal())) errs.push('không bị bắt mà không vào cảnh tản cư');
-    pickAll(/Đêm trước Chương Dương/); if (!/Đêm trước Chương Dương/.test(modal())) errs.push('nhánh tản cư không tới trận Chương Dương');
+    ch2Skip(d, m => m && /Đêm trước Chương Dương/.test(m)); if (!/Đêm trước Chương Dương/.test(modal())) errs.push('nhánh tản cư không tới trận Chương Dương');
     while (d.modalOpen) d.nextModal();
     document.body.classList.remove('mg');
     return {errs, out};
@@ -748,7 +764,7 @@
     const F = M.F; let t = 0;
     for (; t < 600 && d.MG === M; t += 1 / 30) {
       if (M.phase === 'dem') { const mb = M.me, hy = mb.y - 37; const ahead = M.pat.filter(p => hy - (p.y + 37) > -20).sort((a, b) => b.y - a.y)[0], dy = ahead ? hy - (ahead.y + 37) : 999; ev('w', !(ahead && dy > CD.DET_R - 10 && dy < CD.DET_R + 40 && Math.abs(ahead.x - 9 - mb.x) < 300)); }   // chờ dưới dải thuyền canh tới khi đèn đi xa rồi chèo một mạch
-      else { ev('w', false); if (M.phase === 'co') { M.P.x = F.go.x; M.P.y = F.go.y + 4; ev('e', true); } else if (M.phase !== 'xong') fight(M, 1 / 30); }
+      else { ev('w', false); if (M.phase === 'co') { const ms = M.ms; if (ms && !ms.dead && !ms.flee) { ev('e', false); M.P.x = ms.x; M.P.y = ms.y + 12; M.key(' '); } else { M.P.x = F.go.x; M.P.y = F.go.y + 4; ev('e', true); } } else if (M.phase !== 'xong') fight(M, 1 / 30); }
       d.step(1 / 30);
       if (M.phase === 'canh' && out.ms === undefined) { const t0 = performance.now(); for (let i = 0; i < 20; i++) M.render(); out.ms = +((performance.now() - t0) / 20).toFixed(1); }
     }
@@ -760,6 +776,7 @@
       if (R.late) errs.push('bot giỏi đứng giữ bến mà đợt sau vẫn đổ bộ muộn');
       if (R.canh !== 'giu') errs.push('bot giỏi đứng ở cánh trái mà cánh trái vẫn vỡ');
       if (R.co !== 'me') errs.push('bot giỏi đứng trên gò giữ E mà không cắm được cờ');
+      if (R.ms !== 'chay') errs.push('bot giỏi đánh Mặt Sẹo trên gò mà hắn không bỏ chạy');
       if (!/Chương Dương/.test(modal())) errs.push('hết trận không có khung kết trận');
       if (!/Sử sách chép tên các tướng/.test(modal())) errs.push('đủ công mà khung kết thiếu câu "Sử sách chép tên các tướng"');
       if (!/Toàn thư chép/.test(modal())) errs.push('khung kết trận thiếu dòng Toàn thư');
@@ -815,8 +832,13 @@
     else if (R.xa.length) errs.push(`hạ lính rồi cắt dây mà vẫn có người bị chở đi: ${R.xa.join(', ')}`);
     // 4. tin, vua về kinh, tháng 8
     if (!/Về bìa tre|Thuyền giặc/.test(modal())) errs.push('hết màn cứu người không có khung kết');
-    d.mpick(0); if (!/Giặc chạy/.test(modal())) errs.push('không tới khung giặc chạy'); d.mpick(0);
+    d.mpick(0); const C = d.MG; const said = new Set();
+    if (!C || C.type !== 'traidb' || C.kind !== 'C') errs.push(`hết màn cứu người không sang lửa trại ngày giặc tan (${C && C.type})`);
+    else for (let k = 0; k < 900 && !d.modalOpen; k++) { d.step(.1); for (const b of C.bub) said.add(b.text); }
+    if (![...said].some(x => /đồ đồng/.test(x))) errs.push('lửa trại giặc tan không có lời kể chuyện Thoát Hoan chui đồ đồng');
+    if (!/Giặc chạy/.test(modal())) errs.push('không tới khung giặc chạy');
     if (!/Tây Kết/.test(modal()) || !/Người làm tôi phải nên như thế này/.test(modal())) errs.push('khung tin Tây Kết thiếu tin hoặc lời vua'); d.mpick(0);
+    if (d.modalOpen) d.mpick(0);   // xuôi sông đuổi giặc
     const V = d.MG; if (!V || V.type !== 'vuave') errs.push(`không vào cảnh vua về kinh (${V && V.type})`);
     else { let asked = false; window.dispatchEvent(new KeyboardEvent('keydown', {key: ' '}));
       for (t = 0; t < 120 && d.MG === V; t += 1 / 20) { if (d.modalOpen) { if (/hỏi tên/.test(modal())) { asked = true; d.mpick(0); } else break; } d.step(1 / 20); }
@@ -825,9 +847,95 @@
       if (d.MG === V) errs.push('đoàn rước không đi hết sau 120 giây');
       if (!/Đoạt sáo Chương Dương độ/.test(modal()) || !/Non nước cũ muôn thu/.test(modal())) errs.push('thiếu bài thơ Trần Quang Khải'); d.mpick(0);
       if (!/Phong thưởng và trị tội/.test(modal())) errs.push('không tới khung tháng 8'); d.mpick(0);
+      if (/Ông Cả Lợi bị xét tội/.test(modal())) d.mpick(0); else errs.push('làm chứng mà không có khung ông Cả Lợi bị xét tội');
       if (!/Biên niên chương hai/.test(modal())) errs.push('không tới màn biên niên chương hai');
       const chron = d.S.c2.chron.join('\n');
       for (const [re, what] of [[/cắt dây cứu/, 'cứu người'], [/đuổi giặc/, 'đuổi giặc'], [/ghi tên bạn/, 'viên quan ghi tên'], [/Cả Lợi/, 'ông Cả Lợi'], [/tám quan/, 'thưởng']]) if (!re.test(chron)) errs.push(`biên niên thiếu dòng ${what}`); }
+    while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
+    document.body.classList.remove('mg');
+    return {errs, out};
+  }
+
+  /* Chương hai, quãng trước Chương Dương (traiDB.js, dotin.js, cuopluong.js) và hậu quả các lựa chọn ở trận:
+     tin Trần Bình Trọng nói quanh đống lửa, giữ chân anh Hến; dò tin (bot đủ ba tin, đứng trước lính tuần thì lộ); chặn lương
+     (bot thắng, Mặt Sẹo chạy; đứng yên vẫn kết thúc); người nhà tới thăm đêm trước trận; lựa chọn đổi trận; lửa trại ngày
+     giặc tan (chỗ người ngã để trống, đuổi giặc cứu được người làng bị chở đi). */
+  function danbinh2() {
+    const d = D(), errs = [], out = {};
+    const modal = () => document.querySelector('#modal').innerText;
+    const opt = i => { const b = document.querySelector('#dialog #opt' + i); if (b) b.click(); };
+    const setup = (scene, extra = {}) => { d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, ch: 2, path: 'van', van: 45, vo: 30, tieng: 35, co: 'village', thao: 'wife', child: true, cha: true,
+      flags: {dieu: 'di'}, res: {reason: 'done', boss: 'killed'}, c2: Object.assign({scene, doi: 2, chron: [], tancu: {}, tron: null}, extra)}));
+      while (d.modalOpen) d.nextModal(); if (d.dialogOpen) d.closeDialog(); if (d.MG) d.setMG(null); d.ch2.ch2Resume(); return d.MG; };
+    // 1. đêm A: tin nói quanh đống lửa, khung có dòng Toàn thư; giữ chân anh Hến; ông Đoàn → dò tin
+    let M = setup('traiA'); const said = new Set();
+    if (!M || M.type !== 'traidb') errs.push(`không vào trại dân binh (${M && M.type})`);
+    else {
+      for (let k = 0; k < 900 && !d.modalOpen; k++) { d.step(.1); for (const b of M.bub) said.add(b.text); }
+      const all = [...said].join('\n');
+      if (!/ma nước Nam/.test(all) || !/Trần Kiện/.test(all)) errs.push('đêm ở trại không có lời kể tin Trần Kiện, Trần Bình Trọng');
+      if (!/Toàn thư chép/.test(modal())) errs.push('khung tin Trần Bình Trọng thiếu dòng Toàn thư');
+      d.mpick(0); if (d.S.c2.the !== 'the') errs.push('chọn thề mà S.c2.the không ghi');
+      M.hen.talk(); opt(0); if (d.S.c2.hen !== 'o') errs.push('Tiếng 35 mà không giữ được anh Hến');
+      M.doan.talk(); opt(0); if (!/Dò tin ở làng Thượng Phúc/.test(modal())) errs.push('gặp ông Đoàn đi ngủ mà không sang dò tin');
+    }
+    while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
+    // 2. dò tin: bot dịch chuyển theo MG.goal() rồi bấm E
+    M = setup('dotin'); d.mpick(0); M = d.MG;
+    if (!M || M.type !== 'dotin') errs.push(`không vào màn dò tin (${M && M.type})`);
+    else {
+      for (let k = 0; k < 20 && d.MG === M; k++) { const g = M.goal(); d.S.x = g[0] + .4; d.S.y = g[1] + .3; M.alert = 0; const t = M.findTarget(); if (t) t.act(); d.step(.05); }
+      out.tin = d.S.c2.tin2; if (d.MG === M) errs.push('bot dò tin mà màn không kết thúc');
+      if (!d.S.c2.tin2 || d.S.c2.tin2.length < 3) errs.push(`Văn 45 mà bot chỉ dò được ${(d.S.c2.tin2 || []).length} tin`);
+      if (!/Về trại/.test(modal())) errs.push('dò tin xong không có khung về trại');
+    }
+    while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
+    M = setup('dotin'); d.mpick(0); M = d.MG;
+    if (M && M.type === 'dotin') { const DV = {up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0]};
+      for (let k = 0; k < 200 && d.MG === M; k++) { const g = M.pat[0], [vx, vy] = DV[g.dir]; d.S.x = g.x + vx * 1.5; d.S.y = g.y + vy * 1.5; d.step(.05); }
+      if (d.MG === M || !d.S.c2.dotin || !d.S.c2.dotin.lo) errs.push('đứng trước mặt lính tuần mà không bị lộ'); }
+    while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
+    // 3. chặn lương: bot áp sát chém tên gần nhất
+    M = setup('cuop2', {men: [{name: 'anh Tráng', look: {id: 'trai'}, fallen: false}, {name: 'anh Lực', look: {id: 'trai2'}, fallen: false}]}); d.mpick(0); M = d.MG;
+    if (!M || M.type !== 'cuop2') errs.push(`không vào màn chặn lương (${M && M.type})`);
+    else {
+      let t = 0; for (; t < 120 && d.MG === M; t += 1 / 20) { const l = M.en.filter(e => !e.dead); if (l.length && (M.fight || t > 3)) { const e = l[0]; d.S.x = e.x - .8; d.S.y = e.y; M.key(' '); } d.step(1 / 20); }
+      out.luong = d.S.c2.luong; out.luongT = Math.round(t);
+      if (d.S.c2.luong !== 'giu') errs.push(`bot đánh mà không giữ được thóc (${d.S.c2.luong})`);
+      if (!(d.S.c2.msWin || []).includes('cuop')) errs.push('hạ nửa toán lính mà Mặt Sẹo không bỏ chạy');
+      if (!/Mặt Sẹo/.test(d.S.c2.chron.join('\n'))) errs.push('biên niên thiếu dòng Mặt Sẹo ở trận chặn lương');
+    }
+    while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
+    M = setup('cuop2'); d.mpick(0); M = d.MG;
+    if (M && M.type === 'cuop2') { let t = 0; for (; t < 200 && d.MG === M; t += 1 / 20) d.step(1 / 20); out.luongIdle = d.S.c2.luong;
+      if (d.MG === M) errs.push('đứng yên ở màn chặn lương mà màn không kết thúc'); }
+    while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
+    // 4. đêm B: Thảo, bé Sen, Cò; rồi xuống thuyền, lựa chọn đổi trận
+    M = setup('traiB', {luong: 'giu', the: 'mai', tin2: ['gac']});
+    if (!M || M.type !== 'traidb') errs.push('không vào đêm trước Chương Dương');
+    else {
+      for (let k = 0; k < 400 && !M.free; k++) d.step(.1);
+      if (!M.kin || !M.sen || !M.co) errs.push('đêm trước trận thiếu Thảo, bé Sen hay Cò');
+      else { M.kin.talk(); opt(0); M.sen.talk(); d.closeDialog(); M.co.talk(); opt(0); }
+      if (d.S.c2.hua !== 've' || !d.S.c2.bua || d.S.c2.coKe !== 'canh') errs.push(`lựa chọn đêm trước trận không ghi (hua ${d.S.c2.hua}, bua ${d.S.c2.bua}, coKe ${d.S.c2.coKe})`);
+      M.doan.talk(); opt(0); if (!/Đêm trước Chương Dương/.test(modal())) errs.push('xuống thuyền mà không tới trận');
+      else if (!/giờ đổi gác/.test(modal())) errs.push('khung đầu trận không nhắc tin dò được');
+      d.mpick(0); const C = d.MG;
+      if (!C || C.type !== 'cd') errs.push('không vào trận Chương Dương');
+      else { const base = 6 + d.stats.voHp() + d.stats.theHp(); if (C.P.max !== base + 1) errs.push(`giữ được thóc mà máu ở trận ${C.P.max}, chờ ${base + 1}`);
+        if (C.dmgB !== 1 || !C.bua || !C.hua || C.nightT <= d.cd.CD.NIGHT_T) errs.push('mài giáo, vòng chỉ đỏ, lời hứa, tin giờ đổi gác không đổi gì ở trận'); }
+    }
+    while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null); document.body.classList.remove('mg', 'battle');
+    // 5. lửa trại ngày giặc tan: chỗ trống cho người đã ngã; đuổi giặc cứu được người bị chở đi
+    M = setup('tin', {cd: {cong: 1}, men: [{name: 'anh Tráng', look: {id: 'trai'}, fallen: true}], missing: ['Mẹ']});
+    if (!M || M.type !== 'traidb') errs.push('không vào lửa trại ngày giặc tan');
+    else {
+      if (!M.empty || M.empty.length !== 1) errs.push('anh Tráng đã ngã mà quanh đống lửa không để trống chỗ');
+      for (let k = 0; k < 900 && !d.modalOpen; k++) d.step(.1);
+      if (!/Giặc chạy/.test(modal())) errs.push('lửa trại không tới khung giặc chạy');
+      d.mpick(0); if (d.S.c2.rescued !== 'Mẹ' || (d.S.c2.missing || []).length) errs.push('đuổi giặc mà không cứu được mẹ bị chở đi');
+      if (!/Thuyền chở người bị bắt/.test(modal())) errs.push('đuổi giặc cứu người mà không có khung');
+    }
     while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
     document.body.classList.remove('mg');
     return {errs, out};
@@ -1090,5 +1198,5 @@
     return {errs};
   }
 
-  window.__checks = {giactan, chuongduong, chapter2, nguArc, midgame, career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  window.__checks = {danbinh2, giactan, chuongduong, chapter2, nguArc, midgame, career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();
