@@ -6,6 +6,7 @@ import {campSolid} from './trai.js';
 import {startFerry} from './thuyen.js';
 import {toggleWorldMap,worldMapOpen} from './render.js';
 import {BUILDINGS,SIGNS,bsolid,get,isW} from './map.js';
+import {HOANG_DOORS} from './kinhthanh.js';
 import {MG,NPCS,P,S,age,npcOn} from './state.js';
 import {closeDialog,dialogOpen,floats,modalOpen,mpick,pick,renderHUD,say,toast,toggleQuests} from './ui.js';
 import {buffaloLabel,buffaloUpdate,doorAction,fieldMenu,fishAction,goSleep,talkBuffalo} from './dialogs.js';
@@ -78,7 +79,8 @@ function findTarget(){
   {const ex=exploreTarget(best);if(ex){best=ex.d;target=ex}}
   if(S.buffalo.st==='lost'&&S.quests.trau==='active'&&Math.hypot(b.x-S.x,b.y-S.y)<1.5)target={label:buffaloLabel(),act:talkBuffalo};   // đang tìm trâu thì trâu được ưu tiên hơn chỗ khám phá cạnh đó
   if(!target)for(const f of FERRIES)for(const [a,b] of [[f.a,f.b],[f.b,f.a]]){if(target)break;if(Math.hypot(a[0]-S.x,a[1]-S.y)<1.4&&regionOpen(S,regionId(Math.floor(a[0]),Math.floor(a[1])))&&regionOpen(S,regionId(Math.floor(b[0]),Math.floor(b[1]))))target={label:'Đi đò: '+f.name,act:()=>startFerry(f,a,b)}}
-  if(!target)for(const bd of BUILDINGS){if(!['home','cung','chua','dinh','truong','thap'].includes(bd.id))continue;const dx=bd.x+Math.floor(bd.w/2)+.5,dy=bd.y+bd.h+.3;if(Math.hypot(dx-S.x,dy-S.y)<1.3){target={label:bd.id==='home'?'Vào nhà':'Xem '+bd.name,act:()=>doorAction(bd)};break}}
+  if(!target)for(const [x,y,name] of HOANG_DOORS)if(Math.hypot(x-S.x,y-S.y)<1.4){target={label:'Xem '+name,act:()=>doorAction({id:'cung',name})};break}   // cổng Hoàng thành đóng
+  if(!target)for(const bd of BUILDINGS){if(!['home','chua','dinh','truong','thap'].includes(bd.id))continue;const dx=bd.x+Math.floor(bd.w/2)+.5,dy=bd.y+bd.h+.3;if(Math.hypot(dx-S.x,dy-S.y)<1.3){target={label:bd.id==='home'?'Vào nhà':'Xem '+bd.name,act:()=>doorAction(bd)};break}}
   if(!target&&get(Math.floor(S.x),Math.floor(S.y))===FI&&age()>=8)target={label:'Làm đồng',act:fieldMenu};
   if(!target){const v={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[P.dir];if(isW(get(Math.floor(S.x+v[0]*.9),Math.floor(S.y+v[1]*.9))))target={label:'Câu cá  (−1 Sức)',act:fishAction}}
   setPrompt();

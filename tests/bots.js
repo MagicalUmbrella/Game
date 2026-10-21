@@ -120,7 +120,7 @@
   }
 
   /* ---------- Đêm tháng giêng 1285 ---------- */
-  const SPAWNS = [[53.5, 21.8], [24.5, 20.4]]; // điểm giặc xuất hiện (src/climax.js, spawnEnemy)
+  const SPAWNS = [[53.5, 41.8], [24.5, 40.4]]; // điểm giặc xuất hiện (src/climax.js, spawnEnemy)
   const zoneC = () => { const Z = D().ZONE; return [(Z.x0 + Z.x1) / 2 + .5, (Z.y0 + Z.y1) / 2 + .5]; };
   const inZone = (x, y) => { const Z = D().ZONE; return x >= Z.x0 && x <= Z.x1 + 1 && y >= Z.y0 && y <= Z.y1 + 1; };
 

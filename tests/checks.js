@@ -2,7 +2,7 @@
    Mỗi hàm trả về danh sách lỗi (mảng chuỗi rỗng là đạt) kèm vài số liệu. */
 (() => {
   const D = () => window.__dv;
-  const W = 480, H = 240, DT = 1 / 60;   // bản đồ thế giới (src/constants.js); bài world() kiểm tra lại
+  const W = 480, H = 260, DT = 1 / 60;   // bản đồ thế giới (src/constants.js); bài world() kiểm tra lại
   const ev = (k, down) => window.dispatchEvent(new KeyboardEvent(down ? 'keydown' : 'keyup', {key: k}));
   const run = (sec, dt = DT) => { for (let t = 0; t < sec; t += dt) D().step(dt); };
 
@@ -17,7 +17,7 @@
   /* Mọi NPC, cửa nhà, biển, chuồng trâu, đống đất và chỗ đê vỡ (1270), người và thóc cần cứu, rừng
      trú ẩn (1285), chỗ giấu trâu đều đi tới được từ nhà. Bán kính lấy nhỏ hơn bán kính bấm E một chút. */
   function reach() {
-    const d = D(), S = d.S, prev = d.bfs(43, 50), errs = [];
+    const d = D(), S = d.S, prev = d.bfs(43, 70), errs = [];
     let n = 0;
     const need = (name, x, y, r) => { n++; if (!near(prev, x, y, r)) errs.push(`không tới được ${name} (${x.toFixed(1)}, ${y.toFixed(1)})`); };
     // NPC: thử vị trí ở nhiều năm và nhiều nhánh truyện (NPC có at() đổi chỗ theo trạng thái)
@@ -147,7 +147,10 @@
     const where = new Set();
     // bài này chỉ xem giặc đi đúng địa hình: bạn đứng yên không ngã (giặc đông, khỏe hơn từ 10/2026 từng hạ bạn sớm,
     // màn kết thúc trước khi giặc kịp sang bờ nam, test báo lỗi chập chờn)
+    // cảnh nhỏ khi lên mốc chỉ số (moc.js) còn xếp hàng từ bài trước thì mở khung, chặn màn chơi: đóng đi
+    S.mocQ = [];
     for (let i = 0; i < 70 * 60 && d.MG === M; i++) {
+      while (d.modalOpen) d.nextModal();
       M.hp = 99; d.step(DT);
       for (const o of M.en.concat(M.al)) {
         if (o.dead || o.down) continue;
@@ -763,7 +766,7 @@
       const chron = d.S.c2.chron.join('\n');
       for (const [re, what] of [[/cắm lá cờ đầu tiên/, 'cắm cờ'], [/giữ được bến/, 'giữ bến'], [/Cánh trái sắp vỡ/, 'cánh trái'], [/hạ \d+ tên giặc/, 'số giặc hạ']]) if (!re.test(chron)) errs.push(`biên niên thiếu dòng ${what}`);
       if (R.fallen.length && !/Trai làng ngã ở Chương Dương/.test(chron)) errs.push('có trai làng ngã mà biên niên không ghi tên');
-      d.mpick(0); if (d.S.c2.scene !== 'cho') errs.push(`sau trận không sang cảnh kế (cảnh ${d.S.c2.scene})`);
+      d.mpick(0); if (d.S.c2.scene !== 'tim') errs.push(`sau trận không sang cảnh cứu người ở trại (cảnh ${d.S.c2.scene})`);
     }
     if (out.ms > 40) errs.push(`vẽ một khung trận mất ${out.ms} ms (quá chậm)`);
     while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
@@ -778,6 +781,58 @@
     return {errs, out};
   }
 
+  /* Giặc tan (chapter2/giactan.js, vuave.js): đứng yên thì hàng tù bị chở đi hết; bot đánh ngất lính từ sau lưng rồi cắt dây thì
+     cứu được hết; đứng trước mặt lính thì bị lộ; tin giặc chạy, vua về kinh (viên quan hỏi tên khi đủ công), bài thơ, tháng 8. */
+  function giactan() {
+    const d = D(), errs = [], out = {}, TIM = d.gt.TIM;
+    const modal = () => document.querySelector('#modal').innerText;
+    const setup = (cong) => { d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 1, ch: 2, path: 'vo', vo: 45, co: 'village', cha: true,
+      res: {reason: 'done', lostWho: [{name: 'Mẹ', look: {id: 'me_gia'}}, {name: 'Bà Tư', look: {id: 'batu'}}]},
+      c2: {scene: 'tim', cd: {cong}, chron: [], tancu: {}, tron: null, men: [{name: 'anh Tráng', look: {id: 'trai'}, fallen: false}]}}));
+      while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null); d.ch2.ch2Resume();
+      if (!/Trại giặc bỏ hoang/.test(modal())) errs.push('không mở khung trại giặc bỏ hoang'); d.mpick(0);
+      const M = d.MG; if (!M || M.type !== 'tim') { errs.push(`không vào màn cứu người (${M && M.type})`); return null; } return M; };
+    // 1. đứng yên: bị chở đi hết
+    let M = setup(0); if (!M) return {errs, out}; let t = 0;
+    for (; t < 200 && d.MG === M; t += 1 / 20) d.step(1 / 20);
+    out.idle = Math.round(t);
+    if (d.MG === M) errs.push('đứng yên mà màn cứu người không kết thúc sau 200 giây');
+    else { const R = d.S.c2.tim; if (R.cuu.length) errs.push('đứng yên mà vẫn cứu được người'); if (!(d.S.c2.missing || []).includes('Mẹ')) errs.push('mẹ bị chở đi mà không ghi vào S.c2.missing'); }
+    while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
+    // 2. đứng trước mặt lính đi đầu: bị lộ
+    M = setup(3); for (let i = 0; i < 200; i++) d.step(1 / 20);
+    const g0 = M.row[0], [vx, vy] = {up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0]}[g0.face || g0.dir];
+    for (let i = 0; i < 80 && !M.lo; i++) { d.S.x = g0.x + vx * 2; d.S.y = g0.y + vy * 2; d.step(1 / 20); }
+    if (!M.lo) errs.push('đứng ngay trước mặt lính mà không bị lộ');
+    // 3. bot: đánh ngất lính từ sau lưng, rồi cắt dây từng người
+    const back = {up: [0, 1], down: [0, -1], left: [1, 0], right: [-1, 0]};
+    for (const g of M.row.filter(o => o.guard)) { for (let i = 0; i < 3 && !g.ko; i++) { const [bx, by] = back[g.face || g.dir]; d.S.x = g.x + bx * .8; d.S.y = g.y + by * .8; M.alert = 0; M.stun = 0; M.key(' '); d.step(1 / 20); } }
+    out.ko = M.ko; if (M.ko < 2) errs.push(`đứng sau lưng lính bấm Space mà chỉ hạ được ${M.ko} tên`);
+    for (t = 0; t < 120 && d.MG === M; t += 1 / 20) { const c = M.caps.find(c => c.tied && !c.gone); if (c) { d.S.x = c.x + .4; d.S.y = c.y + .4; ev('e', true); } else ev('e', false); d.step(1 / 20); }
+    ev('e', false);
+    const R = d.S.c2.tim; out.cuu = R && R.cuu.length;
+    if (d.MG === M) errs.push('cứu hết mà màn không kết thúc');
+    else if (R.xa.length) errs.push(`hạ lính rồi cắt dây mà vẫn có người bị chở đi: ${R.xa.join(', ')}`);
+    // 4. tin, vua về kinh, tháng 8
+    if (!/Về bìa tre|Thuyền giặc/.test(modal())) errs.push('hết màn cứu người không có khung kết');
+    d.mpick(0); if (!/Giặc chạy/.test(modal())) errs.push('không tới khung giặc chạy'); d.mpick(0);
+    if (!/Tây Kết/.test(modal()) || !/Người làm tôi phải nên như thế này/.test(modal())) errs.push('khung tin Tây Kết thiếu tin hoặc lời vua'); d.mpick(0);
+    const V = d.MG; if (!V || V.type !== 'vuave') errs.push(`không vào cảnh vua về kinh (${V && V.type})`);
+    else { let asked = false; window.dispatchEvent(new KeyboardEvent('keydown', {key: ' '}));
+      for (t = 0; t < 120 && d.MG === V; t += 1 / 20) { if (d.modalOpen) { if (/hỏi tên/.test(modal())) { asked = true; d.mpick(0); } else break; } d.step(1 / 20); }
+      window.dispatchEvent(new KeyboardEvent('keyup', {key: ' '})); out.vuave = Math.round(t);
+      if (!asked) errs.push('đủ công mà viên quan không dừng lại hỏi tên');
+      if (d.MG === V) errs.push('đoàn rước không đi hết sau 120 giây');
+      if (!/Đoạt sáo Chương Dương độ/.test(modal()) || !/Non nước cũ muôn thu/.test(modal())) errs.push('thiếu bài thơ Trần Quang Khải'); d.mpick(0);
+      if (!/Phong thưởng và trị tội/.test(modal())) errs.push('không tới khung tháng 8'); d.mpick(0);
+      if (!/Biên niên chương hai/.test(modal())) errs.push('không tới màn biên niên chương hai');
+      const chron = d.S.c2.chron.join('\n');
+      for (const [re, what] of [[/cắt dây cứu/, 'cứu người'], [/đuổi giặc/, 'đuổi giặc'], [/ghi tên bạn/, 'viên quan ghi tên'], [/Cả Lợi/, 'ông Cả Lợi'], [/tám quan/, 'thưởng']]) if (!re.test(chron)) errs.push(`biên niên thiếu dòng ${what}`); }
+    while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
+    document.body.classList.remove('mg');
+    return {errs, out};
+  }
+
   /* Bản đồ thế giới: kích thước; chương một không bước ra khỏi vùng An Phú (khóa vùng) và BFS không lan ra ngoài;
      mở hết các vùng thì đi bộ cộng đi đò tới được mọi biển địa danh, đầu đò, cổng doanh trại; trong doanh trại
      từ cổng tây tới được cửa chuồng tù, cổng đông, cổng nam; vẽ một mảnh nền không quá lâu. */
@@ -785,29 +840,29 @@
     const d = D(), errs = [], out = {}, wd = d.world;
     if (d.W !== W || d.H !== H) errs.push(`checks.js ghi bản đồ ${W}×${H} nhưng game là ${d.W}×${d.H}`);
     d.setS(Object.assign(d.newState('Thử'), {year: 1270, season: 0, quests: {trau: 'done'}}));
-    let S = d.S, prev = d.bfs(43, 50), leak = 0;
+    let S = d.S, prev = d.bfs(43, 70), leak = 0;
     for (let i = 0; i < W * H; i++) if (prev[i] !== -2 && wd.regionId(i % W, (i / W) | 0) !== 'anphu') leak++;
     if (leak) errs.push(`chương một: BFS từ nhà lan ra ${leak} ô ngoài vùng An Phú`);
     // đi thẳng xuống nam ở mép dưới vùng An Phú, đi sang đông ở bến Đông Bộ Đầu: phải dừng ở ranh
-    S.x = 40.5; S.y = 70.5; ev('s', true); run(3); ev('s', false);
-    if (S.y >= 72) errs.push(`chương một mà đi được xuống phía nam ra ngoài vùng (y ${S.y.toFixed(1)})`);
+    S.x = 40.5; S.y = 90.5; ev('s', true); run(3); ev('s', false);
+    if (S.y >= 92) errs.push(`chương một mà đi được xuống phía nam ra ngoài vùng (y ${S.y.toFixed(1)})`);
     if (!/chưa tới lúc/.test(document.getElementById('toast').innerText)) errs.push('chạm ranh vùng chưa mở mà không có lời nhắc');
     // mở hết các vùng: tới được mọi nơi (đi bộ + đò)
     S.regions = Object.keys(wd.REGIONS); S.res = null;
-    const seen = new Int32Array(W * H).fill(-2), comp = [[43, 50]];
+    const seen = new Int32Array(W * H).fill(-2), comp = [[43, 70]];
     const used = new Set();
     while (comp.length) { const [sx, sy] = comp.pop(); const p = d.bfs(sx, sy); for (let i = 0; i < W * H; i++) if (p[i] !== -2) seen[i] = 1;
       wd.FERRIES.forEach((f, k) => { for (const [a, b] of [[f.a, f.b], [f.b, f.a]]) { if (used.has(k + ':' + a)) continue; if (seen[Math.floor(a[1]) * W + Math.floor(a[0])] === 1) { used.add(k + ':' + a); comp.push([Math.floor(b[0]), Math.floor(b[1])]); } } }); }
     const reachSet = seen.map(v => v === 1 ? 0 : -2);
     for (const s of wd.WSIGNS) if (!near(reachSet, s.x + .5, s.y + 1.2, 1.6)) errs.push(`biển "${s.name}" (${s.x}, ${s.y}) không tới được`);
     for (const f of wd.FERRIES) for (const e of [f.a, f.b]) if (!near(reachSet, e[0], e[1], 1.3)) errs.push(`đầu đò "${f.name}" (${e[0]}, ${e[1]}) không tới được`);
-    const C = wd.CAMP; if (!near(reachSet, C.x0 - .5, 12.5, 1.2)) errs.push('cổng tây doanh trại không tới được');
+    const C = wd.CAMP; if (!near(reachSet, C.x0 - .5, 32.5, 1.2)) errs.push('cổng tây doanh trại không tới được');
     // trong trại (đã dựng): từ cổng tây tới cửa chuồng tù, cổng đông, cổng nam
     S.res = {reason: 'done'}; const T = d.trai;
     const ok = (x, y) => d.walkable(x, y) && !T.campSolid(x, y);
-    const q = [[C.x0, 12]], vis = new Set([C.x0 + ',' + 12]);
+    const q = [[C.x0, 32]], vis = new Set([C.x0 + ',' + 32]);
     while (q.length) { const [x, y] = q.shift(); for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + a, ny = y + b, k = nx + ',' + ny; if (vis.has(k) || !ok(nx, ny) || nx < C.x0 - 2 || nx > C.x1 + 2 || ny < C.y0 - 1 || ny > C.y1 + 2) continue; vis.add(k); q.push([nx, ny]); } }
-    for (const [nm, x, y] of [['cửa chuồng tù', T.PEN.door, T.PEN.y0 - 2], ['cổng đông', C.x1, 20], ['cổng nam', 153, C.y1], ['trướng Ô Mã Nhi', Math.floor(T.KC_AT[0]), Math.floor(T.KC_AT[1])]])
+    for (const [nm, x, y] of [['cửa chuồng tù', T.PEN.door, T.PEN.y0 - 2], ['cổng đông', C.x1, 40], ['cổng nam', 153, C.y1], ['trướng Ô Mã Nhi', Math.floor(T.KC_AT[0]), Math.floor(T.KC_AT[1])]])
       if (!vis.has(x + ',' + y)) errs.push(`trong doanh trại không đi được từ cổng tây tới ${nm} (${x}, ${y})`);
     // đi đò thật (bến Chương Dương): có cảnh thuyền, tới bờ bên kia
     S.res = null; const f = wd.FERRIES.find(x => /Chương Dương/.test(x.name)); S.x = f.a[0]; S.y = f.a[1]; d.step(DT);
@@ -880,7 +935,7 @@
     if (!/Chỉ đường/.test(document.getElementById('prompt').innerText)) errs.push(`Đức 25: đứng cạnh mẹ mà không chỉ đường được ("${document.getElementById('prompt').innerText}")`);
     d.setMG(null); M = night({duc: 0}); d.S.x = M.v.find(p => p.id === 'me').x + .4; d.S.y = M.v.find(p => p.id === 'me').y; d.step(DT);
     if (/Chỉ đường/.test(document.getElementById('prompt').innerText)) errs.push('Đức 0 (đường nông) mà vẫn chỉ đường được');
-    d.setMG(null); M = night({nghe: {thuoc: d.nghe.NGHE.thuoc.need}}); M.spawnT = 1e9; M.hp = 1; d.S.x = 20; d.S.y = 60; run(4);
+    d.setMG(null); M = night({nghe: {thuoc: d.nghe.NGHE.thuoc.need}}); M.spawnT = 1e9; M.hp = 1; d.S.x = 20; d.S.y = 80; run(4);
     if (M.hp !== 2) errs.push(`biết thuốc nam mà còn 1 máu không tự băng bó (máu ${M.hp})`);
     d.setMG(null); document.body.classList.remove('mg');
     // bản lưu cũ (chưa tách Đức, Tiếng)
@@ -1035,5 +1090,5 @@
     return {errs};
   }
 
-  window.__checks = {chuongduong, chapter2, nguArc, midgame, career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  window.__checks = {giactan, chuongduong, chapter2, nguArc, midgame, career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();

@@ -249,4 +249,4 @@ function finish(M){M.phase='ket';M.update=()=>{};M.hud=()=>{};   // bãi trận 
       ${cong.length?`<ul class="chron">${cong.map(c=>`<li>${c}</li>`).join('')}</ul>`:'<p>Bạn đánh trong đám đông dân binh, không ai kịp nhớ mặt ai.</p>'}${lost}${coP}
       <p class="note">${cong.length>=3?'Sử sách chép tên các tướng. Làng An Phú nhớ tên bạn.':'Việc của bạn và trai làng ở trận này là hư cấu.'}</p>
       ${src('tháng 5 năm 1285, có người trốn từ chỗ giặc về báo: Thượng tướng Trần Quang Khải, Hoài Văn hầu Trần Quốc Toản cùng Trần Thông, Nguyễn Khả Lạp và em là Nguyễn Truyền đem dân binh các lộ đánh bại giặc ở Kinh Thành, Chương Dương; giặc tan vỡ lớn, thái tử Thoát Hoan, A Lạt chạy qua sông Lô.')}`,
-    choices:[{label:'Tiếp tục',fn:()=>{setMG(null);setKeys();document.body.classList.remove('mg','battle');ch2Go('cho')}}]})}
+    choices:[{label:'Tiếp tục',fn:()=>{setMG(null);setKeys();document.body.classList.remove('mg','battle');ch2Go('tim')}}]})}

@@ -12,7 +12,11 @@
      núi Phả Lại. Từ đó sông Thái Bình chảy xuống nam, sông Kinh Thầy chảy sang đông thành sông Bạch Đằng
      ra biển; gần cửa biển là trại Yên Hưng, ngoài biển là Vân Đồn.
    Module này chỉ import constants.js (map.js gọi buildWorld, không có vòng import). */
-import {BI,BR,DK,FI,G,H,H0,MO,PA,SA,TR,W,W0,WA,WR} from './constants.js';
+import {BI,BR,DK,FI,G,H,H0,MO,OY,PA,SA,TR,W,W0,WA,WR} from './constants.js';
+/* Tọa độ: bản đồ được nới thêm OY hàng ở phía bắc (kinh thành Thăng Long gấp đôi, map.js + kinhthanh.js). Module này sinh
+   địa hình theo tọa độ cũ (gọi là tọa độ gốc: hàng 0 cũ là hàng OY bây giờ), mọi chỗ ghi vào bản đồ cộng OY; dữ liệu xuất ra
+   ngoài (biển, nhà, bến đò, CAMP, THUY, hongX, regionId…) đều theo tọa độ thế giới (đã cộng OY). HL: số hàng tính theo gốc. */
+const HL=H-OY;
 
 /* hash cố định theo tọa độ (giống pixel.js, chép lại để module này đứng riêng) */
 const hs=(x,y,k)=>{let h=(x|0)*374761393+(y|0)*668265263+(k|0)*2147483647;h=(h^(h>>>13))*1274126177;h=h^(h>>>16);return (h>>>0)/4294967296};
@@ -24,26 +28,29 @@ const smooth=t=>t<=0?0:t>=1?1:t*t*(3-2*t);
 
 /* ---- sông ---- */
 /* Sông Hồng: tâm dòng theo hàng y. Phần gốc (y < H0) giữ công thức cũ; xuống dưới thì trôi dần sang đông nam. */
-export const hongX=y=>{const b=84+3*Math.sin(y/9);if(y<H0)return b;const u=y-H0;return b+.0029*u*u+5*Math.sin(u/23)*Math.min(1,u/40)};
+const hx=y=>{const b=84+3*Math.sin(y/9);if(y<H0)return b;const u=y-H0;return b+.0029*u*u+5*Math.sin(u/23)*Math.min(1,u/40)};
 /* Sông Hồng rộng hơn hẳn các sông khác: nửa phía tây hongHW (phần gốc giữ 2,6 ô vì bờ tây là làng, đê, bến Đông Bộ Đầu),
    nửa phía đông hongEW (11 ô ở khúc Thăng Long). Muốn sang sông phải đi thuyền (thuyen.js). */
-export const hongHW=y=>y<H0?2.6:2.6+Math.min(2.4,(y-H0)/40);
-export const hongEW=y=>y<H0?11:11-Math.min(3,(y-H0)/50);
+const hHW=y=>y<H0?2.6:2.6+Math.min(2.4,(y-H0)/40);
+const hEW=y=>y<H0?11:11-Math.min(3,(y-H0)/50);
+export const hongX=y=>hx(y-OY),hongHW=y=>hHW(y-OY),hongEW=y=>hEW(y-OY);   // theo tọa độ thế giới
 const slope=(f,v)=>(f(v+.5)-f(v-.5));
 /* các sông khác: mỗi sông là hàm tâm dòng theo một trục, có khoảng chạy và nửa bề rộng */
 export const RIVERS=[
   {id:'nhanh',axis:'x',a:86,b:331,c:x=>57-10*(1-Math.exp(-(x-86)/50))+2*Math.sin(x/19)*smooth((x-96)/20),hw:x=>1.5+.4*smooth((x-200)/120),t:WR},   // nhánh sang đông tới Bình Than
-  {id:'bac1',axis:'y',a:-1,b:47,c:y=>300+30*Math.pow(Math.max(0,y)/47,1.3)+3*Math.sin(y/8),hw:()=>1.4,t:WR},
-  {id:'bac2',axis:'y',a:-1,b:47,c:y=>372-40*Math.pow(Math.max(0,y)/47,1.2)+3*Math.sin(y/7),hw:()=>1.4,t:WR},
-  {id:'thaibinh',axis:'y',a:46,b:H+1,c:y=>331-.25*(y-47)+6*Math.sin((y-47)/21),hw:y=>1.9+Math.min(.8,(y-47)/200),t:WR},
+  {id:'bac1',axis:'y',a:-OY-1,b:47,c:y=>300+30*Math.pow(Math.max(0,y)/47,1.3)+3*Math.sin(y/8),hw:()=>1.4,t:WR},
+  {id:'bac2',axis:'y',a:-OY-1,b:47,c:y=>372-40*Math.pow(Math.max(0,y)/47,1.2)+3*Math.sin(y/7),hw:()=>1.4,t:WR},
+  {id:'thaibinh',axis:'y',a:46,b:HL+1,c:y=>331-.25*(y-47)+6*Math.sin((y-47)/21),hw:y=>1.9+Math.min(.8,(y-47)/200),t:WR},
   {id:'luoc',axis:'x',a:118,b:298,c:x=>185+6*Math.sin((x-119)/25)*smooth((x-122)/12),hw:()=>1.3,t:WR},
   {id:'bachdang',axis:'x',a:331,b:W+1,c:x=>47+83*Math.pow(Math.max(0,x-332)/112,1.6)+3*Math.sin(x/13)*smooth((x-340)/20),hw:x=>1.8+1.9*smooth((x-370)/60),t:x=>x<392?WR:WA},
 ];
 const RV=Object.fromEntries(RIVERS.map(r=>[r.id,r]));
-export const riverC=(id,v)=>RV[id].c(v);
+const rc=(id,v)=>RV[id].c(v);
+export const riverC=(id,v)=>RV[id].axis==='x'?RV[id].c(v)+OY:RV[id].c(v-OY);   // theo tọa độ thế giới
 /* bờ biển phía đông: biển ở x > coastX(y) */
-export const coastX=y=>452-8*Math.sin(y/30)-Math.max(0,y-100)*.12;
+const cX=y=>452-8*Math.sin(y/30)-Math.max(0,y-100)*.12;
 /* đảo Vân Đồn ngoài biển */
+export const coastX=y=>cX(y-OY);
 const ISLES=[[468,20,6],[474,38,5],[464,58,4],[476,8,3]];
 
 /* ---- vùng đất và khóa theo cốt truyện ---- */
@@ -57,23 +64,25 @@ export const REGIONS={
   vankiep:{name:'Vạn Kiếp, Bình Than',short:'Vạn Kiếp',ch:3},
   bachdang:{name:'Sông Bạch Đằng, Yên Hưng, Vân Đồn',short:'Bạch Đằng',ch:3},
 };
-const eastOfHong=(x,y)=>x+.5>hongX(y);
-export function regionAt(x,y){
+const eastOfHong=(x,y)=>x+.5>hx(y);
+function regionAt(x,y){   // tọa độ gốc
   if(x>=400)return'bachdang';
   if(!eastOfHong(x,y))return y<H0?'anphu':'phianam';
-  if(x>=290){if(y>47&&x<riverC('thaibinh',y))return'hamtu';return'vankiep'}
-  return y<riverC('nhanh',Math.max(86,x))?'gialam':'hamtu'}
+  if(x>=290){if(y>47&&x<rc('thaibinh',y))return'hamtu';return'vankiep'}
+  return y<rc('nhanh',Math.max(86,x))?'gialam':'hamtu'}
 /* ?mo=het trên địa chỉ trang: mở mọi vùng để xem bản đồ (dùng khi làm game) */
 const OPEN_ALL=typeof location!=='undefined'&&/[?&]mo=het\b/.test(location.search);
 export const regionOpen=(S,id)=>OPEN_ALL||id==='anphu'||!!(S&&S.regions&&S.regions.includes(id));
 export function openRegion(S,id){if(!S.regions)S.regions=[];if(!S.regions.includes(id))S.regions.push(id)}
 const regionCache=new Uint8Array(W*H);const RIDS=Object.keys(REGIONS);
-export function regionId(x,y){if(x<0||y<0||x>=W||y>=H)return'anphu';const i=y*W+x;if(!regionCache[i])regionCache[i]=RIDS.indexOf(regionAt(x,y))+1;return RIDS[regionCache[i]-1]}
+export function regionId(x,y){if(x<0||y<0||x>=W||y>=H)return'anphu';const i=y*W+x;if(!regionCache[i])regionCache[i]=RIDS.indexOf(y<OY?(x+.5>hongX(y)?'gialam':'anphu'):regionAt(x,y-OY))+1;return RIDS[regionCache[i]-1]}   // các hàng mới phía bắc: bờ tây là kinh thành (An Phú), bờ đông là Gia Lâm
 export const locked=(S,x,y)=>!regionOpen(S,regionId(x,y));
 
 /* ---- công trình quân Nguyên năm 1285 ---- */
-export const CAMP={x0:128,y0:4,x1:170,y1:38};        // doanh trại Ô Mã Nhi ở Gia Lâm, cổng tây ở y 11–13, cổng đông ở y 19–21
-export const THUY={x0:98,y0:5,x1:109,y1:20};          // thủy trại: bến thuyền giặc ở bờ đông, đối diện bến Đông Bộ Đầu (x0 = mép bãi)
+const CAMP0={x0:128,y0:4,x1:170,y1:38};        // doanh trại Ô Mã Nhi ở Gia Lâm, cổng tây ở y 11–13, cổng đông ở y 19–21
+const THUY0={x0:98,y0:5,x1:109,y1:20};          // thủy trại: bến thuyền giặc ở bờ đông, đối diện bến Đông Bộ Đầu (x0 = mép bãi)
+
+export const CAMP={...CAMP0,y0:CAMP0.y0+OY,y1:CAMP0.y1+OY},THUY={...THUY0,y0:THUY0.y0+OY,y1:THUY0.y1+OY};   // theo tọa độ thế giới
 
 /* ---- địa danh, làng, bến đò ---- */
 /* Biển địa danh chỉ ghi vị trí (theo chú thích bản dịch Toàn thư), không kể trước sự việc chương sau. */
@@ -85,46 +94,47 @@ export const FERRIES=[];
 
 /* ---- sinh địa hình ---- */
 export function buildWorld(api){
-  const {map,bsolid,road}=api;
-  const old=(x,y)=>x<W0&&y<H0;
+  const {map,bsolid}=api,road=(x0,y0,x1,y1)=>api.road(x0,y0+OY,x1,y1+OY);   // tọa độ gốc → thế giới
+  const CAMP=CAMP0,THUY=THUY0,H=HL;
+  const old=(x,y)=>x<W0&&y>=0&&y<H0;   // phần bản đồ gốc (map.js sinh), tọa độ gốc
   // trong phần bản đồ gốc chỉ được sửa bờ đông sông Hồng (phía bên kia sông, người chơi chương một không tới được)
-  const okSet=(x,y)=>x>=0&&y>=0&&x<W&&y<H&&(!old(x,y)||x+.5>hongX(y)+hongHW(y));
-  const set=(x,y,v)=>{if(okSet(x,y))map[y*W+x]=v};
-  const get=(x,y)=>(x<0||y<0||x>=W||y>=H)?MO:map[y*W+x];
+  const okSet=(x,y)=>x>=0&&y>=-OY&&x<W&&y<H&&(!old(x,y)||x+.5>hx(y)+hHW(y));
+  const set=(x,y,v)=>{if(okSet(x,y))map[(y+OY)*W+x]=v};
+  const get=(x,y)=>(x<0||y<-OY||x>=W||y>=H)?MO:map[(y+OY)*W+x];
   const fill=(x0,y0,x1,y1,v)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)set(x,y,v)};
   const isWat=t=>t===WA||t===WR||t===BI;
   const inCamp=(x,y,m=0)=>x>=CAMP.x0-m&&x<=CAMP.x1+m&&y>=CAMP.y0-m&&y<=CAMP.y1+m;
   const inThuy=(x,y,m=0)=>x>=THUY.x0-m&&x<=THUY.x1+m&&y>=THUY.y0-m&&y<=THUY.y1+m;
 
   // 1. nền: cỏ, đồi núi rìa bắc, rìa tây; rừng, ruộng theo nhiễu
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(old(x,y))continue;
+  for(let y=-OY;y<H;y++)for(let x=0;x<W;x++){if(old(x,y))continue;
     let t=G;const f=vn(x,y,11,3),r=vn(x,y,7,9);
     if(x<6&&x<4+Math.round(2*Math.sin(y/5)+hs(x,y,1)*2))t=MO;                                  // núi rìa tây (tiếp phần gốc)
-    else if(y<2+Math.round(vn(x,0,9,4)*3)&&x>=W0)t=MO;                                          // đồi rìa bắc
+    else if(y<-OY+2+Math.round(vn(x,0,9,4)*3))t=MO;                                              // đồi rìa bắc (mép trên bản đồ)
     else if(x>=280&&x<400&&y<26&&vn(x,y,8,5)>.62)t=MO;                                          // đồi Chí Linh
     else if(x>=400&&y<80&&vn(x,y,5,6)>.74)t=MO;                                                 // núi đá vôi gần Bạch Đằng
     else if(f>(delta(x,y)?.76:.62)&&hs(x,y,2)<.6)t=TR;                                          // rừng: đồng bằng ít, gần đồi nhiều
     else if(r<(delta(x,y)?.5:.3)&&y>8)t=FI;                                                     // ruộng: đồng bằng nhiều
     else if(delta(x,y)&&vn(x,y,5,21)>.84&&hs(x,y,4)<.9)t=WA;                                    // ao, đầm
     else if(hs(x,y,3)<.035)t=TR;                                                                // cây lẻ
-    map[y*W+x]=t}
+    map[(y+OY)*W+x]=t}
   // núi Phả Lại cạnh Bình Than
   for(let y=18;y<40;y++)for(let x=335;x<360;x++){const d=Math.hypot((x-347)/1.3,y-28)+vn(x,y,3,7)*3;if(d<7)set(x,y,MO);else if(d<9&&get(x,y)===FI)set(x,y,G)}
 
   // 2. sông Hồng phần mới (y ≥ H0), bãi cát hai bên, đê bờ tây
-  for(let y=0;y<H;y++){const c=hongX(y),k=Math.sqrt(1+slope(hongX,y)**2),ww=hongHW(y)*k,we=hongEW(y)*k;   // phần gốc chỉ nới thêm nửa phía đông (okSet)
+  for(let y=-OY;y<H;y++){const c=hx(y),k=Math.sqrt(1+slope(hx,y)**2),ww=hHW(y)*k,we=hEW(y)*k;   // phần gốc chỉ nới thêm nửa phía đông (okSet)
     for(let x=Math.floor(c-ww-4*k);x<=Math.ceil(c+we+4*k);x++){const r=x+.5-c;if(r>=-ww&&r<=we)set(x,y,WR);else if(r>=-ww-1.1*k&&r<=we+1.1*k&&!isWat(get(x,y)))set(x,y,SA)}}
   let px=null;
-  for(let y=H0;y<H;y++){const k=Math.sqrt(1+slope(hongX,y)**2),x=Math.ceil(hongX(y)-(hongHW(y)+2.6)*k);
+  for(let y=H0;y<H;y++){const k=Math.sqrt(1+slope(hx,y)**2),x=Math.ceil(hx(y)-(hHW(y)+2.6)*k);
     for(let xx=(px===null?x:Math.min(px,x))-1;xx<=(px===null?x:Math.max(px,x));xx++){const t=get(xx,y);if(t!==WR&&t!==WA&&t!==SA&&t!==MO)set(xx,y,DK)}
     px=x}
   // 3. các sông khác
   for(const r of RIVERS){const f=r.c;
-    for(let v=Math.max(r.a,r.axis==='x'?0:-1);v<Math.min(r.b,r.axis==='x'?W:H);v++){const vv=Math.max(0,v),c=f(vv+.5),k=Math.sqrt(1+slope(f,vv)**2),hw=r.hw(vv)*k,tt=typeof r.t==='function'?r.t(vv):r.t;
+    for(let v=Math.max(r.a,r.axis==='x'?0:-OY-1);v<Math.min(r.b,r.axis==='x'?W:H);v++){const vv=r.axis==='x'?Math.max(0,v):v,c=f(vv+.5),k=Math.sqrt(1+slope(f,vv)**2),hw=r.hw(vv)*k,tt=typeof r.t==='function'?r.t(vv):r.t;
       for(let u=Math.floor(c-hw-3*k);u<=Math.ceil(c+hw+3*k);u++){const d=Math.abs(u+.5-c),[x,y]=r.axis==='x'?[vv,u]:[u,vv];
         if(d<=hw)set(x,y,tt);else if(d<=hw+1*k&&!isWat(get(x,y))&&get(x,y)!==DK)set(x,y,SA)}}}
   // 4. biển, bãi bồi, đảo
-  for(let y=0;y<H;y++){const cx=coastX(y);for(let x=Math.floor(cx-4);x<W;x++){const d=x+.5-cx+(vn(x,y,4,12)-.5)*3;
+  for(let y=-OY;y<H;y++){const cx=cX(y);for(let x=Math.floor(cx-4);x<W;x++){const d=x+.5-cx+(vn(x,y,4,12)-.5)*3;
     if(d>0)set(x,y,BI);else if(d>-2.2&&!isWat(get(x,y)))set(x,y,SA)}}
   for(const [cx,cy,r] of ISLES)for(let y=cy-r-3;y<=cy+r+3;y++)for(let x=cx-r-3;x<=cx+r+3;x++){const d=Math.hypot(x-cx,(y-cy)*1.2)+(vn(x,y,3,13)-.5)*3;
     if(d<r*.45)set(x,y,MO);else if(d<r)set(x,y,hs(x,y,14)<.35?TR:G);else if(d<r+1.3)set(x,y,SA)}
@@ -133,12 +143,12 @@ export function buildWorld(api){
   const way=(pts,noBridge)=>{for(let i=1;i<pts.length;i++){const [x0,y0]=pts[i-1],[x1,y1]=pts[i];
     if(noBridge){for(const [a,b,c,d] of [[x0,y0,x1,y0],[x1,y0,x1,y1]])for(let y=Math.min(b,d);y<=Math.max(b,d);y++)for(let x=Math.min(a,c);x<=Math.max(a,c);x++)if(!isWat(get(x,y))&&get(x,y)!==MO)set(x,y,PA)}
     else{road(x0,y0,x1,y0);road(x1,y0,x1,y1)}}};
-  const wx=(y,side,off)=>Math.round(hongX(y)+side*((side<0?hongHW(y):hongEW(y))+off)*Math.sqrt(1+slope(hongX,y)**2));   // điểm sát bờ sông Hồng
+  const wx=(y,side,off)=>Math.round(hx(y)+side*((side<0?hHW(y):hEW(y))+off)*Math.sqrt(1+slope(hx,y)**2));   // điểm sát bờ sông Hồng
   // bờ tây: từ làng xuôi theo chân đê xuống Chương Dương, Thiên Trường
   way([[40,H0],[40,86],[62,86],[62,104],[wx(112,-1,4.2),104],[wx(112,-1,4.2),112],[wx(112,-1,1.6),112]]);
   way([[wx(112,-1,4.2),112],[wx(112,-1,4.2)-8,112],[wx(112,-1,4.2)-8,150],[70,150],[70,196],[96,196],[96,226],[wx(226,-1,1.6),226]]);
   // bờ đông: thủy trại → doanh trại → làng Gia Lâm → cầu qua nhánh sông → Hàm Tử, Long Hưng
-  const LX=Math.ceil(hongX(12)+hongEW(12)+1.2);
+  const LX=Math.ceil(hx(12)+hEW(12)+1.2);
   way([[LX,12],[CAMP.x0,12]]);
   way([[CAMP.x1,20],[184,20],[184,30],[112,30],[112,40],[118,40]]);
   way([[184,30],[184,64],[150,64],[150,96],[wx(112,1,1.6)+3,96],[wx(112,1,1.6)+3,112],[wx(112,1,1.6),112]]);
@@ -183,7 +193,7 @@ export function buildWorld(api){
   for(let y=THUY.y0;y<=THUY.y1;y++)for(let x=LX-1;x<=THUY.x1;x++){const t=get(x,y);if(t===G&&x<LX+2)set(x,y,SA)}
   // cầu tàu thủy trại: hai dãy ván chìa ra sông
   // (ghi thẳng vào map: nửa sông phía đông thuộc phần bản đồ gốc nhưng okSet không cho sửa)
-  for(const y of [8,16])for(let x=Math.floor(hongX(y)+hongEW(y)-4);x<=LX;x++){const t=get(x,y);if((t===WR&&x+.5>hongX(y))||t===SA)map[y*W+x]=BR}
+  for(const y of [8,16])for(let x=Math.floor(hx(y)+hEW(y)-4);x<=LX;x++){const t=get(x,y);if((t===WR&&x+.5>hx(y))||t===SA)map[(y+OY)*W+x]=BR}
 
   // 8. biển địa danh
   const sign=(x,y,name,text,place)=>{WSIGNS.push({x,y,name,text});if(place!==false)PLACES.push({name:place||name,x,y})};
@@ -200,22 +210,24 @@ export function buildWorld(api){
   sign(406,62,'Sông Bạch Đằng','Sông Bạch Đằng, còn gọi là sông Rừng, chảy ra biển.','Bạch Đằng');
   sign(414,56,'Trại Yên Hưng','Trại Yên Hưng, vùng gần cửa biển.',false);
   sign(466,26,'Vân Đồn','Vân Đồn, vùng đảo ngoài biển phía đông bắc.','Vân Đồn');
-  PLACES.push({name:'Thăng Long',x:53,y:11},{name:'An Phú',x:40,y:44},{name:'Đông Bộ Đầu',x:80,y:9},{name:'Thái Bình',x:312,y:150,river:1},{name:'Sông Hồng',x:110,y:186,river:1});
+  PLACES.push({name:'Thăng Long',x:38,y:0},{name:'An Phú',x:40,y:44},{name:'Đông Bộ Đầu',x:80,y:9},{name:'Thái Bình',x:312,y:150,river:1},{name:'Sông Hồng',x:110,y:186,river:1});
   // 9. bến đò (đầu đò là ô cát sát nước; người chơi đứng gần bấm E)
   const fer=(name,a,b)=>FERRIES.push({name,a,b});
   fer('Đò Đông Bộ Đầu – Gia Lâm',[82.5,12.5],[LX+.5,12.5]);
   fer('Đò Chương Dương',[wx(112,-1,1.6)+.5,112.5],[wx(112,1,1.6)+.5,112.5]);
   fer('Đò Hàm Tử',[wx(165,-1,1.6)+.5,165.5],[wx(165,1,1.6)+.5,165.5]);
   fer('Đò Thiên Trường – Long Hưng',[wx(226,-1,1.6)+.5,226.5],[wx(222,1,1.6)+.5,222.5]);
-  const tb=y=>riverC('thaibinh',y),thw=y=>RV.thaibinh.hw(y)*Math.sqrt(1+slope(RV.thaibinh.c,y)**2);
+  const tb=y=>rc('thaibinh',y),thw=y=>RV.thaibinh.hw(y)*Math.sqrt(1+slope(RV.thaibinh.c,y)**2);
   fer('Đò sông Thái Bình',[Math.floor(tb(140)-thw(140)-1.6)+.5,140.5],[Math.floor(tb(140)+thw(140)+1.6)+.5,140.5]);
-  const bd=x=>riverC('bachdang',x),bhw=x=>RV.bachdang.hw(x)*Math.sqrt(1+slope(RV.bachdang.c,x)**2);
+  const bd=x=>rc('bachdang',x),bhw=x=>RV.bachdang.hw(x)*Math.sqrt(1+slope(RV.bachdang.c,x)**2);
   fer('Đò Bạch Đằng',[432.5,Math.floor(bd(432)-bhw(432)-1.6)+.5],[430.5,Math.ceil(bd(430)+bhw(430)+1.6)-.5]);
-  fer('Thuyền ra Vân Đồn',[Math.floor(coastX(30))-2.5,30.5],[462.5,22.5]);
+  fer('Thuyền ra Vân Đồn',[Math.floor(cX(30))-2.5,30.5],[462.5,22.5]);
   // đầu đò: nối đường tới mép nước cho chắc đứng được
   for(const f of FERRIES)for(const [x,y] of [f.a,f.b]){const tx=Math.floor(x),ty=Math.floor(y);if(isWat(get(tx,ty))||get(tx,ty)===MO||get(tx,ty)===TR||get(tx,ty)===DK)set(tx,ty,SA)}
 
-  // 10. bsolid cho nhà, giếng, biển
+  // 10. đổi sang tọa độ thế giới, rồi đánh dấu bsolid cho nhà, giếng, biển
+  for(const o of [...WSIGNS,...PLACES,...WBUILD,...WDECOR])o.y+=OY;
+  for(const f of FERRIES){f.a=[f.a[0],f.a[1]+OY];f.b=[f.b[0],f.b[1]+OY]}
   for(const b of WBUILD)for(let y=b.y;y<b.y+b.h;y++)for(let x=b.x;x<b.x+b.w;x++)bsolid[y*W+x]=1;
   for(const d of WDECOR)if(d.solid)bsolid[d.y*W+d.x]=1;
   for(const s of WSIGNS)bsolid[s.y*W+s.x]=1;

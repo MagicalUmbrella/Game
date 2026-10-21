@@ -1,4 +1,5 @@
 /* ================= state ================= */
+import {OY} from './constants.js';
 import {nguDBOn,nguQuestHint,talkNguTuong} from './ngu.js';
 import {talkLaiDo} from './minigames/cheo.js';
 import {say} from './ui.js';
@@ -22,11 +23,11 @@ export const QUESTS={
   nguDB:{title:'Gặp Phạm Ngũ Lão ở bến Đông Bộ Đầu',hint:'Quân các vương hầu duyệt binh ở bến Đông Bộ Đầu. Phạm Ngũ Lão đứng ở bãi sông dưới chân đê, ngoài tường đông kinh thành. Tới hết năm nay.'},
   lua:{title:'Tấm lụa cho mẹ',hint:'Mua lụa của lái buôn người Tống ở phường Nhai Tuân, mang về biếu mẹ. (Cũng có thể tặng Thảo.)'},
 };
-export function newState(name){return{name,year:1264,season:0,suc:4,van:0,vo:0,duc:0,tieng:0,the:55,nghe:{},ngheV:2,statsV:2,tien:3,items:[],quests:{},path:null,ev:{},x:43.5,y:50.4,ate:false,
-  buffalo:{x:44.5,y:58.6,st:'pen',tracks:[],bolts:0},nguMet:false,nguN:0,nguY:0,thayBonus:false,dothi:false,ended:false,
+export function newState(name){return{name,year:1264,season:0,suc:4,van:0,vo:0,duc:0,tieng:0,the:55,nghe:{},ngheV:2,statsV:2,tien:3,items:[],quests:{},path:null,ev:{},x:43.5,y:70.4,mapV:2,ate:false,
+  buffalo:{x:44.5,y:78.6,st:'pen',tracks:[],bolts:0},nguMet:false,nguN:0,nguY:0,thayBonus:false,dothi:false,ended:false,
   rel:{co:2,thao:0},flags:{},ducMerged:true,cha:true,thay:true,co:'village',thao:'none',married:false,child:false,thaoHelped:false,coPlayed:false,paper:false,tonic:false,life:{},lifeWait:2,career:{van:null,hoctro:0,laiN:0,boBut:false,doi:false,ruong:2,mua:0,xa:null},found:{},chains:{},toi:'',pending:null}}
 export function save(){try{localStorage.setItem('dvmd-save',JSON.stringify(S))}catch(e){}}
-export function loadSave(){try{const s=localStorage.getItem('dvmd-save');if(!s)return null;const o=JSON.parse(s),b=newState('');const r=Object.assign(b,o);r.rel=Object.assign(newState('').rel,o.rel||{});r.flags=Object.assign({},o.flags||{});if(!r.buffalo||!r.buffalo.st){r.buffalo={x:44.5,y:58.6,st:'pen',tracks:[],bolts:0};if(r.quests&&r.quests.trau==='active')r._reLose=true}
+export function loadSave(){try{const s=localStorage.getItem('dvmd-save');if(!s)return null;const o=JSON.parse(s),b=newState('');const r=Object.assign(b,o);r.rel=Object.assign(newState('').rel,o.rel||{});r.flags=Object.assign({},o.flags||{});if(!r.buffalo||!r.buffalo.st){r.buffalo={x:44.5,y:78.6,st:'pen',tracks:[],bolts:0};if(r.quests&&r.quests.trau==='active')r._reLose=true}
   // bản lưu cũ còn uy tín làng riêng (flags.lang): quy sang Đức, mỗi điểm uy tín bằng 3 Đức
   if(!o.ducMerged){r.duc=Math.max(0,Math.min(100,r.duc+3*(r.flags.lang||0)));r.ducMerged=true}delete r.flags.lang;
   // bản lưu trước khi tách Đức (lòng mình) với Tiếng (uy tín với làng): Đức cũ phần lớn là việc làng nên chuyển sang Tiếng,
@@ -41,33 +42,35 @@ export function loadSave(){try{const s=localStorage.getItem('dvmd-save');if(!s)r
   // bản lưu cũ đã qua tin Toa Đô mà chưa có việc "Lo trước ngày giặc đến"
   if(r.ev&&r.ev.toado&&!r.quests.lo&&r.year<1285)r.quests.lo='active';
   // bản lưu cũ: việc Tứ thư còn dở khi thầy đã mất, việc lo trước còn dở khi đã sang 1285
+  // bản lưu trước khi nới bản đồ (10/2026, kinh thành gấp đôi, mọi chỗ cũ dời xuống OY hàng): đưa người chơi về nhà, dời trâu theo
+  if(o.mapV!==2){r.mapV=2;r.x=43.5;r.y=70.4;if(o.buffalo&&o.buffalo.st){r.buffalo.y+=OY;r.buffalo.tracks=(r.buffalo.tracks||[]).map(t=>Array.isArray(t)?[t[0],t[1]+OY,...t.slice(2)]:Object.assign({},t,{y:t.y+OY}))}}
   if(!r.thay&&r.quests.sach==='active')delete r.quests.sach;if(r.year>=1285&&r.quests.lo==='active')delete r.quests.lo;return r}catch(e){return null}}
 
 export const P={dir:'down',walk:0,moving:false};
 export const LOOK_THAO={id:'thao'};
 export const NPCS=[
- {id:'me',name:'Mẹ',x:45.5,y:50.4,look:{id:'me'},talk:talkMe},
- {id:'cha',name:'Cha',x:42.5,y:56.4,look:{id:'cha'},talk:talkCha,show:()=>S.cha},
- {id:'thay',name:'Thầy đồ Chu',x:33.8,y:42.7,look:{id:'thay'},talk:talkThay,show:()=>S.thay},
- {id:'vosu',name:'Lão võ sư Hoàng',x:48.5,y:38.5,look:{id:'vosu'},talk:talkVo},
- {id:'su',name:'Sư cụ',x:24.6,y:14.4,look:{id:'su'},talk:talkSu},
- {id:'batu',name:'Bà Tư',x:52.4,y:49.9,look:{id:'batu'},talk:talkBaTu},
- {id:'thao',name:'Thảo',x:49.3,y:50.6,look:LOOK_THAO,talk:talkThao,show:()=>!!S.ev.thao&&S.thao!=='gone',at:()=>S.thao==='wife'?[47.4,50.7]:S.thao==='co'?[36.4,49.7]:[49.3,50.6]},
- {id:'sen',name:'Bé Sen',x:46.6,y:51.7,look:{id:'sen',kid:true},talk:()=>say('Bé Sen',pickR(['Cha ơi, bế con!','Cha ơi, mẹ Thảo bảo tối nay có canh cua.','Con biết đếm đến mười rồi đấy!'])),show:()=>S.child},
- {id:'ly',name:'Cụ xã',x:35.8,y:36.9,look:{id:'ly'},talk:talkLy},
- {id:'co',name:'Cò',x:38.5,y:45.2,wander:true,home:[38.5,45.2],talk:talkCo,show:()=>S.co==='village'},
- {id:'hsach',name:'Chủ hàng sách',x:39.6,y:15.6,look:{id:'hsach'},talk:talkSach},
- {id:'hren',name:'Bác thợ rèn',x:44.6,y:15.6,look:{id:'hren'},talk:talkRen},
- {id:'tong',name:'Lái buôn người Tống',x:59.6,y:15.6,look:{id:'tong'},talk:talkTong,show:()=>S.year>=1275},
- {id:'dan1',name:'Người bán hàng',x:59.6,y:15.6,look:{id:'dan1'},talk:()=>say('Người bán hàng',S.year>=1274?'Gian hàng này sắp có người mới thuê đấy. Nghe đâu là người phương bắc.':'Kim chỉ, quạt nan, nón lá đủ cả. Cậu xem có món nào mua về cho mẹ không?'),show:()=>S.year<1275},
- {id:'gom',name:'Bà hàng gốm',x:63.6,y:18.5,look:{id:'gom'},talk:()=>say('Bà hàng gốm','Bát đĩa men ngọc, gốm hoa nâu đây con. Mua về cho mẹ đựng cà muối.')},
- {id:'linh1',name:'Lính gác',x:51.3,y:20.5,look:{id:'linh'},talk:talkLinh},
- {id:'linh2',name:'Lính gác',x:55.7,y:20.5,look:{id:'linh'},talk:talkLinh},
- {id:'hocquan',name:'Học quan',x:42.6,y:8.8,look:{id:'hocquan'},talk:talkHocQuan},
- {id:'voquan',name:'Võ quan',x:66.4,y:12.8,look:{id:'voquan'},talk:talkVoQuan},
- {id:'laido',name:'Ông lái đò',x:76.6,y:43.5,look:{id:'laido'},talk:talkLaiDo,show:()=>age()>=8},
- {id:'ngutuong',name:'Phạm Ngũ Lão',x:79.5,y:9.6,look:{id:'ngu_tuong'},talk:()=>talkNguTuong(),show:()=>nguDBOn()},   // năm 1284, bãi sông ngoài tường đông (ngu.js: NGU_DB)
- {id:'ngu',name:'Chàng trai đọc sách',x:74.5,y:30.4,look:{id:'ngu'},talk:()=>talkNgu(),show:()=>S.year>=1272&&S.year<=1277},
+ {id:'me',name:'Mẹ',x:45.5,y:70.4,look:{id:'me'},talk:talkMe},
+ {id:'cha',name:'Cha',x:42.5,y:76.4,look:{id:'cha'},talk:talkCha,show:()=>S.cha},
+ {id:'thay',name:'Thầy đồ Chu',x:33.8,y:62.7,look:{id:'thay'},talk:talkThay,show:()=>S.thay},
+ {id:'vosu',name:'Lão võ sư Hoàng',x:48.5,y:58.5,look:{id:'vosu'},talk:talkVo},
+ {id:'su',name:'Sư cụ',x:14.0,y:62.6,look:{id:'su'},talk:talkSu},
+ {id:'batu',name:'Bà Tư',x:52.4,y:69.9,look:{id:'batu'},talk:talkBaTu},
+ {id:'thao',name:'Thảo',x:49.3,y:70.6,look:LOOK_THAO,talk:talkThao,show:()=>!!S.ev.thao&&S.thao!=='gone',at:()=>S.thao==='wife'?[47.4,70.7]:S.thao==='co'?[36.4,69.7]:[49.3,70.6]},
+ {id:'sen',name:'Bé Sen',x:46.6,y:71.7,look:{id:'sen',kid:true},talk:()=>say('Bé Sen',pickR(['Cha ơi, bế con!','Cha ơi, mẹ Thảo bảo tối nay có canh cua.','Con biết đếm đến mười rồi đấy!'])),show:()=>S.child},
+ {id:'ly',name:'Cụ xã',x:35.8,y:56.9,look:{id:'ly'},talk:talkLy},
+ {id:'co',name:'Cò',x:38.5,y:65.2,wander:true,home:[38.5,65.2],talk:talkCo,show:()=>S.co==='village'},
+ {id:'hsach',name:'Chủ hàng sách',x:27.6,y:22.6,look:{id:'hsach'},talk:talkSach},
+ {id:'hren',name:'Bác thợ rèn',x:32.6,y:22.6,look:{id:'hren'},talk:talkRen},
+ {id:'tong',name:'Lái buôn người Tống',x:27.6,y:27.6,look:{id:'tong'},talk:talkTong,show:()=>S.year>=1275},
+ {id:'dan1',name:'Người bán hàng',x:27.6,y:27.6,look:{id:'dan1'},talk:()=>say('Người bán hàng',S.year>=1274?'Gian hàng này sắp có người mới thuê đấy. Nghe đâu là người phương bắc.':'Kim chỉ, quạt nan, nón lá đủ cả. Cậu xem có món nào mua về cho mẹ không?'),show:()=>S.year<1275},
+ {id:'gom',name:'Bà hàng gốm',x:32.6,y:27.6,look:{id:'gom'},talk:()=>say('Bà hàng gốm','Bát đĩa men ngọc, gốm hoa nâu đây con. Mua về cho mẹ đựng cà muối.')},
+ {id:'linh1',name:'Lính gác',x:51.3,y:40.5,look:{id:'linh'},talk:talkLinh},
+ {id:'linh2',name:'Lính gác',x:55.7,y:40.5,look:{id:'linh'},talk:talkLinh},
+ {id:'hocquan',name:'Học quan',x:27.0,y:6.8,look:{id:'hocquan'},talk:talkHocQuan},
+ {id:'voquan',name:'Võ quan',x:63.9,y:31.6,look:{id:'voquan'},talk:talkVoQuan},
+ {id:'laido',name:'Ông lái đò',x:76.6,y:63.5,look:{id:'laido'},talk:talkLaiDo,show:()=>age()>=8},
+ {id:'ngutuong',name:'Phạm Ngũ Lão',x:79.5,y:29.6,look:{id:'ngu_tuong'},talk:()=>talkNguTuong(),show:()=>nguDBOn()},   // năm 1284, bãi sông ngoài tường đông (ngu.js: NGU_DB)
+ {id:'ngu',name:'Chàng trai đọc sách',x:74.5,y:50.4,look:{id:'ngu'},talk:()=>talkNgu(),show:()=>S.year>=1272&&S.year<=1277},
 ];
 export const coLook=()=>age()<14?{id:'co_be',kid:true}:{id:S.year>=1284?'co_do':'co'};
 /* Hình người của NPC lúc này: Cò lớn lên, cha mẹ già đi. */

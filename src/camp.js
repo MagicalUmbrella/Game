@@ -31,9 +31,9 @@ import {BEN_FIRES,BIGFLAG,CAMP,FIRES,KC_AT,OMN_AT,PEN,PENS,PEN_DOOR,PEN_IN,THUY,
 
 const src=t=>`<p class="src">Toàn thư chép: ${t}</p>`;
 /* ---------- chỗ trong cảnh (tọa độ ô; bố cục trại ở src/trai.js) ---------- */
-const BEN=[82.5,12.5];                                   // bến Đông Bộ Đầu, bờ tây
+const BEN=[82.5,32.5];                                   // bến Đông Bộ Đầu, bờ tây
 const LANDING=FERRIES[0].b;                              // bãi đổ bờ đông, ở thủy trại
-const GATE_W=[CAMP.x0+.5,12.5];                          // cổng tây doanh trại
+const GATE_W=[CAMP.x0+.5,32.5];                          // cổng tây doanh trại
 /* Cảnh riêng theo cách bị bắt (S.capt.how): 'fight' đánh thua tên đầu toán, 'trick' lừa hỏng, 'surrender' đổi mình,
    'down' ngã xuống không ai đỡ. lead: câu tên cầm đầu toán áp giải nói lúc lên đường. Chủ dự án sẽ viết thêm cảnh
    riêng cho từng nhánh: thêm trường vào đây (ví dụ cảnh trong trại) rồi gọi ở campUpdate. */
@@ -101,7 +101,7 @@ function escortUpdate(dt){const M=MG;M.clock+=dt;const fast=keys[' ']?3:1;
     M.s=Math.min(M.L+M.col.length*GAP,M.s+PACE*fast*dt);placeColumn(M,dt*fast,true);
     // chuyện dọc đường
     const home=BUILDINGS.find(b=>b.id==='home');if(M.phase==='walk'&&home&&Math.hypot(S.x-(home.x+2.5),S.y-(home.y+3))<4)once('home',()=>sayMe(M.burnt.includes(home)?'Nhà mình... cháy cả rồi.':'Nhà mình...',3.4));
-    if(M.phase==='walk'&&S.y<31&&S.x>45)once('tolich',()=>{sayMe('Qua sông Tô Lịch rồi. Làng ở sau lưng...',3.4)});
+    if(M.phase==='walk'&&S.y<51&&S.x>45)once('tolich',()=>{sayMe('Qua sông Tô Lịch rồi. Làng ở sau lưng...',3.4)});
     if(M.phase==='walk'&&Math.hypot(S.x-BEN[0],S.y-BEN[1])<9)once('ben',()=>{toast('Bến Đông Bộ Đầu đỏ rực đuốc giặc. Một lá cờ lớn cắm trên bãi, thuyền giặc chờ sẵn.',4600);note('giặc kéo đến Đông Bộ Đầu, dựng một lá cờ lớn (tháng giêng năm 1285).')});
     if(M.phase==='walk2'&&S.x>THUY.x1+4)once('road',()=>{sayMe('Chúng giải mình đi đâu thế này... xa bờ sông quá.',3.6);note('ngày 12 tháng giêng, giặc đánh vào Gia Lâm, Vũ Ninh, Đông Ngàn.',8)});
     if(M.phase==='walk2'&&S.x>CAMP.x0-9)once('see',()=>toast('Trước mặt là doanh trại quân Nguyên: rào cọc nhọn, chòi canh bốn góc, lửa trại khắp bãi.',5000));
@@ -152,7 +152,7 @@ function startCamp(){const M=MG,res=M.res;
   const caps=M.caps,px=PEN.x0,py=PEN.y0;caps.push(walker('la1','Người làng bên',{id:'dan_nam1'},px+3.6,py+.4,{tat:true}),walker('la2','Người làng bên',{id:'dan_nu1'},px+.6,py+2.2,{}));
   const spots=[[px+.6,py+.6],[px+4.2,py+1.8],[px+1.4,py+2.4],[px+3.4,py+2.6],[px+.4,py+1.6],[px+4.4,py+.6]];caps.forEach((c,i)=>{if(c.id.startsWith('cap')){const p=spots[i%spots.length];c.x=p[0];c.y=p[1]}c.path=null;c.moving=false;c.dir='down'});
   S.x=PEN_IN[0];S.y=PEN_IN[1];P.dir='down';if(ducTrust())S.capt.trust=true;if(knows('ngua'))S.capt.horse=true;
-  const guards=[walker('gd1','Lính canh',{id:'giac'},PEN_DOOR[0]-.8,PEN_DOOR[1]-.2,{torch:true}),walker('gd2','Lính canh',{id:'giac'},CAMP.x0+1.4,12.6,{torch:true})];
+  const guards=[walker('gd1','Lính canh',{id:'giac'},PEN_DOOR[0]-.8,PEN_DOOR[1]-.2,{torch:true}),walker('gd2','Lính canh',{id:'giac'},CAMP.x0+1.4,32.6,{torch:true})];
   // người bị bắt ở các chuồng khác (hư cấu)
   const others=[];PENS.filter(p=>!p.main).forEach((p,j)=>{const ids=['dan1','trai','gom','dan1'];for(let i=0;i<3+j;i++)others.push(walker('o'+j+i,'Người bị bắt',{id:ids[(i+j)%ids.length]},p.x0+.6+((i*1.7)%4.2),p.y0+.5+(i%3)*.8,{dir:i%2?'up':'down'}))});
   setMG({type:'camp',clock:0,c:0,res,me:M.me,caps,guards,bub:[],note:null,fade:0,dawn:0,hideNPC:true,said:{},ev:{},

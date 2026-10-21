@@ -12,7 +12,7 @@ const K='Xuân 1285 · tháng giêng';
 const BNAME={home:'nhà bạn',nha1:'nhà hàng xóm',nha2:'nhà chị Lụa',batu:'nhà bà Tư',truong:'trường làng',vo:'nhà lão võ sư'};
 const lc=n=>/^(Mẹ|Cha|Bà|Bé|Cụ|Trai|Cu)/.test(n)?n[0].toLowerCase()+n.slice(1):n;
 
-export function startTancu(){S.c2.scene='tancu';S.x=43.5;S.y=50.4;save();
+export function startTancu(){S.c2.scene='tancu';S.x=43.5;S.y=70.4;save();
   const r=S.res||{},tr=S.c2.tron,burnt=(r.burnt||[]).map(b=>BNAME[b]).filter(Boolean);
   const lost=tr?tr.lost:(r.lostWho||[]).map(p=>p.name);
   const open=tr?(tr.ok?`<p>Bạn về tới bìa rừng làng An Phú lúc mặt trời lên cao. Mẹ chạy ra, ôm lấy bạn không nói được câu nào.${tr.saved.length?' Những người bạn đưa về cũng được người nhà đón.':''}</p>`

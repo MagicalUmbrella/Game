@@ -16,9 +16,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import playtest as pt
 from playwright.sync_api import sync_playwright
 
-NOI = [('lang', 43.5, 51.5, 'Làng An Phú, nhà mình'), ('song', 40, 24.5, 'Sông Tô Lịch'), ('ruong', 46, 60, 'Ruộng'),
-       ('rung', 14, 46, 'Rừng phía tây'), ('kinh', 52, 12, 'Kinh thành'), ('cong', 53.5, 21.5, 'Cổng nam kinh thành'),
-       ('de', 80, 23, 'Đê sông Hồng, cống Tô Lịch'), ('hong', 80, 40, 'Bãi sông Hồng'), ('chua', 23, 15, 'Chùa làng')]
+NOI = [('lang', 43.5, 71.5, 'Làng An Phú, nhà mình'), ('song', 40, 44.5, 'Sông Tô Lịch'), ('ruong', 46, 80, 'Ruộng'),
+       ('rung', 14, 66, 'Rừng phía tây, chùa làng'), ('kinh', 53.5, 29, 'Kinh thành, cửa Đại Hưng'), ('cong', 53.5, 41.5, 'Cổng nam kinh thành'),
+       ('long', 53.5, 15, 'Long Trì, điện Thiên An'), ('cho', 30, 23, 'Chợ kinh thành'), ('dienhuu', 14, 10, 'Chùa Diên Hựu, Quốc học viện'),
+       ('giangvo', 60, 33, 'Giảng võ đường, tháp Báo Thiên'),
+       ('de', 80, 43, 'Đê sông Hồng, cống Tô Lịch'), ('hong', 80, 60, 'Bãi sông Hồng')]
 MUA = ['xuan', 'ha', 'thu', 'dong']
 TEXT = """() => { const m=document.querySelector('#modal'), d=document.querySelector('#dialog');
   return {modal: m && !m.hidden ? m.innerText : '', dialog: d && !d.hidden ? d.innerText : ''} }"""

@@ -15,13 +15,13 @@ import {hudBar,hudBox,mark} from './flood.js';
 import {endMG,goalArrow,pickTiles,twinkle} from './chung.js';
 
 export const KIEN={T:48,WIN:6,VAN_HINT:40};   // 10/2026: ít giờ hơn, phải đủ hai chứng cứ mạnh nhất (sổ ruộng, người làm chứng vắng làng)
-const DINH={x:34.5,y:36.4};
+const DINH={x:34.5,y:56.4};
 /* manh mối: chỗ, lời kể khi xem, chứng cứ có được (w: sức nặng trước làng) */
-function clues(){const moc=pickTiles(43,50,52,52,70,64,(x,y)=>get(x,y)===FI,1,1)[0]||{x:60.5,y:56.5};
+function clues(){const moc=pickTiles(43,70,52,72,70,84,(x,y)=>get(x,y)===FI,1,1)[0]||{x:60.5,y:76.5};
   return[
     {id:'so',x:DINH.x,y:DINH.y,name:'Sổ ruộng ở đình',see:'Cuốn sổ ruộng của làng vẫn ghi thửa bờ sông dưới tên chồng bà Tư, chưa hề sang tên ai.',proof:'Sổ ruộng của làng chưa sang tên',w:3},
-    {id:'thue',x:50.5,y:49.4,name:'Nhà bà Tư',see:'Bà Tư lục rương, đưa ra mấy tờ biên nhận nộp thuế thửa ruộng ấy, năm nào cũng có, năm ngoái vẫn còn.',proof:'Biên nhận thuế bà Tư nộp đến tận năm ngoái',w:2},
-    {id:'chung',x:44.5,y:43.6,name:'Giếng làng',see:'Mấy bà gánh nước kể: năm nước to, ông Ba (người ký làm chứng trong văn tự) đi phu đắp đê ở xa cả năm, không có ở làng.',proof:'Người làm chứng vắng làng đúng năm ký văn tự',w:3},
+    {id:'thue',x:50.5,y:69.4,name:'Nhà bà Tư',see:'Bà Tư lục rương, đưa ra mấy tờ biên nhận nộp thuế thửa ruộng ấy, năm nào cũng có, năm ngoái vẫn còn.',proof:'Biên nhận thuế bà Tư nộp đến tận năm ngoái',w:2},
+    {id:'chung',x:44.5,y:63.6,name:'Giếng làng',see:'Mấy bà gánh nước kể: năm nước to, ông Ba (người ký làm chứng trong văn tự) đi phu đắp đê ở xa cả năm, không có ở làng.',proof:'Người làm chứng vắng làng đúng năm ký văn tự',w:3},
     {id:'moc',x:moc.x,y:moc.y,name:'Cột mốc ruộng',see:'Cột mốc ở góc thửa ruộng còn khắc chữ họ nhà bà Tư, nhưng chữ đã mờ, khắc từ đời nào không rõ.',proof:'Cột mốc khắc họ nhà bà Tư',w:1}]}
 const DECOY={id:'khoc',proof:'Bà Tư khóc, thề là không bán',w:0};
 

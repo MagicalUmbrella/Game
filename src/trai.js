@@ -16,38 +16,38 @@ import {sackSprite} from './minigames/flood.js';
 export {CAMP,THUY};
 
 /* ---------- bố cục ---------- */
-export const GATES={w:[11,12,13],e:[19,20,21],s:[152,153,154]};      // cổng tây (x=CAMP.x0), cổng đông (x=CAMP.x1), cổng nam (y=CAMP.y1)
-export const CMD={x:147,y:7,w:5,h:3};                                // trướng Ô Mã Nhi
-export const OMN_AT=[150.9,11.4],KC_AT=[148.4,11.5];                 // chỗ Ô Mã Nhi đứng, chỗ sứ giả đứng trước trướng
-export const GENS=[{x:140,y:7,w:3,h:2,name:'Lều tướng'},{x:154,y:7,w:3,h:2,name:'Lều tướng'}];
+export const GATES={w:[31,32,33],e:[39,40,41],s:[152,153,154]};      // cổng tây (x=CAMP.x0), cổng đông (x=CAMP.x1), cổng nam (y=CAMP.y1)
+export const CMD={x:147,y:27,w:5,h:3};                                // trướng Ô Mã Nhi
+export const OMN_AT=[150.9,31.4],KC_AT=[148.4,31.5];                 // chỗ Ô Mã Nhi đứng, chỗ sứ giả đứng trước trướng
+export const GENS=[{x:140,y:27,w:3,h:2,name:'Lều tướng'},{x:154,y:27,w:3,h:2,name:'Lều tướng'}];
 /* chuồng tù: rào quanh (x0-1..x1+1, y0-1..y1+1), cửa ở hàng trên (door) */
-export const PENS=[{x0:146,y0:15,x1:150,y1:17,door:148,main:true},{x0:138,y0:15,x1:142,y1:17,door:140},{x0:138,y0:23,x1:142,y1:25,door:140}];
+export const PENS=[{x0:146,y0:35,x1:150,y1:37,door:148,main:true},{x0:138,y0:35,x1:142,y1:37,door:140},{x0:138,y0:43,x1:142,y1:45,door:140}];
 export const PEN=PENS[0];
-export const PEN_DOOR=[148.5,13.4],PEN_IN=[148.5,16.2];
-export const TORTURE={x:146,y:22};                                   // chỗ tra hỏi: cột trói, lò than, bàn
-export const HORSE={x0:159,y0:6,x1:166,y1:10,gate:162};              // bãi ngựa (trong rào), cổng ở hàng dưới
-export const FORGE={x:131,y:25,w:5,h:3};                             // lò rèn (lán), đe, giá binh khí
-export const ANVIL=[137.5,27.6],RACKS=[{x:131,y:29},{x:133,y:29}];
-export const GRAN={x:147,y:26,w:6,h:3};                              // kho lương
-export const SACKS=[];for(let y=31;y<=33;y++)for(let x=145;x<=151;x++)if((x+y)%3!==0)SACKS.push([x+.5,y+.6]);
-export const CARTS=[{x:156,y:27},{x:154,y:33}];
-export const TOWERS=[{x:129,y:5},{x:168,y:5},{x:129,y:35},{x:168,y:35},{x:129,y:8},{x:129,y:14},{x:168,y:16},{x:168,y:22},{x:149,y:35},{x:156,y:35}];
-export const TENTS=[{x:132,y:6},{x:136,y:6},{x:156,y:14},{x:160,y:14},{x:164,y:14},{x:157,y:23},{x:161,y:23},{x:165,y:23},{x:157,y:32},{x:161,y:32},{x:165,y:32},
-  {x:131,y:33},{x:135,y:33},{x:139,y:33},{x:132,y:17}];
-export const FIRES=[[134.5,10.4],[158.5,18.6],[162.5,27.8],[138.5,30.6],[151.5,19.4],[144.5,9.4],[164.5,19.4]];
-export const FLAGS=[[146.6,10.2],[152.4,10.2],[128.5,10.4],[128.5,14.6],[170.5,18.4],[170.5,22.6]];
-export const BIGFLAG=[80.4,13.6];                                    // cờ lớn ở bến Đông Bộ Đầu (Toàn thư), chỉ cắm từ đêm 12
-export const TROUGH={x:160,y:10};
-export const HAY=[[165,7],[165,9]];
-export const POT=[162.5,29.2];
-/* thủy trại: cầu tàu (ô BR do world.js đặt ở y 8 và 16), thuyền chiến neo hai bên, hàng cọc phía bộ */
-export const JETTY_Y=[8,16];
-export const SHIPS=[[94.6,7.15],[94.4,9.9],[94.6,15.15],[94.2,17.9]];
-export const T_TENTS=[{x:103,y:5},{x:103,y:17}];
-export const T_SACKS=[[104.5,9.6],[105.5,9.6],[104.5,10.4],[105.3,14.6],[106.2,14.6]];
-export const T_FIRES=[[102.5,13.9]];
-export const T_FLAGS=[[101.4,9.6],[101.4,14.8]];
-export const T_STAKE_X=THUY.x1+1;                                   // hàng cọc phía bộ, chừa lối ở y 11–13
+export const PEN_DOOR=[148.5,33.4],PEN_IN=[148.5,36.2];
+export const TORTURE={x:146,y:42};                                   // chỗ tra hỏi: cột trói, lò than, bàn
+export const HORSE={x0:159,y0:26,x1:166,y1:30,gate:162};              // bãi ngựa (trong rào), cổng ở hàng dưới
+export const FORGE={x:131,y:45,w:5,h:3};                             // lò rèn (lán), đe, giá binh khí
+export const ANVIL=[137.5,47.6],RACKS=[{x:131,y:49},{x:133,y:49}];
+export const GRAN={x:147,y:46,w:6,h:3};                              // kho lương
+export const SACKS=[];for(let y=51;y<=53;y++)for(let x=145;x<=151;x++)if((x+y)%3!==0)SACKS.push([x+.5,y+.6]);
+export const CARTS=[{x:156,y:47},{x:154,y:53}];
+export const TOWERS=[{x:129,y:25},{x:168,y:25},{x:129,y:55},{x:168,y:55},{x:129,y:28},{x:129,y:34},{x:168,y:36},{x:168,y:42},{x:149,y:55},{x:156,y:55}];
+export const TENTS=[{x:132,y:26},{x:136,y:26},{x:156,y:34},{x:160,y:34},{x:164,y:34},{x:157,y:43},{x:161,y:43},{x:165,y:43},{x:157,y:52},{x:161,y:52},{x:165,y:52},
+  {x:131,y:53},{x:135,y:53},{x:139,y:53},{x:132,y:37}];
+export const FIRES=[[134.5,30.4],[158.5,38.6],[162.5,47.8],[138.5,50.6],[151.5,39.4],[144.5,29.4],[164.5,39.4]];
+export const FLAGS=[[146.6,30.2],[152.4,30.2],[128.5,30.4],[128.5,34.6],[170.5,38.4],[170.5,42.6]];
+export const BIGFLAG=[80.4,33.6];                                    // cờ lớn ở bến Đông Bộ Đầu (Toàn thư), chỉ cắm từ đêm 12
+export const TROUGH={x:160,y:30};
+export const HAY=[[165,27],[165,29]];
+export const POT=[162.5,49.2];
+/* thủy trại: cầu tàu (ô BR do world.js đặt ở y gốc 8 và 16, tức 28 và 36), thuyền chiến neo hai bên, hàng cọc phía bộ */
+export const JETTY_Y=[28,36];
+export const SHIPS=[[94.6,27.15],[94.4,29.9],[94.6,35.15],[94.2,37.9]];
+export const T_TENTS=[{x:103,y:25},{x:103,y:37}];
+export const T_SACKS=[[104.5,29.6],[105.5,29.6],[104.5,30.4],[105.3,34.6],[106.2,34.6]];
+export const T_FIRES=[[102.5,33.9]];
+export const T_FLAGS=[[101.4,29.6],[101.4,34.8]];
+export const T_STAKE_X=THUY.x1+1;                                   // hàng cọc phía bộ, chừa lối ở y 31–33
 
 /* Trại có dựng chưa: từ đêm 12 tháng giêng 1285 (đã qua đêm giặc đến làng, hoặc đang bị giải đi). */
 export const campUp=()=>!!(MG&&(MG.type==='escort'||MG.type==='camp'))||!!(S&&S.res);
@@ -56,7 +56,7 @@ const inR=(x,y,r)=>x>=r.x&&x<r.x+r.w&&y>=r.y&&y<r.y+r.h;
 export const inRect=(x,y,r)=>x>=r.x0&&x<=r.x1&&y>=r.y0&&y<=r.y1;
 export const isStake=(x,y)=>(((x===CAMP.x0&&!GATES.w.includes(y))||(x===CAMP.x1&&!GATES.e.includes(y)))&&y>=CAMP.y0&&y<=CAMP.y1)||
   (y===CAMP.y0&&x>=CAMP.x0&&x<=CAMP.x1)||(y===CAMP.y1&&x>=CAMP.x0&&x<=CAMP.x1&&!GATES.s.includes(x))||
-  (x===T_STAKE_X&&y>=THUY.y0&&y<=THUY.y1&&!(y>=11&&y<=13));
+  (x===T_STAKE_X&&y>=THUY.y0&&y<=THUY.y1&&!(y>=31&&y<=33));
 const ring=(x,y,p)=>((x===p.x0-1||x===p.x1+1)&&y>=p.y0-1&&y<=p.y1+1)||((y===p.y0-1||y===p.y1+1)&&x>=p.x0-1&&x<=p.x1+1);
 /* rào chuồng tù; openDoor: cửa chuồng chính đang mở (lúc áp giải vào, lính ra vào) */
 export function penFence(x,y,openDoor){for(const p of PENS)if(ring(x,y,p)){if(openDoor&&p.main&&y===p.y0-1&&x===p.door)return false;return true}return false}
@@ -136,7 +136,7 @@ function trampled(x0,y0,x1,y1){ctx.globalAlpha=.5;
   ctx.globalAlpha=1}
 
 /* ngựa trong bãi: đi lững thững, cúi gặm cỏ (vị trí tính theo đồng hồ, không cần lưu) */
-const HORSES=[[160.5,7.4,0],[162.8,8.6,1],[164.6,7.2,2],[161.6,10.2,0],[165.4,9.8,1]];
+const HORSES=[[160.5,27.4,0],[162.8,28.6,1],[164.6,27.2,2],[161.6,30.2,0],[165.4,29.8,1]];
 function horseAt(i){const [hx,hy,c]=HORSES[i],t=clock*.25+i*1.7,dx=Math.sin(t)*1.1,dy=Math.sin(t*.6+i)*.4;return {x:Math.max(HORSE.x0+.6,Math.min(HORSE.x1+.4,hx+dx)),y:Math.max(HORSE.y0+.7,Math.min(HORSE.y1+.6,hy+dy)),c,dir:Math.cos(t)>0?'right':'left',graze:Math.sin(t*1.3+i)>.2}}
 
 /* Thêm doanh trại vào danh sách vẽ (chỉ phần thấy trên màn hình). */
@@ -172,10 +172,10 @@ export function drawCamp(list){const x0=Math.floor(camX/T)-1,y0=Math.floor(camY/
 }
 const flips={};export function horseDir(c,fr,dir){const sp=horseSprite(c,fr);if(dir!=='right')return sp;const k=c+'_'+fr;return flips[k]||(flips[k]=flip(sp))}
 /* cờ lớn, đuốc giặc ở bến Đông Bộ Đầu (đêm 12) */
-export const BEN_FIRES=[[80.5,11.2],[81,14.6]];
+export const BEN_FIRES=[[80.5,31.2],[81,34.6]];
 
 /* ---------- người trong trại (lính tuần, thợ rèn, lính giữ ngựa): vị trí tính theo đồng hồ ---------- */
-const PATROLS=[[[131.5,12.6],[144.5,12.6],[144.5,20.6],[131.5,20.6]],[[154.5,12.6],[167.5,12.6],[167.5,20.6],[154.5,20.6]],[[132.5,30.6],[166.5,30.6]],[[107.5,6.6],[107.5,19.6]]];
+const PATROLS=[[[131.5,32.6],[144.5,32.6],[144.5,40.6],[131.5,40.6]],[[154.5,32.6],[167.5,32.6],[167.5,40.6],[154.5,40.6]],[[132.5,50.6],[166.5,50.6]],[[107.5,26.6],[107.5,39.6]]];
 function along(pts,t){const L=[];let tot=0;const loop=pts.length>2?[...pts,pts[0]]:[...pts,...pts.slice(0,-1).reverse()];
   for(let i=1;i<loop.length;i++){const d=Math.abs(loop[i][0]-loop[i-1][0])+Math.abs(loop[i][1]-loop[i-1][1]);L.push(d);tot+=d}
   let u=(t%tot+tot)%tot;for(let i=0;i<L.length;i++){if(u<=L[i]){const a=loop[i],b=loop[i+1],f=L[i]?u/L[i]:0,dx=b[0]-a[0],dy=b[1]-a[1];
