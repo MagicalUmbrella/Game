@@ -666,7 +666,7 @@
       capt: capt ? {how: 'fight', for: null} : null}));
       while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null); };
     const modal = () => document.querySelector('#modal').innerText;
-    const pickAll = (until) => { for (let i = 0; i < 20 && d.modalOpen && !until.test(modal()); i++) d.mpick(0); };
+    const pickAll = (until) => { for (let i = 0; i < 20 && d.modalOpen && !until.test(modal()); i++) d.mpick(0); };   // chọn lựa chọn đầu tới khung có chữ until
     // 1. bị bắt: sang chương hai vào màn trốn trại
     base(true); if (!d.ch2.ch2Open(d.S)) errs.push('màn kết chương một mà ch2Open sai');
     d.ch2.ch2Start(); d.mpick(0); let M = d.MG, S = d.S;
@@ -701,12 +701,12 @@
     S.x = C.x0 - 3; S.y = C.y0 + 10; run(.2);
     if (d.MG) errs.push('ra ngoài rào trại mà màn trốn trại chưa xong');
     if (!S.c2.tron || !S.c2.tron.ok) errs.push('thoát mà S.c2.tron.ok sai');
-    pickAll(/Biên niên chương hai/);
-    const txt = modal(); out.chron = S.c2.chron.length;
-    if (!/Biên niên chương hai/.test(txt)) errs.push('chuỗi cảnh chương hai không tới màn biên niên');
+    pickAll(/Đêm trước Chương Dương/);
+    const txt = S.c2.chron.join('\n'); out.chron = S.c2.chron.length;
+    if (!/Đêm trước Chương Dương/.test(modal())) errs.push('chuỗi cảnh chương hai không tới trận Chương Dương');
     for (const [re, what] of [[/trốn khỏi trại/, 'trốn trại'], [/kho lương/, 'đốt kho'], [/dân binh/, 'dân binh'], [/Trần Bình Trọng/, 'tin Trần Bình Trọng'], [/thóc/, 'thóc']])
       if (!re.test(txt)) errs.push(`biên niên chương hai thiếu dòng ${what}`);
-    if (S.ch !== 2 || S.c2.scene !== 'cho') errs.push(`hết phần đã làm mà S.ch ${S.ch}, cảnh ${S.c2.scene}`);
+    if (S.ch !== 2 || S.c2.scene !== 'cd') errs.push(`tới trận mà S.ch ${S.ch}, cảnh ${S.c2.scene}`);
     while (d.modalOpen) d.nextModal();
     // tải lại khi đang ở cảnh trốn trại: mở lại đúng cảnh
     S.c2.scene = 'tron'; d.ch2.ch2Resume(); if (!d.MG || d.MG.type !== 'tron') errs.push('tải lại giữa cảnh trốn trại mà không mở lại màn');
@@ -717,9 +717,64 @@
     base(false); d.ch2.ch2Start(); d.mpick(0);
     if (d.MG) errs.push('không bị bắt mà vẫn vào màn trốn trại');
     if (!/Làng sau đêm giặc/.test(modal())) errs.push('không bị bắt mà không vào cảnh tản cư');
-    pickAll(/Biên niên chương hai/); if (!/Biên niên chương hai/.test(modal())) errs.push('nhánh tản cư không tới màn biên niên');
+    pickAll(/Đêm trước Chương Dương/); if (!/Đêm trước Chương Dương/.test(modal())) errs.push('nhánh tản cư không tới trận Chương Dương');
     while (d.modalOpen) d.nextModal();
     document.body.classList.remove('mg');
+    return {errs, out};
+  }
+
+  /* Trận Chương Dương (chapter2/chuongduong.js): bot giỏi (né đèn thuyền canh, đứng giữ bến, sang cánh trái, cắm cờ) phải được
+     đủ công; đứng yên thì trận vẫn tới kết (trời rạng, đợt sau đổ bộ muộn, người khác cắm cờ); biên niên; vẽ một khung không quá lâu. */
+  function chuongduong() {
+    const d = D(), errs = [], out = {}, CD = d.cd.CD;
+    const modal = () => document.querySelector('#modal').innerText;
+    const setup = () => { d.setS(Object.assign(d.newState('Thử'), {year: 1285, season: 0, ch: 2, path: 'vo', vo: 45, the: 60, co: 'village', flags: {de: 'saved', dieu: 'di'},
+      c2: {scene: 'cd', doi: 3, chron: [], tancu: {}, tron: null}}));
+      while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
+      d.ch2.ch2Resume(); if (!/Đêm trước Chương Dương/.test(modal())) errs.push('không mở khung đêm trước Chương Dương'); d.mpick(0);
+      const M = d.MG; if (!M || M.type !== 'cd') { errs.push(`không vào trận (${M && M.type})`); return null; } return M; };
+    const fight = (M, dt) => {   // bot: tới sát kẻ địch gần nhất quanh mục tiêu rồi chém
+      const F = M.F, P = M.P, [gx, gy] = M.goal(); let best = null, bd = 1e9;
+      for (const e of F.near) if (e.side && !e.dead && !e.flee) { const dd = Math.hypot(e.x - gx, e.y - gy); if (dd < bd) { bd = dd; best = [e.x, e.y]; } }
+      if (M.phase === 'canh') for (const b of F.blocks) if (b.side && !b.broken) for (const m of b.men) if (m.alive) { const x = b.x + m.dx, y = b.y + m.dy, dd = Math.hypot(x - gx, y - gy); if (dd < bd) { bd = dd; best = [x, y]; } }
+      const lim = M.phase === 'giu' ? CD.HOLD_R * .8 : 90;
+      if (best && bd < lim) { P.x = best[0]; P.y = best[1] + 12; } else { P.x = gx; P.y = gy; }
+      M.key(' '); };
+    // 1. bot giỏi
+    let M = setup(); if (!M) return {errs, out};
+    const F = M.F; let t = 0;
+    for (; t < 600 && d.MG === M; t += 1 / 30) {
+      if (M.phase === 'dem') { const mb = M.me, hy = mb.y - 37; const ahead = M.pat.filter(p => hy - (p.y + 37) > -20).sort((a, b) => b.y - a.y)[0], dy = ahead ? hy - (ahead.y + 37) : 999; ev('w', !(ahead && dy > CD.DET_R - 10 && dy < CD.DET_R + 40 && Math.abs(ahead.x - 9 - mb.x) < 300)); }   // chờ dưới dải thuyền canh tới khi đèn đi xa rồi chèo một mạch
+      else { ev('w', false); if (M.phase === 'co') { M.P.x = F.go.x; M.P.y = F.go.y + 4; ev('e', true); } else if (M.phase !== 'xong') fight(M, 1 / 30); }
+      d.step(1 / 30);
+      if (M.phase === 'canh' && out.ms === undefined) { const t0 = performance.now(); for (let i = 0; i < 20; i++) M.render(); out.ms = +((performance.now() - t0) / 20).toFixed(1); }
+    }
+    ev('e', false); ev('w', false);
+    const R = d.S.c2.cd; out.good = R && {lo: R.lo, late: R.late, canh: R.canh, co: R.co, kills: R.kills, nga: R.nga, fallen: R.fallen.length, t: Math.round(t)};
+    if (!R) errs.push(`bot giỏi: trận không kết thúc sau ${Math.round(t)} giây (nhịp ${M.phase})`);
+    else {
+      if (R.lo) errs.push('bot giỏi né đèn mà vẫn bị lộ');
+      if (R.late) errs.push('bot giỏi đứng giữ bến mà đợt sau vẫn đổ bộ muộn');
+      if (R.canh !== 'giu') errs.push('bot giỏi đứng ở cánh trái mà cánh trái vẫn vỡ');
+      if (R.co !== 'me') errs.push('bot giỏi đứng trên gò giữ E mà không cắm được cờ');
+      if (!/Chương Dương/.test(modal())) errs.push('hết trận không có khung kết trận');
+      if (!/Sử sách chép tên các tướng/.test(modal())) errs.push('đủ công mà khung kết thiếu câu "Sử sách chép tên các tướng"');
+      if (!/Toàn thư chép/.test(modal())) errs.push('khung kết trận thiếu dòng Toàn thư');
+      const chron = d.S.c2.chron.join('\n');
+      for (const [re, what] of [[/cắm lá cờ đầu tiên/, 'cắm cờ'], [/giữ được bến/, 'giữ bến'], [/Cánh trái sắp vỡ/, 'cánh trái'], [/hạ \d+ tên giặc/, 'số giặc hạ']]) if (!re.test(chron)) errs.push(`biên niên thiếu dòng ${what}`);
+      if (R.fallen.length && !/Trai làng ngã ở Chương Dương/.test(chron)) errs.push('có trai làng ngã mà biên niên không ghi tên');
+      d.mpick(0); if (d.S.c2.scene !== 'cho') errs.push(`sau trận không sang cảnh kế (cảnh ${d.S.c2.scene})`);
+    }
+    if (out.ms > 40) errs.push(`vẽ một khung trận mất ${out.ms} ms (quá chậm)`);
+    while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
+    // 2. đứng yên: trận vẫn tới kết
+    M = setup(); if (!M) return {errs, out};
+    for (t = 0; t < 700 && d.MG === M; t += 1 / 20) d.step(1 / 20);
+    const R2 = d.S.c2.cd; out.idle = R2 && {cham: R2.cham, lo: R2.lo, late: R2.late, canh: R2.canh, co: R2.co, nga: R2.nga, fallen: R2.fallen.length, t: Math.round(t)};
+    if (!R2) errs.push(`đứng yên: trận không kết thúc sau ${Math.round(t)} giây (nhịp ${M.phase})`);
+    else { if (!R2.cham && !R2.lo) errs.push('đứng yên ban đêm mà không bị trời rạng hay bị lộ'); if (!R2.late) errs.push('đứng yên mà vẫn giữ được bến'); if (R2.co !== 'khac') errs.push('đứng yên mà vẫn cắm được cờ'); if (R2.canh !== 'vo') errs.push('đứng yên không sang cánh trái mà cánh trái vẫn trụ được'); }
+    while (d.modalOpen) d.nextModal(); if (d.MG) d.setMG(null);
+    document.body.classList.remove('mg', 'battle');
     return {errs, out};
   }
 
@@ -980,5 +1035,5 @@
     return {errs};
   }
 
-  window.__checks = {chapter2, nguArc, midgame, career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
+  window.__checks = {chuongduong, chapter2, nguArc, midgame, career, statsV2, world, captivity, acts, combat, chains, explore, daily, reach, noDiagonal, buffalo, terrain, selfWalk, downRule, noCamping, shopLimit, prep, statTiers, lifeAll, lifePacing};
 })();

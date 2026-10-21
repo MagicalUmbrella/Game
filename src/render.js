@@ -38,6 +38,7 @@ function render(){
   camX=Math.round(camX/Z)*Z;camY=Math.round(camY/Z)*Z;
   if(MG&&MG.shake>0&&!reduce){const k=MG.shake*7;camX+=Math.round((Math.random()-.5)*k)*Z;camY+=Math.round((Math.random()-.5)*k)*Z}   // rung màn hình khi trúng đòn, nhà cháy
   ctx.fillStyle='#0f1311';ctx.fillRect(0,0,VW,VH);
+  if(MG&&MG.render){MG.render();ctx.setTransform(DPR,0,0,DPR,0,0);if(MG&&MG.hud)MG.hud();return}   // trận lớn vẽ bãi riêng (chapter2/chientruong.js)
   const s=season();
   drawGround(ctx,s,camX/Z,camY/Z,VW/Z,VH/Z,Z);   // nền vẽ theo mảnh (ground.js)
   const x0=Math.max(0,Math.floor(camX/T)-1),y0=Math.max(0,Math.floor(camY/T)-1),x1=Math.min(W-1,Math.ceil((camX+VW)/T)+1),y1=Math.min(H-1,Math.ceil((camY+VH)/T)+2);
