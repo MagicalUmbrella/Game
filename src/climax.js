@@ -36,6 +36,7 @@ import {lifeChronicle,lifeClimax} from './life.js';
 import {exploreChronicle} from './explore.js';
 import {chainChronicle} from './chains.js';
 import {startEscort} from './camp.js';
+import {ch2Start} from './chapter2/index.js';
 
 export const ZONE={x0:23,y0:54,x1:29,y1:66};
 const inZone=(x,y)=>x>=ZONE.x0&&x<=ZONE.x1+1&&y>=ZONE.y0&&y<=ZONE.y1+1;
@@ -531,5 +532,5 @@ export function endChapter(res){
     body:`<p>${path}</p><p class="kicker" style="margin-top:6px">Biên niên đời bạn</p><ul style="margin:0;padding-left:18px;display:grid;gap:4px;line-height:1.5">${L.filter(Boolean).map(x=>`<li>${x}</li>`).join('')}</ul>${(()=>{const t=lifeChronicle();return t.length?`<p class="kicker" style="margin-top:6px">Những chuyện nhỏ</p><ul class="note" style="margin:0;padding-left:18px;display:grid;gap:2px;line-height:1.5">${t.map(x=>`<li>${x[0].toUpperCase()+x.slice(1)}.</li>`).join('')}</ul>`:''})()}
      <div class="endstats"><div><b>${S.van}</b><span>Văn</span></div><div><b>${S.vo}</b><span>Võ</span></div><div><b>${S.duc}</b><span>Đức</span></div><div><b>${S.tieng}</b><span>Tiếng</span></div><div><b>${S.tien}</b><span>quan</span></div></div>
      <p class="note">${S.name}, 27 tuổi.</p><p><span class="seal">Hết chương một</span>&nbsp; ${hook}</p>`,
-    choices:[{label:'Bắt đầu một cuộc đời mới',fn:()=>{try{localStorage.removeItem('dvmd-save')}catch(e){}location.reload();return false}}]});
+    choices:[{label:'Sang chương hai',note:'1285–1288 · giữ nước',fn:()=>{ch2Start()}},{label:'Bắt đầu một cuộc đời mới',fn:()=>{try{localStorage.removeItem('dvmd-save')}catch(e){}location.reload();return false}}]});
 }

@@ -180,6 +180,7 @@ def mechanics(page, fails):
                      ('đường văn: dân tự vào rừng', 'selfWalk'), ('ngã xuống: ai bị bắt, ai kẹt lại', 'downRule'),
                      ('ba hồi đêm 1285: lửa, tên đầu toán, đổi mình', 'acts'),
                      ('bị bắt: luật, giải sang trại giặc, cảnh trong trại', 'captivity'),
+                     ('chương hai: trốn trại, tản cư, dân binh', 'chapter2'),
                      ('bản đồ thế giới: khóa vùng, đi tới mọi nơi, doanh trại', 'world'),
                      ('chỉ số: Đức / Tiếng, thể trạng, nghề, mốc mở việc, bản lưu cũ', 'statsV2'),
                      ('thăng tiến: trượt thi, dạy học, lại viên, đội trưởng, ruộng, việc làng', 'career'),

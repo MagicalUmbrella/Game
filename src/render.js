@@ -68,7 +68,7 @@ function render(){
     const ms=MG&&MG.meSort?MG.meSort():null;   // ngồi trên thuyền: vẽ giữa thân thuyền và mạn trước, không bóng
     list.push({y:ms?ms.y:S.y,f:()=>{if(MG&&MG.inv>0&&Math.floor(clock*14)%2)return;if(!ms)shadow(S.x,S.y,10);drawSprite(personSprite(look,P.dir,fr),S.x,S.y+(ms?ms.dy:0))}});
   }
-  if(S&&campUp()&&!(MG&&MG.draw&&(MG.type==='escort'||MG.type==='camp')))drawCamp(list);   // doanh trại giặc ở Gia Lâm (từ đêm 1285)
+  if(S&&campUp()&&!(MG&&MG.draw&&(MG.type==='escort'||MG.type==='camp'||MG.type==='tron')))drawCamp(list);   // doanh trại giặc ở Gia Lâm (từ đêm 1285)
   if(MG&&MG.draw)MG.draw(list);
   list.sort((p,q)=>p.y-q.y);for(const o of list)o.f();
   if(!S)return;
