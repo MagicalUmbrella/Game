@@ -8,6 +8,8 @@ import {PLACES,REGIONS,regionId,regionOpen} from './world.js';
 import {CAMP as CAMP_R,campUp,drawCamp,hideProp as campHide} from './trai.js';
 import {GATES_K,KINH,cityFolk} from './kinhthanh.js';
 import {cityDecorSprite} from './kinhthanh_ve.js';
+import {villageDecorSprite} from './anphu_ve.js';
+import {VILLAGE,villageFolk} from './anphu.js';
 import {banyanSprite,boatSprite,buffaloSprite,buildingSprite,personSprite,propSprite,signSprite,treeSprite,wellSprite} from './sprites.js';
 import {PROPS,propAt} from './scenery.js';
 import {TOWERS,WALLS,towerSprite,wallSprite} from './walls.js';
@@ -55,7 +57,7 @@ function render(){
   for(const t of TOWERS)if(t.x+t.n>=x0-2&&t.x<=x1+2&&t.y>=y0-2&&t.y<=y1+3)list.push({y:t.y+1.02,f:()=>drawSprite(towerSprite(t),t.x+t.n/2,t.y-.1)});
   for(const p of near(PROPS,x0-1,y0,x1+1,y1+2))if(p.x>=x0-1&&p.x<=x1+1&&p.y>=y0&&p.y<=y1+2&&!(MG&&MG.hideProp&&MG.hideProp(p))&&!campHide(p)){const [px,py]=propAt(p);list.push({y:py-.05,f:()=>drawSprite(propSprite(p,s),px,py)})}
   for(const b of near(BUILDINGS,x0-8,y0-6,x1+2,y1+3)){if(b.x>x1+2||b.x+b.w<x0-2||b.y>y1+3||b.y+b.h<y0-2)continue;list.push({y:b.y+b.h,f:()=>{const c=buildingSprite(b);blit(c,b.x*TS-c.ox,b.y*TS-c.oy)}})}
-  for(const d of near(DECOR,x0-3,y0-3,x1+3,y1+3)){if(d.x<x0-3||d.x>x1+3||d.y<y0-3||d.y>y1+3)continue;list.push({y:d.y+(d.kind==='boat'?.4:d.kind==='them'?-5:1),f:()=>{if(d.kind==='banyan')drawSprite(banyanSprite(s),d.x+.5,d.y+1);else if(d.kind==='well')drawSprite(wellSprite(),d.x+.5,d.y+1);else if(d.city){const c=cityDecorSprite(d);if(c)drawSprite(c,d.x+.5,d.y+(d.kind==='them'?1.05:1))}else{const bob=reduce?0:Math.round(Math.sin(clock*1.5+d.x));drawSprite(boatSprite(),d.x+.5,d.y+.6+bob/TS)}}})}
+  for(const d of near(DECOR,x0-3,y0-3,x1+3,y1+3)){if(d.x<x0-3||d.x>x1+3||d.y<y0-3||d.y>y1+3)continue;list.push({y:d.y+(d.kind==='boat'?.4:d.kind==='them'?-5:d.flat?.1:1),f:()=>{if(d.kind==='banyan')drawSprite(banyanSprite(s),d.x+.5,d.y+1);else if(d.kind==='well')drawSprite(wellSprite(),d.x+.5,d.y+1);else if(d.lang){const c=villageDecorSprite(d);if(c)drawSprite(c,d.x+.5,d.y+(d.v?1.15:d.kind==='cauao'?.4:1))}else if(d.city){const c=cityDecorSprite(d);if(c)drawSprite(c,d.x+.5,d.y+(d.kind==='them'?1.05:1))}else{const bob=reduce?0:Math.round(Math.sin(clock*1.5+d.x));drawSprite(boatSprite(),d.x+.5,d.y+.6+bob/TS)}}})}
   for(const sg of near(SIGNS,x0-1,y0-1,x1+1,y1+2))list.push({y:sg.y+1,f:()=>drawSprite(signSprite(),sg.x+.5,sg.y+1)});
   if(S){
     const a=age();
@@ -67,6 +69,8 @@ function render(){
       const fr=n.moving?[1,0,2,0][Math.floor(clock*8)%4]:0;
       list.push({y:n.y,f:()=>{shadow(n.x,n.y,10);drawSprite(personSprite(look,dir,fr),n.x,n.y)},lab:Math.hypot(dpx,dpy)<4?[n.name,n.x,n.y-(isKid(look)?1.55:2)]:null})}
     if(!(MG&&MG.hideNPC)&&x0<KINH.x1+3&&y0<KINH.y1+3)for(const o of cityFolk(clock)){if(o.x<x0-1||o.x>x1+1||o.y<y0-1||o.y>y1+2)continue;   // người trong kinh thành
+      const fr=o.frame!==undefined&&o.frame!==0?o.frame:o.moving?[1,0,2,0][Math.floor(o.walk)%4]:0;list.push({y:o.y,f:()=>{shadow(o.x,o.y,10);drawSprite(personSprite(o.look,o.dir,fr),o.x,o.y)}})}
+    if(!(MG&&MG.hideNPC)&&!S.res&&S.ch!==2&&x1>VILLAGE.x0&&x0<VILLAGE.x1&&y1>VILLAGE.y0&&y0<VILLAGE.y1)for(const o of villageFolk(clock)){if(o.x<x0-1||o.x>x1+1||o.y<y0-1||o.y>y1+2)continue;   // người trong làng (trước đêm giặc đến)
       const fr=o.frame!==undefined&&o.frame!==0?o.frame:o.moving?[1,0,2,0][Math.floor(o.walk)%4]:0;list.push({y:o.y,f:()=>{shadow(o.x,o.y,10);drawSprite(personSprite(o.look,o.dir,fr),o.x,o.y)}})}
     list.push({y:S.buffalo.y,f:()=>{shadow(S.buffalo.x,S.buffalo.y,22);drawSprite(buffaloSprite(S.buffalo.dir||'left'),S.buffalo.x,S.buffalo.y)}});
     const look={id:a<14?'ban_be':S.path==='van'?'ban_van':S.path==='vo'?'ban_vo':'ban_nong'};
