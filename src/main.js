@@ -40,13 +40,17 @@ import * as tron from './chapter2/trontrai.js';
 import * as cd from './chapter2/chuongduong.js';
 import * as gt from './chapter2/giactan.js';
 import * as vv from './chapter2/vuave.js';
+import * as db from './chapter2/traiDB.js';
+import * as dtin from './chapter2/dotin.js';
+import * as cl from './chapter2/cuopluong.js';
+import * as ms from './chapter2/matseo.js';
 import {personSprite} from './sprites.js';
 import {loadPeople} from './person.js';
 import {groundChunk,overview,prewarm} from './ground.js';
 
 // chờ nạp ảnh nhân vật (src/assets/nguoi.png) rồi mới vẽ
 loadPeople().catch(e=>console.error('Không nạp được ảnh nhân vật',e)).then(()=>{requestAnimationFrame(loop);titleScreen();
-  for(const s of [0,1,2,3])prewarm(s,44,40);   // vẽ sẵn nền quanh làng, 4 mùa, lúc ở màn tiêu đề
+  for(const s of [0,1,2,3])prewarm(s,44,100);   // vẽ sẵn nền quanh làng, 4 mùa, lúc ở màn tiêu đề
   if(import.meta.env.MODE==='test')window.__dv=hook});
 
 /* Hook cho tests/playtest.py và tests/bots.js. Chỉ có trong bản build `--mode test`, bản phát hành tự loại bỏ.
@@ -56,4 +60,4 @@ const hook=import.meta.env.MODE==='test'&&{
   get modalOpen(){return ui.modalOpen},renderHUD:ui.renderHUD,get dialogOpen(){return ui.dialogOpen},pick:ui.pick,closeDialog:ui.closeDialog,mpick:ui.mpick,nextModal:ui.nextModal,startQuest:ui.startQuest,
   advance,advanceOne,EVENTS,LIFE,SPOTS,runLife,lifeChronicle,fastForward,chooseFocus,talkThay,talkVo,talkLy,talkRen,talkCha,talkMe,talkSach,talkTong,talkCo,talkThao,startPlay,fieldAction,fishAction,
   startFlood,endFlood,startExam,startTraining,tmHit,startClimax,finishClimax,startEscort,W,H,
-  dailyFlush,step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY,personSprite,groundChunk,overview,world,trai,stats,nghe,talkSu,loadSave:state.loadSave,doorAction,chuc,prepCost,endChapter,startDich,startCuop,startSau,startKien,hoiVat,startVat,vatFlush,midChronicle,cheo,loi,ngu,talkNgu:ngu.talkNgu,talkHocQuan,talkVoQuan,ch2,tron,cd,gt,vv};
+  dailyFlush,step:update,canStand,walkable,bfs,pathTo,hideSpots,PEN,BUILDINGS,SIGNS,talkBuffalo,loseBuffalo,ZONE,tileAt:get,WA,tolichY,personSprite,groundChunk,overview,world,trai,stats,nghe,talkSu,loadSave:state.loadSave,doorAction,chuc,prepCost,endChapter,startDich,startCuop,startSau,startKien,hoiVat,startVat,vatFlush,midChronicle,cheo,loi,ngu,talkNgu:ngu.talkNgu,talkHocQuan,talkVoQuan,ch2,tron,cd,gt,vv,db,dtin,cl,ms};

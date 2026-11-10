@@ -26,6 +26,7 @@ export function chucName(){const c=C();let t='';
   else if(S.path==='vo')t=c.doi?'Đội trưởng hương binh':'Hương binh';
   else if(S.path==='nong')t=c.ruong>=6?'Nhà nhiều ruộng':c.ruong>=4?'Nhà nông khá giả':'Nhà nông';
   if(c.xa==='win')t=(t?t+' · ':'')+'Xã chính';
+  if(S.ch===2&&S.c2){if(S.c2.ten==='ghi')t=(t?t+' · ':'')+'Dân binh có tên trong sổ công';else if(S.c2.ten==='doi')t=(t?t+' · ':'')+'Dân binh đội ông Đoàn';else if(S.c2.scene&&S.c2.scene!=='tron'&&S.c2.scene!=='tancu')t=(t?t+' · ':'')+'Dân binh'}   // chương hai (hư cấu)
   return t}
 
 /* ---------- đường văn: sau khi trượt thi ---------- */

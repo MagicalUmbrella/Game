@@ -8,7 +8,10 @@ import {LOOK_THAO,NPCS,S,coLook,npcLook} from './state.js';
 const SKY=[['#f3d9c8','#e9b9a8'],['#bfe0e8','#8ec5d6'],['#f1d79a','#e2a866'],['#c9d3d8','#9fb0b8']]; // xuân, hạ, thu, đông
 
 /* Ai là người nói: tìm theo tên trong NPCS, cộng vài tên đặc biệt. Không phải người thì null. */
+/* người không có trong NPCS (chương hai: ông Đoàn, trai làng, dân binh…) đăng ký hình chân dung ở đây */
+export const EXTRA_LOOK={};
 function lookOf(who){
+  if(EXTRA_LOOK[who])return EXTRA_LOOK[who];
   if(who==='Cò')return coLook();
   if(who==='Thảo')return LOOK_THAO;
   const n=NPCS.find(n=>n.name===who);

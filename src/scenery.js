@@ -101,7 +101,7 @@ for(const bd of BUILDINGS){if(bd.kind!=='house')continue;
 for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){const t=get(x,y),h=Hs(x,y,321);
   const wet=[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>get(x+a,y+b)===WA);
   if((t===SA||t===G)&&wet&&h<.16&&!bsolid[y*W+x])PROPS.push({x,y,k:'lau'});
-  else if(t===G&&h>.975&&!(x>=27&&x<=59&&y>=49&&y<=73)&&!(x>=KINH.x0&&x<=KINH.x1&&y>=KINH.y0&&y<=KINH.y1)&&!nearPath(x,y)&&!bsolid[y*W+x]&&!DECOR.some(d=>Math.abs(d.x-x)<3&&Math.abs(d.y-y)<3)&&!SIGNS.some(s=>s.x===x&&s.y===y))PROPS.push({x,y,k:'bui'})}
+  else if(t===G&&h>.975&&!(x>=22&&x<=75&&y>=108&&y<=133)&&!(x>=KINH.x0&&x<=KINH.x1&&y>=KINH.y0&&y<=KINH.y1)&&!nearPath(x,y)&&!bsolid[y*W+x]&&!DECOR.some(d=>Math.abs(d.x-x)<3&&Math.abs(d.y-y)<3)&&!SIGNS.some(s=>s.x===x&&s.y===y))PROPS.push({x,y,k:'bui'})}
 
 /* chuồng trâu ở chỗ trâu đứng (PEN, dialogs.js): mái rơm và rào sau vẽ trước trâu, rào trước vẽ sau trâu */
 function penBack(){if(sc.penB)return sc.penB;const b=buf(44,30);
@@ -115,7 +115,7 @@ function penFront(){if(sc.penF)return sc.penF;const b=buf(44,12);
   for(let x=2;x<43;x++){if(x>17&&x<27)continue;b.set(x,3,x%5===0?'#5a3c22':'#a87e4c');b.set(x,7,x%5===0?'#5a3c22':'#9a7444')}   // chừa lối vào
   for(const x of [16,27])for(let y=0;y<11;y++){b.set(x,y,'#7a5634');b.set(x+1,y,'#5a3c22')}
   const c=b.done();outline(c);c.ax=22;c.ay=11;return sc.penF=c}
-PROPS.push({x:44,y:77,k:'chuongSau'},{x:44,y:79,k:'chuongTruoc'});
+PROPS.push({x:44,y:137,k:'chuongSau'},{x:44,y:139,k:'chuongTruoc'});
 export function propSprite(p,s){if(p.k==='chuongSau')return penBack();if(p.k==='chuongTruoc')return penFront();return p.k==='rom'?haystack(s):p.k==='chum'?jar():p.k==='lau'?reeds(s,p.x+p.y):bush(s,(p.x*7+p.y)%9)}
 /* vị trí neo khi vẽ (ô x+.5, y+1 là chân) */
-export const propAt=p=>p.k==='chuongSau'?[44.5,78.05]:p.k==='chuongTruoc'?[44.5,79.3]:[p.x+.5+(p.k==='lau'?(Hs(p.x,p.y,4)-.5)*.6:0),p.y+(p.k==='bui'||p.k==='lau'?.7+Hs(p.x,p.y,5)*.3:.95)];
+export const propAt=p=>p.k==='chuongSau'?[44.5,138.05]:p.k==='chuongTruoc'?[44.5,139.3]:[p.x+.5+(p.k==='lau'?(Hs(p.x,p.y,4)-.5)*.6:0),p.y+(p.k==='bui'||p.k==='lau'?.7+Hs(p.x,p.y,5)*.3:.95)];

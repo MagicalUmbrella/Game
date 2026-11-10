@@ -49,13 +49,13 @@ function wallPx(s,wpx,hpx,wt,P){
 }
 const bspr={};
 export function buildingSprite(b){if(bspr[b.id])return bspr[b.id];
-  const wpx=b.w*TS,hpx=b.h*TS,ex=10,top={dien:58,palace:44,pagoda:42,tower:84,dinh:26,school:22,stall:16,shed:18,house:20,pho:22,kho:20,lang:16}[b.kind];
+  const wpx=b.w*TS,hpx=b.h*TS,ex=10,top={dien:58,palace:44,pagoda:42,tower:84,dinh:26,school:22,stall:16,nhangoi:22,shed:18,house:20,pho:22,kho:20,lang:16}[b.kind];
   const[c,g]=mk(wpx+ex*2,hpx+top+2),ox=ex,oy=top,s=(x,y,w,h,col)=>{g.fillStyle=col;g.fillRect(ox+x,oy+y,w,h)};
   const P={house:{wall:'#c6a676',post:'#7a5a36',roof:'#c4a35e',thatch:1},school:{wall:'#cdb088',post:'#6d4a2c',roof:'#8f5434',up:1,curl:1},dinh:{wall:'#b99a6a',post:'#5e3c22',roof:'#7d4329',up:1,curl:1,pearl:'#d9b14a'},
     shed:{wall:'#a88c62',post:'#6b4f2e',roof:'#b99a58',thatch:1},pagoda:{wall:'#d4b88e',post:'#7a3c26',roof:'#7a3f2a',up:1,curl:1,pearl:'#d9b14a'},palace:{wall:'#a8402b',post:'#6e2418',roof:'#9c6a2c',up:1,curl:1,ridge:'#e2b94e',pearl:'#f0d27a'},
     stall:{wall:'#b8946a',post:'#6b4f2e',roof:'#8a5a34',up:1},tower:{},
     dien:{wall:'#a8302a',post:'#5e1a12',roof:'#b8862c',up:1,curl:1,ridge:'#f0c850',pearl:'#ffe08a'},            // điện Thiên An: mái ngói vàng, cột son
-    pho:{wall:'#cdb48a',post:'#6b4a2c',roof:'#8a4a2e',up:1},kho:{wall:'#9a7a56',post:'#5a3a22',roof:'#7a4a2c'},   // nhà phố mái ngói, kho
+    pho:{wall:'#cdb48a',post:'#6b4a2c',roof:'#8a4a2e',up:1},nhangoi:{wall:'#c9ad80',post:'#5e3c22',roof:'#8a4a2e',up:1,curl:1},kho:{wall:'#9a7a56',post:'#5a3a22',roof:'#7a4a2c'},   // nhà phố mái ngói, kho
     lang:{wall:'#a8402b',post:'#6e2418',roof:'#9c6a2c',up:1,ridge:'#e2b94e'}}[b.kind];   // dãy nhà lang hai bên sân rồng
   if(b.kind==='lang'&&b.h>b.w){   // dãy nhà lang chạy dọc (nhìn từ trên): mái ngói dọc thân, nóc vàng giữa, hàng cột son phía sân
     const T=['#b07a3a','#9c6a2c','#86582a','#704822'];for(let y=0;y<hpx-6;y++)for(let x=1;x<wpx-1;x++){const row=y%4,side=Math.abs(x-wpx/2)/(wpx/2);s(x,y,1,1,row===0?T[0]:side>.7?T[3]:(x+(y>>2))%4===0?T[2]:T[1])}
@@ -68,7 +68,7 @@ export function buildingSprite(b){if(bspr[b.id])return bspr[b.id];
   } else {
     const wt=Math.round(hpx*.45);
     wallPx(s,wpx,hpx,wt,P);
-    if(b.kind==='stall'){s(4,hpx-12,wpx-8,8,'#3a2a1c');s(3,hpx-6,wpx-6,3,'#8a6238');const goods={sach:['#d9cba0','#b8a676','#e8dcb6'],ren:['#c0c4c8','#e0823a','#8a8e92'],nhaituan:['#b8322a','#e2bf72','#3f6f9a'],gom:['#9fbfa8','#7a5132','#d9d0b8']}[b.id]||['#d9cba0'];
+    if(b.kind==='stall'){s(4,hpx-12,wpx-8,8,'#3a2a1c');s(3,hpx-6,wpx-6,3,'#8a6238');const goods={sach:['#d9cba0','#b8a676','#e8dcb6'],ren:['#c0c4c8','#e0823a','#8a8e92'],nhaituan:['#b8322a','#e2bf72','#3f6f9a'],gom:['#9fbfa8','#7a5132','#d9d0b8'],cho_rau:['#5a9a3a','#8ac85a','#d8c060'],cho_ca:['#a8b4bc','#d8dce0','#7a5132'],k_rau:['#5a9a3a','#8ac85a','#d8c060'],k_ca:['#a8b4bc','#d8dce0','#7a5132'],vai:['#b8322a','#3f6f9a','#e2bf72'],gao:['#efe8d4','#d9cba0','#c8b890']}[b.id]||['#d9cba0'];
       for(let i=0;i<Math.floor((wpx-10)/5);i++)s(5+i*5,hpx-9,3,3,goods[i%goods.length])}
     else{const dw=b.kind==='palace'||b.kind==='dien'?14:b.kind==='lang'?6:10,dx=Math.floor(wpx/2-dw/2);s(dx-1,hpx-15,dw+2,12,shade(P.post,-.25));s(dx,hpx-14,dw,11,'#2e2118');
       if(P.thatch){for(let y=hpx-14;y<hpx-8;y+=2)s(dx,y,dw,1,'#b08a52');s(dx,hpx-8,dw,1,'#8a6a3a')}   // mành tre cuộn nửa chừng

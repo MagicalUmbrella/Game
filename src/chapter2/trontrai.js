@@ -15,8 +15,10 @@ import {floatText,gain,setKeys,showModal,toast} from '../ui.js';
 import {camX,camY,clock} from '../render.js';
 import {keys} from '../input.js';
 import {walker,drawWalker} from '../camp.js';
-import {CAMP,FIRES,GATES,GRAN,HORSE,PEN,PEN_IN,campFolk,campMini,campSolid,drawCamp,hideProp,inRect} from '../trai.js';
-import {tongue,smoke} from '../climax.js';
+import {CAMP,CMD,FIRES,GATES,GRAN,HORSE,PEN,PEN_DOOR,PEN_IN,campFolk,campMini,campSolid,drawCamp,hideProp,inRect} from '../trai.js';
+import {tongue,smoke,drawBubbles} from '../climax.js';
+import {walker as _w,goTo} from '../camp.js';
+import {MS,msMeet,msTaunt} from './matseo.js';
 import {darkPost} from '../minigames/chung.js';
 import {hudBar,hudBox} from '../minigames/flood.js';
 import {knows} from '../nghe.js';
@@ -36,7 +38,8 @@ export function startTron(){
   LOOSE={x:PEN.x0+2,y:PEN.y1+1};
   const gate=gatePost().map((g,i)=>walker('gate'+i,'Lính giữ cổng',{id:'giac'},g.x,g.y,{dir:g.dir,torch:true,post:g}));
   S.x=PEN_IN[0];S.y=PEN_IN[1];P.dir='down';
-  setMG({type:'tron',t:0,caps,gate,follow:[],trail:[],pry:0,open:false,alert:0,caught:0,torch:false,burn:0,horse:0,seen:false,warned:0,done:false,
+  const ms=_w('ms',MS.name,MS.look,PEN_DOOR[0],PEN_DOOR[1]-.5,{dir:'down',torch:true});msMeet('trai');   // Mặt Sẹo ghé chuồng tù nhìn mặt bạn rồi về trướng (hư cấu)
+  setMG({type:'tron',ms,bub:[{o:ms,text:msTaunt('trai'),t:5}],clock:0,t:0,caps,gate,follow:[],trail:[],pry:0,open:false,alert:0,caught:0,torch:false,burn:0,horse:0,seen:false,warned:0,done:false,
     hideNPC:true,roam:true,hideProp,update:tUpdate,draw:tDraw,post:tPost,hud:tHud,findTarget:tTarget,passAt,speedMul:()=>keys.shift?1.1:.75,mini:tMini,
     goal:()=>MG.open?[CAMP.x0-1,GATES.w[1]+.5]:[LOOSE.x+.5,LOOSE.y-.2]});
   document.body.classList.add('mg');
@@ -55,7 +58,8 @@ function sight(g,o,view){const dx=o.x-g.x,dy=o.y-g.y,d=Math.hypot(dx,dy);if(d>vi
   return 1-d/view*.6}
 function watchers(){const M=MG;const fol=campFolk().filter(o=>o.torch);return [...fol,...M.gate.filter(g=>!g.away)]}
 
-function tUpdate(dt){const M=MG;if(M.done)return;M.t+=dt;
+function tUpdate(dt){const M=MG;if(M.done)return;M.t+=dt;M.clock=M.t;
+  for(const b of M.bub)b.t-=dt;M.bub=M.bub.filter(b=>b.t>0);if(M.ms&&M.t>6&&goTo(M.ms,CMD.x+2.5,CMD.y+CMD.h+.6,2,dt,()=>true))M.ms=null;
   // nạy rào: đứng sát cọc mục, giữ E
   const nearLoose=Math.hypot(S.x-(LOOSE.x+.5),S.y-(LOOSE.y-.3))<1.1;
   if(!M.open&&nearLoose&&keys.e&&!P.moving){M.pry+=dt;if(M.pry>=TRON.PRY){M.open=true;M.follow=M.caps.slice();toast('Cọc mục bật ra. Từng người một chui qua lỗ rào theo bạn.',4000)}}
@@ -112,13 +116,14 @@ function cone(g,view){const [vx,vy]=DIRV[g.dir]||[0,1],a=Math.atan2(vy,vx),h=Mat
 function tDraw(list){const M=MG;drawCamp(list);
   for(const o of campFolk())drawWalker(list,o,false);
   for(const g of M.gate)drawWalker(list,g,false);
+  if(M.ms)drawWalker(list,M.ms,true);
   for(const c of M.caps)drawWalker(list,c,true);
   if(M.torch)list.push({y:S.y+.01,f:()=>{const px=Math.round((S.x+.35)*TS),py=Math.round((S.y-.4)*TS);tongue(px,py-10,8,5,1)}});
   if(M.burnt)list.push({y:GRAN.y+GRAN.h,f:()=>{for(let x=0;x<GRAN.w;x++){const px=(GRAN.x+x)*TS+8,py=(GRAN.y+1)*TS;smoke(px,py-12,x+9,10);tongue(px,py,16,12,x*1.7)}}});
   if(!M.open)list.push({y:LOOSE.y+.9,f:()=>{if(Math.floor(clock*3)%2){const px=Math.round((LOOSE.x+.5)*TS),py=Math.round((LOOSE.y+.4)*TS);ctx.fillStyle='#ffe08a';ctx.fillRect(px*3-camX-3,py*3-camY-30,6,6)}}})}
 function tPost(){const M=MG,h=[[S.x,S.y,M.torch?190:100]];for(const g of watchers())h.push([g.x,g.y,120]);for(const f of FIRES)h.push([f[0],f[1],150]);if(M.burnt)h.push([GRAN.x+GRAN.w/2,GRAN.y+1,320]);
   darkPost(h,.8*(1-Math.max(0,M.t-TRON.T*.75)/(TRON.T*.25)*.5));
-  const view=TRON.VIEW*(M.burn>0||M.horse>0?.5:1);for(const g of watchers())if(Math.abs(g.x-S.x)<16&&Math.abs(g.y-S.y)<10)cone(g,view)}   // quạt tầm nhìn vẽ trên lớp tối cho dễ thấy
+  const view=TRON.VIEW*(M.burn>0||M.horse>0?.5:1);for(const g of watchers())if(Math.abs(g.x-S.x)<16&&Math.abs(g.y-S.y)<10)cone(g,view);drawBubbles(M.bub)}   // quạt tầm nhìn vẽ trên lớp tối cho dễ thấy
 function tHud(){const M=MG,w=Math.min(440,innerWidth-32),x=Math.round(innerWidth/2-w/2);hudBox(x,16,w,46);
   ctx.font='600 12px "Be Vietnam Pro", system-ui, sans-serif';ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillStyle='#e2bf72';ctx.fillText('Trốn khỏi trại giặc · đêm 13 tháng giêng',x+12,30);
   const left=Math.max(0,TRON.T-M.t);ctx.fillStyle='#aab2a2';ctx.textAlign='right';ctx.fillText(`trời sáng sau ${Math.floor(left/60)}:${String(Math.floor(left%60)).padStart(2,'0')}`,x+w-12,30);ctx.textAlign='left';

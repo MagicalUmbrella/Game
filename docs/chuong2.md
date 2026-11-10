@@ -71,6 +71,10 @@ Hai lối gặp nhau ở cùng một chỗ: **làng tản cư gặp toán dân b
    - Cò ở làng: Cò đi cùng bạn trong dân binh.
 4. **Anh Ngũ / Phạm Ngũ Lão:** đã gặp ở chương 1 (`nguMet`) thì có một lần thấy ông từ xa, đi trong đoàn quân của Hưng Đạo Vương. Không bịa trận ông đánh khi Toàn thư không chép.
 
+**Đã làm (10/2026):** tin không hiện bằng khung chữ mà người trong trại dân binh nói với nhau quanh đống lửa (`traiDB.js`, đêm A: tin Trần Kiện, Trần Bình Trọng; anh Hến muốn bỏ về: giữ chân cần Tiếng 30, hoặc để về). Hai nhiệm vụ làm cho mọi đường (không chọn hai trong ba): dò tin ở làng Thượng Phúc (`dotin.js`, Văn 40 đọc được bảng gỗ, biết cưỡi ngựa thì đoán được quân kỵ đóng xa bến) và chặn toán giặc cướp lương (`cuopluong.js`). Đêm B trước trận: người nhà tới thăm (Thảo, bé Sen, hoặc mẹ), hứa trở về hay nhận áo bông; bé Sen buộc vòng chỉ đỏ; Cò ở làng: đứng cạnh nhau hay ở lại giữ thuyền; Cò theo quân: đoàn quân Hoài Văn hầu đi qua trại. Mọi lựa chọn đổi trận Chương Dương (xem đầu `chuongduong.js`).
+
+**Mặt Sẹo** (`matseo.js`, hư cấu hoàn toàn): tên đầu toán đốt làng đêm 1285 (hình `giac_dau`, nay có vết sẹo) thành kẻ thù riêng của bạn: ghé chuồng tù lúc bạn trốn trại, cưỡi ngựa cầm đầu toán cướp lương, giữ gò Chương Dương (phải đánh lui hắn mới cắm được cờ), đứng ở bến thủy trại lúc giặc bỏ trại. Bắt sống hắn ở Bạch Đằng 1288 (chưa làm). Không đụng tới công các tướng có tên trong sử.
+
 ### Trận Chương Dương (tháng 5 năm 1285)
 Toàn thư chép Quang Khải, Quốc Toản, Trần Thông, Nguyễn Khả Lạp, Nguyễn Truyền đem dân binh các lộ đánh bại giặc ở Kinh Thành, Chương Dương; Thoát Hoan chạy qua sông Lô (dòng ~11978).
 
@@ -96,7 +100,8 @@ Toàn thư chép Quang Khải, Quốc Toản, Trần Thông, Nguyễn Khả Lạ
    - Mỗi người trong `lostWho` có một số phận: cứu được, đã bị giải đi xa (nhắc lại ở chương 3), hoặc đã mất.
    - Số phận phụ thuộc việc làm ở phần 1: dò tin đúng chỗ thì cứu được nhiều hơn.
 2. **Đuổi giặc ở Vạn Kiếp** (tùy chọn, đường võ): đứng trên bờ sông thấy thuyền giặc chạy, bắn tên, cản đường. Chỉ nghe kể chuyện Thoát Hoan chui đồ đồng qua lời người khác.
-3. **Vua về kinh:** dân đứng hai bên đường; bài thơ Quang Khải.
+   - **Đã làm:** tin Tây Kết, Vạn Kiếp, Thoát Hoan chui đồ đồng kể quanh lửa trại ngày giặc tan (`traiDB.js`, đêm C); chỗ người đã ngã để trống, có bát cơm úp. Đuổi giặc thì chặn được thuyền giặc, cứu một người làng bị chở đi (`S.c2.rescued`).
+3. **Vua về kinh:** dân đứng hai bên đường; bài thơ Quang Khải. Đã gặp anh Ngũ thì Phạm Ngũ Lão cưỡi ngựa trong đoàn, gật đầu với bạn (hư cấu).
    - Người theo giặc bị xét. Mở đầu chủ đề "hòm biểu xin hàng" cho chương 3: ông Cả Lợi có giấu gì không?
 
 ---
@@ -285,7 +290,7 @@ Ai chết **phụ thuộc vào cách chơi**, không viết sẵn một người
 - **Trốn trại:** đuốc lính quét qua, bạn nín thở sau đống bao thóc.
 - **Tin Trần Bình Trọng:** dân binh im lặng quanh đống lửa; có người đứng dậy nói "thà chết như ông ấy" (hư cấu, không bịa lời Trần Bình Trọng).
 - **Đêm trước Chương Dương:** thuyền trôi trong sương, nghe tiếng giặc nói chuyện trên thuyền canh sát bên.
-- **Khánh Dư bị xiềng** (Toàn thư): bạn thấy ông bị giải đi rồi xin khất ba ngày, rồi thắng. Một bài học về đứng dậy sau thất bại.
+- **Khánh Dư bị xiềng** (Toàn thư): bạn thấy ông bị giải đi rồi xin khất hai, ba ngày, rồi thắng. Một bài học về đứng dậy sau thất bại.
 - **Bạch Đằng, nước chưa rút:** thuyền giặc sắp vượt qua bãi cọc, đồng hồ thủy triều chạy chậm. Phải giữ thêm vài phút.
 
 ### Những khoảnh khắc huy hoàng (tôn nhân vật)

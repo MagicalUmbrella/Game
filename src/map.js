@@ -3,6 +3,7 @@ import {BI,BR,DK,FI,G,GA,H,H0,MO,OY,PA,SA,ST,TR,W,W0,WA,WL,WR} from './constants
 import {buildCity,CITY_BUILD,CITY_DECOR,CITY_SIGNS,CLOSED} from './kinhthanh.js';
 import {Hs} from './pixel.js';
 import {CAMP,THUY,WBUILD,WDECOR,WSIGNS,buildWorld,hongX} from './world.js';
+import {AP_BUILD,AP_DECOR,AP_SIGNS,AP_SOLID,AP_TREE,buildAnPhu} from './anphu.js';
 export {CAMP,THUY,hongX};
 
 export const map=new Uint8Array(W*H),bsolid=new Uint8Array(W*H);
@@ -70,11 +71,13 @@ function buildMap(){
   for(let y=OY-1;y>=0;y--){const x=Math.ceil(hongX(y)-5.2);
     for(let xx=(px===null?x:Math.min(px,x))-1;xx<=(px===null?x:Math.max(px,x));xx++){const t=get(xx,y);if(t===G||t===TR||t===SA||t===PA||t===FI)set(xx,y,DK)}
     px=x}
+  buildAnPhu({set,get,fill,road});   // làng An Phú, bản đồ đợt 2 (anphu.js): xóm Đông, xóm Tây, chợ, ao, lũy tre, cổng làng
   buildCity({set,get,fill,road});   // kinh thành Thăng Long (kinhthanh.js)
-  BUILDINGS.push(...CITY_BUILD,...WBUILD);DECOR.push(...CITY_DECOR,...WDECOR);SIGNS.push(...CITY_SIGNS,...WSIGNS);
+  BUILDINGS.push(...CITY_BUILD,...WBUILD,...AP_BUILD);DECOR.push(...CITY_DECOR,...WDECOR,...AP_DECOR);SIGNS.push(...CITY_SIGNS,...WSIGNS,...AP_SIGNS);
   for(const b of BUILDINGS)for(let y=b.y;y<b.y+b.h;y++)for(let x=b.x;x<b.x+b.w;x++)bsolid[y*W+x]=1;
   for(const d of DECOR)if(d.solid)bsolid[d.y*W+d.x]=1;
   for(const s of SIGNS)bsolid[s.y*W+s.x]=1;
+  for(const [x,y] of AP_SOLID)bsolid[y*W+x]=1;   // cột cổng làng
   for(const k of CLOSED){const [x,y]=k.split(',').map(Number);bsolid[y*W+x]=1}   // cổng Hoàng thành, Cấm thành đóng
 }
 for(const o of [...BUILDINGS,...DECOR,...SIGNS])o.y+=OY;   // danh sách trên ghi theo tọa độ gốc
@@ -82,6 +85,7 @@ buildMap();
 export const TREES=[];for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(map[y*W+x]===TR){
   // loại cây: rừng phía tây chủ yếu cây tán, lẫn tre; quanh làng, ven sông có tre, cau, chuối
   const h=Hs(x,y,5),forest=x<26&&y>26+OY;
+  if(AP_TREE.has(y*W+x)){TREES.push({x,y,v:AP_TREE.get(y*W+x)});continue}   // tre lũy làng, cau, chuối đặt sẵn (anphu.js)
   // ven sông Bạch Đằng, bờ biển: rừng sú vẹt (4)
   if(x>=392&&[[1,0],[-1,0],[0,1],[0,-1],[2,0],[-2,0],[0,2],[0,-2]].some(([a,b])=>{const t=get(x+a,y+b);return t===WA||t===BI||t===SA}))TREES.push({x,y,v:4});
   else TREES.push({x,y,v:forest?(h<.8?0:1):h<.4?0:h<.68?1:h<.84?2:3})}
