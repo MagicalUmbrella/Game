@@ -101,7 +101,7 @@ for(const bd of BUILDINGS){if(bd.kind!=='house')continue;
 for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){const t=get(x,y),h=Hs(x,y,321);
   const wet=[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>get(x+a,y+b)===WA);
   if((t===SA||t===G)&&wet&&h<.16&&!bsolid[y*W+x])PROPS.push({x,y,k:'lau'});
-  else if(t===G&&h>.975&&!(x>=27&&x<=59&&y>=49&&y<=73)&&!(x>=KINH.x0&&x<=KINH.x1&&y>=KINH.y0&&y<=KINH.y1)&&!nearPath(x,y)&&!bsolid[y*W+x]&&!DECOR.some(d=>Math.abs(d.x-x)<3&&Math.abs(d.y-y)<3)&&!SIGNS.some(s=>s.x===x&&s.y===y))PROPS.push({x,y,k:'bui'})}
+  else if(t===G&&h>.975&&!(x>=22&&x<=75&&y>=48&&y<=89)&&!(x>=KINH.x0&&x<=KINH.x1&&y>=KINH.y0&&y<=KINH.y1)&&!nearPath(x,y)&&!bsolid[y*W+x]&&!DECOR.some(d=>Math.abs(d.x-x)<3&&Math.abs(d.y-y)<3)&&!SIGNS.some(s=>s.x===x&&s.y===y))PROPS.push({x,y,k:'bui'})}
 
 /* chuồng trâu ở chỗ trâu đứng (PEN, dialogs.js): mái rơm và rào sau vẽ trước trâu, rào trước vẽ sau trâu */
 function penBack(){if(sc.penB)return sc.penB;const b=buf(44,30);
