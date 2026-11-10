@@ -16,11 +16,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import playtest as pt
 from playwright.sync_api import sync_playwright
 
-NOI = [('lang', 43.5, 71.5, 'Làng An Phú, nhà mình'), ('song', 40, 44.5, 'Sông Tô Lịch'), ('ruong', 46, 80, 'Ruộng'),
-       ('rung', 14, 66, 'Rừng phía tây, chùa làng'), ('kinh', 53.5, 29, 'Kinh thành, cửa Đại Hưng'), ('cong', 53.5, 41.5, 'Cổng nam kinh thành'),
-       ('long', 53.5, 15, 'Long Trì, điện Thiên An'), ('cho', 30, 23, 'Chợ kinh thành'), ('dienhuu', 14, 10, 'Chùa Diên Hựu, Quốc học viện'),
-       ('giangvo', 60, 33, 'Giảng võ đường, tháp Báo Thiên'),
-       ('de', 80, 43, 'Đê sông Hồng, cống Tô Lịch'), ('hong', 80, 60, 'Bãi sông Hồng')]
+NOI = [('lang', 43.5, 131.5, 'Làng An Phú, nhà mình'), ('xomdong', 62, 120, 'Xóm Đông, chợ làng, ao làng'), ('song', 40, 104.5, 'Sông Tô Lịch'),
+       ('ruong', 46, 140, 'Ruộng'), ('rung', 14, 126, 'Rừng phía tây, chùa làng'), ('cong', 46.5, 97, 'Cổng nam kinh thành, trục chính'),
+       ('kinh', 46.5, 76.5, 'Cửa Đại Hưng'), ('long', 46.5, 46, 'Long Trì, điện Thiên An'), ('sanchau', 46.5, 65, 'Sân chầu trước Cấm thành'),
+       ('cho', 16, 69, 'Chợ kinh thành'), ('vanmieu', 18, 27, 'Văn Miếu, Quốc học viện, chùa Diên Hựu'), ('phuong', 12, 45, 'Phường phố phía tây'),
+       ('baothien', 38, 84, 'Tháp, chùa Báo Thiên'), ('giangvo', 60, 92, 'Giảng võ đường'), ('ho', 30, 15, 'Hồ Dâm Đàm, cổng bắc'),
+       ('de', 80, 103, 'Đê sông Hồng, cống Tô Lịch'), ('hong', 80, 120, 'Bãi sông Hồng')]
 MUA = ['xuan', 'ha', 'thu', 'dong']
 TEXT = """() => { const m=document.querySelector('#modal'), d=document.querySelector('#dialog');
   return {modal: m && !m.hidden ? m.innerText : '', dialog: d && !d.hidden ? d.innerText : ''} }"""

@@ -24,7 +24,7 @@ export const pickR=a=>a[Math.floor(Math.random()*a.length)];
 export function allSuc(label,run){const n=S.suc;if(n<2)return[];
   return[{label:`${label} hết Sức mùa này (${n} buổi một lần)`,note:'chơi một lần, tính cho cả mùa',fn:()=>{S.suc=0;renderHUD();run(n)}}]}
 /* Về nhà ngủ từ bất cứ đâu (phím N): đỡ phải đi bộ về khi đã hết việc. */
-export function goSleep(){S.x=43.5;S.y=69.6;advance(1)}   // cửa nhà mình
+export function goSleep(){S.x=43.5;S.y=129.6;advance(1)}   // cửa nhà mình
 function vanLesson(){const v=S.van;return v<10?'Thầy dạy chữ trên khay cát, từng nét một.':v<25?'Thầy giảng sách dạy đạo làm người.':v<45?'Bạn đọc Luận ngữ, tập viết văn sách.':v<70?'Bạn học Kinh Thi, Kinh Thư, bình luận chuyện xưa.':'Bạn đọc Đại Việt sử ký, bàn về phép trị nước.'}
 function voLesson(){const v=S.vo;return v<10?'Đứng tấn đến run cả chân.':v<25?'Tập côn pháp, múa gậy quanh sân.':v<45?'Tập đao pháp đến mỏi tay.':v<70?'Tập cưỡi ngựa, bắn cung.':'Học bày trận, đọc binh thư.'}
 export function talkMe(){
@@ -139,13 +139,13 @@ export function talkVoQuan(){
   say('Võ quan','Giảng võ đường lập mùa thu năm Quý Sửu (1253). Chỉ người đã vào quân mới được luyện ở đây.');
 }
 export {talkNgu} from './ngu.js';   // anh Ngũ: xem ngu.js
-export const PEN={x:44.5,y:78.6};
+export const PEN={x:44.5,y:138.6};
 let reachOK=null,hintT=0;
 export function walkable(x,y){return x>=0&&y>=0&&x<W&&y<H&&![WA,WR,BI,MO,TR,WL].includes(map[y*W+x])&&!bsolid[y*W+x]}
 export function bfs(sx,sy){const prev=new Int32Array(W*H).fill(-2),s=sy*W+sx;prev[s]=-1;const q=[s];let h=0;while(h<q.length){const i=q[h++],x=i%W,y=(i/W)|0;for(const[a,c]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+a,ny=y+c,j=ny*W+nx;if(prev[j]===-2&&walkable(nx,ny)&&!locked(S,nx,ny)){prev[j]=i;q.push(j)}}}return prev}   // chỉ trong các vùng đã mở
-export function hideSpots(){if(!reachOK)reachOK=bfs(43,70);const c=[];
-  for(let y=52;y<90;y++)for(let x=6;x<23;x++){if(reachOK[y*W+x]===-2||get(x,y)===PA)continue;let tr=0,road=false;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const t=get(x+dx,y+dy);if(t===TR)tr++;else if(t===PA)road=true}if(tr>=11&&!road)c.push([x,y])}
-  if(c.length<3)for(let y=52;y<90;y++)for(let x=6;x<23;x++)if(reachOK[y*W+x]!==-2&&get(x,y)!==PA)c.push([x,y]);return c}
+export function hideSpots(){if(!reachOK)reachOK=bfs(43,130);const c=[];
+  for(let y=112;y<150;y++)for(let x=6;x<23;x++){if(reachOK[y*W+x]===-2||get(x,y)===PA)continue;let tr=0,road=false;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const t=get(x+dx,y+dy);if(t===TR)tr++;else if(t===PA)road=true}if(tr>=11&&!road)c.push([x,y])}
+  if(c.length<3)for(let y=112;y<150;y++)for(let x=6;x<23;x++)if(reachOK[y*W+x]!==-2&&get(x,y)!==PA)c.push([x,y]);return c}
 export function pathTo(sx,sy,tx,ty){const prev=bfs(sx,sy),t=ty*W+tx;if(prev[t]===-2)return[];const out=[];for(let i=t;i!==-1;i=prev[i])out.push(i);return out.reverse()}
 function sendBuffalo(fx,fy,minD,maxD){const b=S.buffalo,sp=hideSpots();let pool=sp.filter(([x,y])=>{const d=Math.hypot(x-fx,y-fy);return d>=minD&&d<=maxD});if(!pool.length)pool=sp;
   const[hx,hy]=pool[Math.floor(Math.random()*pool.length)],path=pathTo(Math.floor(fx),Math.floor(fy),hx,hy);

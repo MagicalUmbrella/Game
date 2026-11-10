@@ -31,7 +31,7 @@ import {ch2Go,ch2Note} from './index.js';
 const src=t=>`<p class="src">Toàn thư chép: ${t}</p>`;
 const cap=n=>n[0].toUpperCase()+n.slice(1);
 const lc=n=>/^(Mẹ|Cha|Bà|Bé|Cụ|Trai|Cu)/.test(n)?n[0].toLowerCase()+n.slice(1):n;
-export const CAMP_DB=[70.5,141.5];   // đống lửa trại dân binh (bãi cỏ vùng Chương Dương)
+export const CAMP_DB=[70.5,201.5];   // đống lửa trại dân binh (bãi cỏ vùng Chương Dương)
 function nearOK(x,y){for(let r=0;r<8;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){const tx=Math.floor(x)+dx,ty=Math.floor(y)+dy;if(walkable(tx,ty))return [tx+.5,ty+.5]}return [x,y]}
 const SEAT=[[0,-1.9],[1.8,-.8],[1.8,1.1],[-2.7,.2],[-1.8,1.1],[-1.8,-.8],[1,-1.7],[-1,-1.7],[2.7,.2],[-2.4,2.2]];
 const faceFire=(o,f)=>{const dx=f[0]-o.x,dy=f[1]-o.y;o.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up')};

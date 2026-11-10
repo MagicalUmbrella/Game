@@ -28,20 +28,20 @@ import {ch2Go,ch2Note} from './index.js';
 export const DOTIN={T:150,VIEW:3.8,CONE:.55,NEAR:.9,FILL:1.5,DECAY:.35,PACE:1.05,VAN:40};
 const DIRV={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
 function nearOK(x,y){for(let r=0;r<6;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++)if(walkable(Math.floor(x)+dx,Math.floor(y)+dy))return [Math.floor(x)+dx+.5,Math.floor(y)+dy+.5];return [x,y]}
-const START=[12.5,142.5];
-/* vòng tuần (tọa độ thế giới, cụm nhà ở x 22–40, y 139–148) */
-const LOOPS=[[[21.5,138.5],[28.5,138.5],[28.5,143.5],[21.5,143.5],[21.5,138.5]],
-  [[32.5,139.5],[42.5,139.5],[42.5,148.5],[32.5,148.5],[32.5,139.5]],
-  [[17.5,144.5],[24.5,144.5],[24.5,150.5],[17.5,150.5],[17.5,144.5]]];
+const START=[12.5,202.5];
+/* vòng tuần (tọa độ thế giới, cụm nhà ở x 22–40, y 199–208) */
+const LOOPS=[[[21.5,198.5],[28.5,198.5],[28.5,203.5],[21.5,203.5],[21.5,198.5]],
+  [[32.5,199.5],[42.5,199.5],[42.5,208.5],[32.5,208.5],[32.5,199.5]],
+  [[17.5,204.5],[24.5,204.5],[24.5,210.5],[17.5,210.5],[17.5,204.5]]];
 const INF=[
-  {k:'gac',name:'Ông lão coi đình',look:{id:'ong_gia'},at:[33.5,143.5],
+  {k:'gac',name:'Ông lão coi đình',look:{id:'ong_gia'},at:[33.5,203.5],
     line:'Thuyền canh của chúng đổi gác lúc gà gáy canh tư. Lúc ấy thằng nào cũng ngáp.',got:'Biết giờ đổi gác của thuyền canh giặc'},
-  {k:'thuyen',name:'Bà hàng nước',look:{id:'dan_nu3'},at:[27.5,141.5],
+  {k:'thuyen',name:'Bà hàng nước',look:{id:'dan_nu3'},at:[27.5,201.5],
     line:'Ba chiếc thuyền treo đèn, đêm nào cũng đi đúng một đường, từ gốc gạo sang bãi cát rồi quay lại.',got:'Biết đường đi của thuyền canh giặc'},
-  {k:'ky',name:'Chú bé chăn ngựa',look:{id:'tre2',kid:true},at:[20.5,149.5],
+  {k:'ky',name:'Chú bé chăn ngựa',look:{id:'tre2',kid:true},at:[20.5,209.5],
     line:()=>knows('ngua')?'Cháu phải cho ngựa của chúng ăn. Ngựa nhiều lắm, toàn buộc ở bãi xa phía trên, không cho xuống gần bến.':'Cháu phải cho ngựa của chúng ăn. Nhiều lắm, cháu đếm không xuể.',
     got:()=>knows('ngua')?'Biết quân kỵ giặc đóng xa bến (bạn biết cưỡi ngựa, đếm được số máng cỏ)':null},
-  {k:'bando',name:'Tấm bảng gỗ',board:true,at:[30.5,148.5],
+  {k:'bando',name:'Tấm bảng gỗ',board:true,at:[30.5,208.5],
     line:()=>S.van>=DOTIN.VAN?'Giặc vẽ thế đất quanh bến Chương Dương, chú bằng chữ Hán: chỗ nào đóng trại, chỗ nào đắp ụ.':'Tấm bảng vẽ nguệch ngoạc, chú chữ Hán. Bạn không đọc được.',
     got:()=>S.van>=DOTIN.VAN?'Đọc được thế đất quanh bến Chương Dương':null}];
 const val=v=>typeof v==='function'?v():v;

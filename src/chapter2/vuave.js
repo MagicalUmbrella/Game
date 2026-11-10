@@ -30,7 +30,7 @@ const lc=n=>/^(Mẹ|Cha|Bà|Bé|Cụ|Trai|Cu)/.test(n)?n[0].toLowerCase()+n.slic
 export const VV={PACE:1.25,FAST:3.2,GAP:1.35};
 
 /* ---------- vua về kinh ---------- */
-const ROUTE=[[82.5,31.8],[53.5,31.8],[53.5,25.6]];   // bến Đông Bộ Đầu → cổng đông kinh thành → đại lộ → qua cầu hào tới cửa Đại Hưng
+const ROUTE=[[82.5,91.8],[46.5,91.8],[46.5,75.6]];   // bến Đông Bộ Đầu → cổng đông kinh thành → đại lộ ngang → trục chính lên trước cầu hào cửa Đại Hưng
 const kieuSprite=()=>simple('kieu',30,28,s=>{s(0,19,30,2,'#6e4a2a');s(6,9,18,11,'#a8302a');s(8,11,6,8,'#7a1e1a');s(16,11,6,8,'#7a1e1a');s(14,11,2,8,'#d8a020');
   s(3,5,24,5,'#d8a020');s(5,3,20,3,'#f0c850');s(12,0,6,3,'#f0c850');s(3,9,24,1,'#a87818');s(14,-1,2,2,'#f0d070')},15,24);
 const flagSprite=c=>simple('coxa'+c,18,40,s=>{s(1,0,2,40,'#6e4a2a');s(3,2,14,11,c);s(3,2,14,2,'#f0d070');s(8,6,4,3,'#f0d070')},2,39);
@@ -41,16 +41,16 @@ export function startVuave(){S.c2.scene='vuave';S.season=1;save();
   let s=0,nk=0;const row=plan.map(([k,c])=>{const o={kind:k,col:c,s,x:ROUTE[0][0],y:ROUTE[0][1],dir:'left',walk:0};if(k==='ngua'&&nk++===1&&S.nguMet)o.ngu=true;s+=k==='kieu'||k==='ngua'?1.9:VV.GAP;return o});
   // dân đứng hai bên đường
   const crowd=[],LOOKS=['dan_nam1','dan_nam2','dan_nu1','dan_nu2','dan_nu3','ong_gia','tre1','tre2','trai2','trai3'];let i=0;
-  for(let x=56.5;x<=80;x+=1.15)for(const [y,dir] of [[30.4,'down'],[33.5,'up']]){if(!walkable(Math.floor(x),Math.floor(y)))continue;i++;if((i*7)%5===0)continue;
+  for(let x=49.5;x<=80;x+=1.15)for(const [y,dir] of [[90.4,'down'],[93.5,'up']]){if(!walkable(Math.floor(x),Math.floor(y)))continue;i++;if((i*7)%5===0)continue;
     const id=LOOKS[(i*3+Math.floor(x))%LOOKS.length];crowd.push(walker('d'+i,'',{id,kid:id.startsWith('tre')},x+(i%3)*.1,y,{dir,ph:i*.7}))}
   // chỗ bạn đứng: hàng dân binh (bờ nam) hoặc cùng người nhà (bờ bắc)
-  const ve=S.c2.duoi==='ve',my=ve?30.4:33.5,mx=75.5,me=[];for(const c of crowd)if(Math.abs(c.x-mx)<3.2&&Math.abs(c.y-my)<.5)c.hide=true;
+  const ve=S.c2.duoi==='ve',my=ve?90.4:93.5,mx=75.5,me=[];for(const c of crowd)if(Math.abs(c.x-mx)<3.2&&Math.abs(c.y-my)<.5)c.hide=true;
   const add=(name,look,dx)=>{const o=walker('m'+me.length,name,look,mx+dx,my,{dir:ve?'down':'up',ph:me.length});me.push(o);return o};
   if(ve){add('Mẹ',{id:'me_gia'},-1.2);if(S.cha)add('Cha',{id:'cha_gia'},1.2);if(S.thao==='wife')add('Thảo',{id:'thao'},2.4);if(S.child)add('Bé Sen',{id:'sen',kid:true},-2.4)}
   else{add('Ông Đoàn',{id:'dan_nam2'},-1.2);(S.c2.men||[]).filter(m=>!m.fallen).slice(0,3).forEach((m,k)=>add(m.name[0].toUpperCase()+m.name.slice(1),m.look,[1.2,2.4,-2.4][k]));if(S.co==='village'&&!S.c2.coFell)add('Cò',{id:'co'},-2.4)}
   S.x=mx;S.y=my;st.P.dir=ve?'down':'up';
   setMG({type:'vuave',t:0,clock:0,s:-4,L,row,crowd,me,bub:[],stop:0,asked:false,quan:null,done:false,hideNPC:true,roam:true,speedMul:()=>0,
-    update:vUpdate,draw:vDraw,post:()=>drawBubbles(st.MG.bub),hud:vHud,findTarget:()=>null,cam:()=>{const k=st.MG.row.find(o=>o.kind==='kieu'&&!o.hidden);return [k?Math.max(S.x-6,Math.min(S.x+6,k.x)):S.x,31.4]}});   // máy quay theo cỗ kiệu đầu, không rời chỗ bạn quá 6 ô
+    update:vUpdate,draw:vDraw,post:()=>drawBubbles(st.MG.bub),hud:vHud,findTarget:()=>null,cam:()=>{const k=st.MG.row.find(o=>o.kind==='kieu'&&!o.hidden);return [k?Math.max(S.x-6,Math.min(S.x+6,k.x)):S.x,91.4]}});   // máy quay theo cỗ kiệu đầu, không rời chỗ bạn quá 6 ô
   document.body.classList.add('mg');setKeys('<span>Giữ <kbd>Space</kbd> cho đoàn đi nhanh</span>');save()}
 function say(o,text,t=3.4){const M=st.MG;M.bub=M.bub.filter(b=>b.o!==o);M.bub.push({o,text,t})}
 function vUpdate(dt){const M=st.MG;if(M.done)return;M.t+=dt;M.clock=M.t;for(const b of M.bub)b.t-=dt;M.bub=M.bub.filter(b=>b.t>0);
@@ -63,10 +63,10 @@ function vUpdate(dt){const M=st.MG;if(M.done)return;M.t+=dt;M.clock=M.t;for(cons
   if(near&&!M.cheer){M.cheer=true;for(const c of [...M.crowd,...M.me])if(Math.abs(c.x-S.x)<8&&!c.hide&&Math.random()<.35)say(c,['Vạn tuế!','Giặc tan rồi!','Về rồi, về rồi!'][Math.floor(Math.random()*3)],2.6)}
   // lập công lớn ở Chương Dương: viên quan dừng lại hỏi tên
   const cong=(S.c2.cd&&S.c2.cd.cong)||0,lastK=kieu[kieu.length-1];
-  if(cong>=3&&!M.asked&&lastK.x<S.x-1.5){M.asked=true;M.stop=99;M.quan=walker('quan','Viên quan',{id:'hocquan'},S.x+1.5,31.8,{})}
-  if(M.quan&&!M.quan.back){const q=M.quan;if(goTo(q,S.x+.9,S.y+(S.y<31.8?.9:-.9),2.2,dt)&&!M.qsaid){M.qsaid=true;say(q,'Người dẫn thuyền đầu ở Chương Dương, cắm cờ trên gò, có phải anh không?',4);M.askT=1.4}}
+  if(cong>=3&&!M.asked&&lastK.x<S.x-1.5){M.asked=true;M.stop=99;M.quan=walker('quan','Viên quan',{id:'hocquan'},S.x+1.5,91.8,{})}
+  if(M.quan&&!M.quan.back){const q=M.quan;if(goTo(q,S.x+.9,S.y+(S.y<91.8?.9:-.9),2.2,dt)&&!M.qsaid){M.qsaid=true;say(q,'Người dẫn thuyền đầu ở Chương Dương, cắm cờ trên gò, có phải anh không?',4);M.askT=1.4}}
   if(M.askT>0){M.askT-=dt;if(M.askT<=0)ask()}
-  if(M.quan&&M.quan.back){if(goTo(M.quan,M.quan.bx,31.8,2.4,dt)){M.quan=null;M.stop=0}}
+  if(M.quan&&M.quan.back){if(goTo(M.quan,M.quan.bx,91.8,2.4,dt)){M.quan=null;M.stop=0}}
   M.stop=Math.max(0,M.stop===99?99:M.stop-dt);
   if(M.s-M.row[M.row.length-1].s>=M.L)finish(M)}
 function ask(){const M=st.MG;if(!M||M.type!=='vuave')return;
@@ -74,7 +74,7 @@ function ask(){const M=st.MG;if(!M||M.type!=='vuave')return;
     choices:[{label:`Thưa, tôi là ${S.name}, người làng An Phú`,note:'+Tiếng',fn:()=>{S.c2.ten='ghi';gain('tieng',3);ch2Note('Ngày vua về kinh, viên quan dừng lại ghi tên bạn vào sổ công dân binh.');back()}},
       {label:'Thưa, công ấy là của cả đội dân binh ông Đoàn',note:'+Đức',fn:()=>{S.c2.ten='doi';gain('duc',3);ch2Note('Ngày vua về kinh, viên quan hỏi tên, bạn thưa công ấy là của cả đội dân binh.');back()}}]})}
 function back(){const M=st.MG;if(!M||!M.quan)return;M.quan.back=true;M.quan.bx=Math.max(56,S.x-6);say(M.quan,S.c2.ten==='ghi'?'Được, ta ghi rồi.':'Khá lắm. Ta ghi cả đội.',2.6)}
-function finish(M){M.done=true;setMG(null);setKeys();document.body.classList.remove('mg');S.x=43.5;S.y=50.4;
+function finish(M){M.done=true;setMG(null);setKeys();document.body.classList.remove('mg');S.x=43.5;S.y=110.4;
   if(!S.c2.ten)ch2Note('Ngày vua về kinh, bạn đứng trong hàng '+(S.c2.duoi==='ve'?'dân làng cùng người nhà':'dân binh')+' hai bên đường.');save();
   showModal({kicker:'Tháng 6 · Ất Dậu 1285',title:'Hai vua về kinh',big:true,
     body:`<p>Đoàn xa giá đi khuất vào cổng Hoàng thành. Ngày hôm ấy nước sông lên to. Người ta truyền nhau bài thơ của Thượng tướng Trần Quang Khải:</p>

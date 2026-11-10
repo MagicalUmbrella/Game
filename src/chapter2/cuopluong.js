@@ -27,7 +27,7 @@ import {villageMen} from './chuongduong.js';
 import {ch2Go,ch2Note} from './index.js';
 
 export const LUONG={PACE:.8,N:4,HP:4,EN_SP:2.3,HIT_CD:1.25,MY_CD:.36,AL_CD:1.1,AL_HP:3,MS_HIT:3,AGGRO:3.2};
-const ROUTE=[[54.5,189.5],[70.5,189.5],[70.5,170.5]],EXIT=ROUTE[2],AMBUSH=[67.5,181.5];
+const ROUTE=[[54.5,249.5],[70.5,249.5],[70.5,230.5]],EXIT=ROUTE[2],AMBUSH=[67.5,241.5];
 const okW=(x,y)=>walkable(x,y);
 const cap=n=>n[0].toUpperCase()+n.slice(1);
 const pDmg=()=>1+(S.vo>=50?1:0)+(has('Kiếm sắt')?1:0)+(S.c2.the==='mai'?1:0);

@@ -50,7 +50,7 @@ import {groundChunk,overview,prewarm} from './ground.js';
 
 // chờ nạp ảnh nhân vật (src/assets/nguoi.png) rồi mới vẽ
 loadPeople().catch(e=>console.error('Không nạp được ảnh nhân vật',e)).then(()=>{requestAnimationFrame(loop);titleScreen();
-  for(const s of [0,1,2,3])prewarm(s,44,40);   // vẽ sẵn nền quanh làng, 4 mùa, lúc ở màn tiêu đề
+  for(const s of [0,1,2,3])prewarm(s,44,100);   // vẽ sẵn nền quanh làng, 4 mùa, lúc ở màn tiêu đề
   if(import.meta.env.MODE==='test')window.__dv=hook});
 
 /* Hook cho tests/playtest.py và tests/bots.js. Chỉ có trong bản build `--mode test`, bản phát hành tự loại bỏ.

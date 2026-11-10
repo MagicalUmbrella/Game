@@ -68,7 +68,7 @@ export function buildingSprite(b){if(bspr[b.id])return bspr[b.id];
   } else {
     const wt=Math.round(hpx*.45);
     wallPx(s,wpx,hpx,wt,P);
-    if(b.kind==='stall'){s(4,hpx-12,wpx-8,8,'#3a2a1c');s(3,hpx-6,wpx-6,3,'#8a6238');const goods={sach:['#d9cba0','#b8a676','#e8dcb6'],ren:['#c0c4c8','#e0823a','#8a8e92'],nhaituan:['#b8322a','#e2bf72','#3f6f9a'],gom:['#9fbfa8','#7a5132','#d9d0b8'],cho_rau:['#5a9a3a','#8ac85a','#d8c060'],cho_ca:['#a8b4bc','#d8dce0','#7a5132']}[b.id]||['#d9cba0'];
+    if(b.kind==='stall'){s(4,hpx-12,wpx-8,8,'#3a2a1c');s(3,hpx-6,wpx-6,3,'#8a6238');const goods={sach:['#d9cba0','#b8a676','#e8dcb6'],ren:['#c0c4c8','#e0823a','#8a8e92'],nhaituan:['#b8322a','#e2bf72','#3f6f9a'],gom:['#9fbfa8','#7a5132','#d9d0b8'],cho_rau:['#5a9a3a','#8ac85a','#d8c060'],cho_ca:['#a8b4bc','#d8dce0','#7a5132'],k_rau:['#5a9a3a','#8ac85a','#d8c060'],k_ca:['#a8b4bc','#d8dce0','#7a5132'],vai:['#b8322a','#3f6f9a','#e2bf72'],gao:['#efe8d4','#d9cba0','#c8b890']}[b.id]||['#d9cba0'];
       for(let i=0;i<Math.floor((wpx-10)/5);i++)s(5+i*5,hpx-9,3,3,goods[i%goods.length])}
     else{const dw=b.kind==='palace'||b.kind==='dien'?14:b.kind==='lang'?6:10,dx=Math.floor(wpx/2-dw/2);s(dx-1,hpx-15,dw+2,12,shade(P.post,-.25));s(dx,hpx-14,dw,11,'#2e2118');
       if(P.thatch){for(let y=hpx-14;y<hpx-8;y+=2)s(dx,y,dw,1,'#b08a52');s(dx,hpx-8,dw,1,'#8a6a3a')}   // mành tre cuộn nửa chừng

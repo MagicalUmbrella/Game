@@ -36,7 +36,7 @@ const pmod=(a,m)=>((a%m)+m)%m;
 
 function render(){
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.imageSmoothingEnabled=false;
-  const cm=MG&&MG.cam?MG.cam():null;let fx=cm?cm[0]:S?S.x:titleCam,fy=cm?cm[1]:S?S.y:30;   // màn chơi có thể đặt chỗ máy quay nhìn (MG.cam)
+  const cm=MG&&MG.cam?MG.cam():null;let fx=cm?cm[0]:S?S.x:titleCam,fy=cm?cm[1]:S?S.y:90;   // màn chơi có thể đặt chỗ máy quay nhìn (MG.cam)
   fx=Math.round(fx*TS)/TS;fy=Math.round(fy*TS)/TS;   // camera theo điểm ảnh của người chơi: người đứng yên trên màn hình, không rung một điểm ảnh khi đi, khi ngồi thuyền
   camX=Math.max(0,Math.min(W*T-VW,fx*T-VW/2));camY=Math.max(0,Math.min(H*T-VH,fy*T-VH/2));
   camX=Math.round(camX/Z)*Z;camY=Math.round(camY/Z)*Z;
